@@ -28,6 +28,13 @@
 #include "datadisplay.h"
 
 
+//#define BLUETOOTHCLASSIC 1
+#ifdef BLUETOOTHCLASSIC
+#include <BlueToothSerial.h>
+BluetoothSerial SerialBT;
+#endif
+
+
 ListDevices *pListDevices;
 DataDisplay *pDataDisplay;
 
@@ -43,8 +50,13 @@ void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
 
 
 void setup() {
+#ifdef BLUETOOTHCLASSIC
+  SerialBT.begin("CanAnalyzer"); delay(500);
+  OutputStream=&SerialBT;
+#else
   Serial.begin(115200); delay(500);
   OutputStream=&Serial;
+#endif
 //   while (!Serial) 
 
 
