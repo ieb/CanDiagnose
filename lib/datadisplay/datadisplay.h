@@ -6,9 +6,9 @@
 
 
 
-class DataDisplay: public tNMEA2000::tMsgHandler {
+class DataDisplay{
     public:
-        DataDisplay(tNMEA2000 *_pNMEA2000, Stream *outputStream);
+        DataDisplay(Stream *outputStream);
         void HandleMsg(const tN2kMsg &N2kMsg);
 
         bool showData= false;

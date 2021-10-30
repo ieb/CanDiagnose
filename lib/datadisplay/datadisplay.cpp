@@ -4,8 +4,7 @@
 #include <N2kMessagesEnumToStr.h>
 
 
-DataDisplay::DataDisplay(tNMEA2000 *_pNMEA2000, Stream *outputStream) : 
-        tNMEA2000::tMsgHandler(0,_pNMEA2000),
+DataDisplay::DataDisplay(Stream *outputStream) :
         OutputStream{outputStream} {
 }
 

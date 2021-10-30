@@ -26,9 +26,10 @@
 
 #include "listdevices.h"
 #include "datadisplay.h"
+#include "dataoutput.h"
 
 
-//#define BLUETOOTHCLASSIC 1
+#define BLUETOOTHCLASSIC 1
 #ifdef BLUETOOTHCLASSIC
 #include <BlueToothSerial.h>
 BluetoothSerial SerialBT;
@@ -37,6 +38,7 @@ BluetoothSerial SerialBT;
 
 ListDevices *pListDevices;
 DataDisplay *pDataDisplay;
+DataOutput *pDataOutput;
 
 
 
@@ -46,9 +48,29 @@ Stream *OutputStream;
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
     pListDevices->HandleMsg(N2kMsg);
     pDataDisplay->HandleMsg(N2kMsg);
+    pDataOutput->HandleMsg(N2kMsg);
 }
 
+void showHelp() {
+  OutputStream->println("Device analyzer started.");
+  OutputStream->println("  - Analyzer will automatically print new list on list changes.");
+  OutputStream->println("  - Send 'h' to show this message");
+  OutputStream->println("  - Send 'u' to print latest list of devices");
+  OutputStream->println("  - Send 'o' to toggle output, can be high volume");
+  OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
+  OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
 
+}
+
+void outputPackets(int pnum) {
+  switch (pnum) {
+    case 0:
+     OutputStream->printf("{ id:%d}\n", pnum);
+    break;
+    default:
+     OutputStream->println("{}");
+  }
+}
 void setup() {
 #ifdef BLUETOOTHCLASSIC
   SerialBT.begin("CanAnalyzer"); delay(500);
@@ -85,17 +107,14 @@ void setup() {
   NMEA2000.SetN2kCANMsgBufSize(8);
 
   pListDevices = new ListDevices(&NMEA2000, OutputStream);
-  pDataDisplay = new DataDisplay(&NMEA2000, OutputStream);
+  pDataDisplay = new DataDisplay(OutputStream);
+  pDataOutput = new DataOutput(OutputStream);
   NMEA2000.SetMsgHandler(HandleNMEA2000Msg);
 
   NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, 50);
   NMEA2000.Open();
   OutputStream->print("Running...");
-  OutputStream->println("Device analyzer started.");
-  OutputStream->println("  - Analyzer will automatically print new list on list changes.");
-  OutputStream->println("  - Send 'u' to print latest list");
-  OutputStream->println("  - Send 'o' to toggle output, can be high volume");
-  OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
+  showHelp();
   
 }
 
@@ -117,12 +136,24 @@ void CheckCommand() {
   if (OutputStream->available()) {
     char chr = OutputStream->read();
     switch ( chr ) {
+      case '0': pDataOutput->outputPackets(0); break;
+      case '1': pDataOutput->outputPackets(1); break;
+      case '2': pDataOutput->outputPackets(2); break;
+      case '3': pDataOutput->outputPackets(3); break;
+      case '4': pDataOutput->outputPackets(4); break;
+      case '5': pDataOutput->outputPackets(5); break;
+      case '6': pDataOutput->outputPackets(6); break;
+      case '7': pDataOutput->outputPackets(7); break;
+      case '8': pDataOutput->outputPackets(8); break;
+      case '9': pDataOutput->outputPackets(9); break;
+      case 'h': showHelp(); break;
       case 'u': pListDevices->list(true); break;
       case 'o': Serial.println("Output Toggle"); pDataDisplay->showData = !pDataDisplay->showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
     }
   }
 }
+
 
 
 
