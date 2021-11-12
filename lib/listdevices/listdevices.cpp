@@ -1,4 +1,5 @@
 #include "listdevices.h"
+#include "httpserver.h"
 
 
 ListDevices::ListDevices(tNMEA2000 *_pNMEA2000, Stream *outputStream) : 
@@ -24,6 +25,42 @@ void ListDevices::printUlongList(const char *prefix, const unsigned long * List)
 void ListDevices::printText(const char *Text, bool AddLineFeed) {
   if ( Text!=0 ) OutputStream->print(Text);
   if ( AddLineFeed ) OutputStream->println();   
+}
+
+void ListDevices::outputJson(AsyncResponseStream *outputStream) {  
+  startJson(outputStream);
+  startArray("devices");
+  for (uint8_t i = 0; i < N2kMaxBusDevices; i++)  {
+    const tNMEA2000::tDevice *pDevice = FindDeviceBySource(i);
+    if ( pDevice != 0) {
+      startObject();
+      append("source",pDevice->GetSource());
+      append("mcode",pDevice->GetManufacturerCode());
+      append("id",pDevice->GetUniqueNumber());
+      append("swcode",pDevice->GetSwCode());
+      append("version",pDevice->GetModelVersion());
+      append("info",pDevice->GetManufacturerInformation());
+      append("desc1",pDevice->GetInstallationDescription1());
+      append("desc2",pDevice->GetInstallationDescription2());
+      startArray("tpgn");
+      const unsigned long *tpgn = pDevice->GetTransmitPGNs();
+      while(tpgn[0]!=0) {
+        append(tpgn[0]);
+        tpgn++;
+      }
+      endArray();
+      startArray("rpgn");
+      const unsigned long *rpgn = pDevice->GetReceivePGNs();
+      while(rpgn[0]!=0) {
+        append(rpgn[0]);
+        rpgn++;
+      }
+      endArray();
+      endObject();
+    }
+  }
+  endArray();
+  endJson();
 }
 
 //*****************************************************************************

@@ -6,7 +6,7 @@
 
 
 
-class DataDisplay{
+class DataDisplay {
     public:
         DataDisplay(Stream *outputStream);
         void HandleMsg(const tN2kMsg &N2kMsg);

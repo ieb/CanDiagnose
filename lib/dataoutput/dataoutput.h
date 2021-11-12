@@ -3,6 +3,7 @@
 
 #include <NMEA2000.h>
 #include <N2kMessages.h>
+#include "httpserver.h"
 
 #define MAX_HEADDING_SOURCES 5
 #define MAX_ENGINE_SOURCES 2
@@ -154,12 +155,29 @@ typedef struct EngineData {
 
 
 
-class DataOutput{
+class DataCollector {
     public:
-        DataOutput(Stream *outputStream);
+        DataCollector(Stream *outputStream) : outputStream{outputStream} {};
         void HandleMsg(const tN2kMsg &N2kMsg);
-        void outputPackets(int packetId);
-        bool showData= false;
+        EngineData engine[MAX_ENGINE_SOURCES]; // 1
+        DcBatteryData dcBattery[MAX_BATTERY_SOURCES]; // 1
+        FluidLevelData fluidLevel[MAX_FLUID_LEVEL_SOURCES]; // 1
+
+        HeadingData heading[MAX_HEADDING_SOURCES]; //2
+        SpeedData speed[MAX_SPEED_SOURCES]; //2
+        WaterDepthData waterDepth[MAX_WATER_DEPTH_SOURCES]; //2
+        RudderData rudder[MAX_RUDDER_SOURCES]; //2
+        AttitudeData attitude[MAX_ATTITUDE_SOURCES]; // 1
+
+        CogSogData cogSog[MAX_COGSOG_SOURCES]; // 3
+        GnssData gnss[MAX_GNSS_SOURCES]; // 3
+
+        OutsideEnvironmentData outsideEnvironmental[MAX_OUTSIDE_ENVIRONMENTAL_SOURCES]; // 4
+        HumidityData humidity[MAX_HUMIDITY_SOURCES]; // 4
+        PressureData pressure[MAX_PRESSURE_SOURCES]; // 4
+
+        TemperatureData temperature[MAX_TEMPERATURE_SOURCES];   // 5
+        TemperatureData temperatureExt[MAX_TEMPERATURE_SOURCES]; // 5
     private:
         void EngineRapid(const tN2kMsg &N2kMsg);
         void EngineDynamicParameters(const tN2kMsg &N2kMsg);
@@ -193,29 +211,61 @@ class DataOutput{
         void printLLNumber(Stream *OutputStream, unsigned long long n, uint8_t base=10);
 */
 
-        Stream *OutputStream;
+        Stream *outputStream;
 
-        EngineData engine[MAX_ENGINE_SOURCES]; // 1
-        DcBatteryData dcBattery[MAX_BATTERY_SOURCES]; // 1
-        FluidLevelData fluidLevel[MAX_FLUID_LEVEL_SOURCES]; // 1
 
-        HeadingData heading[MAX_HEADDING_SOURCES]; //2
-        SpeedData speed[MAX_SPEED_SOURCES]; //2
-        WaterDepthData waterDepth[MAX_WATER_DEPTH_SOURCES]; //2
-        RudderData rudder[MAX_RUDDER_SOURCES]; //2
-        AttitudeData attitude[MAX_ATTITUDE_SOURCES]; // 1
 
-        CogSogData cogSog[MAX_COGSOG_SOURCES]; // 3
-        GnssData gnss[MAX_GNSS_SOURCES]; // 3
-
-        OutsideEnvironmentData outsideEnvironmental[MAX_OUTSIDE_ENVIRONMENTAL_SOURCES]; // 4
-        HumidityData humidity[MAX_HUMIDITY_SOURCES]; // 4
-        PressureData pressure[MAX_PRESSURE_SOURCES]; // 4
-
-        TemperatureData temperature[MAX_TEMPERATURE_SOURCES];   // 5
-        TemperatureData temperatureExt[MAX_TEMPERATURE_SOURCES]; // 5
 
         
 };
+
+class EngineDataOutput: public JsonOutput {
+    public:
+        EngineDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputText(Stream *outputStream);
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        DataCollector *dataCollector;
+
+};
+
+class BoatDataOutput: public JsonOutput {
+    public:
+        BoatDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputText(Stream *outputStream);
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        DataCollector *dataCollector;
+};
+class NavigationDataOutput: public JsonOutput {
+    public:
+        NavigationDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputText(Stream *outputStream);
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+
+class EnvironmentDataOutput: public JsonOutput {
+    public:
+        EnvironmentDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputText(Stream *outputStream);
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+class TemperatureDataOutput: public JsonOutput {
+    public:
+        TemperatureDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputText(Stream *outputStream);
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+
+
 
 #endif

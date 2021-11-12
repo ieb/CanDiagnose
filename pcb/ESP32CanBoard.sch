@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:ESP32CanBoard-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -28,6 +29,7 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:ESP32CanBoard-cache
 EELAYER 25 0
 EELAYER END
 $Descr A3 16535 11693
@@ -576,40 +578,12 @@ CAN-RX
 Wire Wire Line
 	10800 4700 10550 4700
 Connection ~ 10800 4700
-Text GLabel 3200 4800 0    60   Input ~ 0
-ADC0
-Text GLabel 3200 5000 0    60   Input ~ 0
-ADC1
-Text GLabel 3200 5200 0    60   Input ~ 0
-ADC2
-Text GLabel 3200 5400 0    60   Input ~ 0
-ADC3
-Text GLabel 3200 5600 0    60   Input ~ 0
-ADC4
-Text GLabel 3200 5800 0    60   Input ~ 0
-ADC5
-Text GLabel 3200 6000 0    60   Output ~ 0
-DAC_Calibration
-Wire Wire Line
-	3200 4800 3400 4800
-Wire Wire Line
-	3200 5000 3400 5000
-Wire Wire Line
-	3200 5200 3400 5200
-Wire Wire Line
-	3200 5400 3400 5400
-Wire Wire Line
-	3200 5600 3400 5600
-Wire Wire Line
-	3200 5800 3400 5800
-Wire Wire Line
-	3400 6000 3200 6000
 $Comp
 L R R2
 U 1 1 61813EA1
 P 4650 9250
 F 0 "R2" V 4730 9250 40  0000 C CNN
-F 1 "220K" V 4657 9251 40  0000 C CNN
+F 1 "22K" V 4657 9251 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 4580 9250 30  0001 C CNN
 F 3 "" H 4650 9250 30  0000 C CNN
 	1    4650 9250
@@ -631,7 +605,7 @@ L R R7
 U 1 1 61813FF6
 P 7150 8400
 F 0 "R7" V 7230 8400 40  0000 C CNN
-F 1 "1M" V 7157 8401 40  0000 C CNN
+F 1 "100K" V 7157 8401 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8400 30  0001 C CNN
 F 3 "" H 7150 8400 30  0000 C CNN
 	1    7150 8400
@@ -642,7 +616,7 @@ L R R3
 U 1 1 618141E3
 P 4800 9250
 F 0 "R3" V 4880 9250 40  0000 C CNN
-F 1 "220K" V 4807 9251 40  0000 C CNN
+F 1 "22K" V 4807 9251 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 4730 9250 30  0001 C CNN
 F 3 "" H 4800 9250 30  0000 C CNN
 	1    4800 9250
@@ -653,32 +627,10 @@ L R R4
 U 1 1 6181423E
 P 4950 9250
 F 0 "R4" V 5030 9250 40  0000 C CNN
-F 1 "220K" V 4957 9251 40  0000 C CNN
+F 1 "22K" V 4957 9251 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 4880 9250 30  0001 C CNN
 F 3 "" H 4950 9250 30  0000 C CNN
 	1    4950 9250
-	-1   0    0    1   
-$EndComp
-$Comp
-L R R5
-U 1 1 6181429A
-P 5100 9250
-F 0 "R5" V 5180 9250 40  0000 C CNN
-F 1 "220K" V 5107 9251 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" V 5030 9250 30  0001 C CNN
-F 3 "" H 5100 9250 30  0000 C CNN
-	1    5100 9250
-	-1   0    0    1   
-$EndComp
-$Comp
-L R R6
-U 1 1 618142F7
-P 5250 9250
-F 0 "R6" V 5330 9250 40  0000 C CNN
-F 1 "220K" V 5257 9251 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" V 5180 9250 30  0001 C CNN
-F 3 "" H 5250 9250 30  0000 C CNN
-	1    5250 9250
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -715,33 +667,11 @@ F 3 "" H 6150 9250 60  0000 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L C C5
-U 1 1 618144F4
-P 6350 9250
-F 0 "C5" H 6350 9350 40  0000 L CNN
-F 1 "100nF" H 6356 9165 40  0000 L CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" H 6388 9100 30  0001 C CNN
-F 3 "" H 6350 9250 60  0000 C CNN
-	1    6350 9250
-	-1   0    0    1   
-$EndComp
-$Comp
-L C C6
-U 1 1 61814563
-P 6550 9250
-F 0 "C6" H 6550 9350 40  0000 L CNN
-F 1 "100nF" H 6556 9165 40  0000 L CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" H 6588 9100 30  0001 C CNN
-F 3 "" H 6550 9250 60  0000 C CNN
-	1    6550 9250
-	-1   0    0    1   
-$EndComp
-$Comp
 L R R8
 U 1 1 618148A9
 P 7150 8500
 F 0 "R8" V 7230 8500 40  0000 C CNN
-F 1 "1M" V 7157 8501 40  0000 C CNN
+F 1 "100K" V 7157 8501 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8500 30  0001 C CNN
 F 3 "" H 7150 8500 30  0000 C CNN
 	1    7150 8500
@@ -752,7 +682,7 @@ L R R9
 U 1 1 61814943
 P 7150 8600
 F 0 "R9" V 7230 8600 40  0000 C CNN
-F 1 "1M" V 7157 8601 40  0000 C CNN
+F 1 "100K" V 7157 8601 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8600 30  0001 C CNN
 F 3 "" H 7150 8600 30  0000 C CNN
 	1    7150 8600
@@ -763,52 +693,22 @@ L R R10
 U 1 1 618149D9
 P 7150 8700
 F 0 "R10" V 7230 8700 40  0000 C CNN
-F 1 "1M" V 7157 8701 40  0000 C CNN
+F 1 "100K" V 7157 8701 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8700 30  0001 C CNN
 F 3 "" H 7150 8700 30  0000 C CNN
 	1    7150 8700
 	0    -1   -1   0   
 $EndComp
-$Comp
-L R R12
-U 1 1 61814A75
-P 7150 8800
-F 0 "R12" V 7230 8800 40  0000 C CNN
-F 1 "1M" V 7157 8801 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8800 30  0001 C CNN
-F 3 "" H 7150 8800 30  0000 C CNN
-	1    7150 8800
-	0    -1   -1   0   
-$EndComp
-$Comp
-L R R13
-U 1 1 61814AEF
-P 7150 8900
-F 0 "R13" V 7230 8900 40  0000 C CNN
-F 1 "1M" V 7157 8901 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 8900 30  0001 C CNN
-F 3 "" H 7150 8900 30  0000 C CNN
-	1    7150 8900
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
-	4250 8900 6900 8900
-Wire Wire Line
-	5250 8900 5250 9000
-Wire Wire Line
-	4250 8800 6900 8800
-Wire Wire Line
-	5100 8800 5100 9000
-Wire Wire Line
-	4250 8700 6900 8700
+	3400 8700 6900 8700
 Wire Wire Line
 	4950 8700 4950 9000
 Wire Wire Line
-	4250 8600 6900 8600
+	3400 8600 6900 8600
 Wire Wire Line
 	4800 8600 4800 9000
 Wire Wire Line
-	4250 8500 6900 8500
+	3400 8500 6900 8500
 Wire Wire Line
 	4650 8500 4650 9000
 $Comp
@@ -816,30 +716,22 @@ L R R1
 U 1 1 61814E16
 P 4500 9250
 F 0 "R1" V 4580 9250 40  0000 C CNN
-F 1 "220K" V 4507 9251 40  0000 C CNN
+F 1 "22K" V 4507 9251 40  0000 C CNN
 F 2 "Resistors_SMD:R_0805_HandSoldering" V 4430 9250 30  0001 C CNN
 F 3 "" H 4500 9250 30  0000 C CNN
 	1    4500 9250
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	4250 8400 6900 8400
+	3400 8400 6900 8400
 Wire Wire Line
 	4500 8400 4500 9000
 Wire Wire Line
 	4500 9500 4500 9850
 Wire Wire Line
-	4500 9700 6550 9700
+	4500 9700 6150 9700
 Wire Wire Line
-	6550 9700 6550 9450
-Wire Wire Line
-	6350 9450 6350 9700
-Connection ~ 6350 9700
-Wire Wire Line
-	6150 9450 6150 9700
-Connection ~ 6150 9700
-Wire Wire Line
-	5950 9450 5950 9700
+	5950 9700 5950 9450
 Connection ~ 5950 9700
 Wire Wire Line
 	5750 9450 5750 9700
@@ -848,13 +740,7 @@ Wire Wire Line
 	5550 9450 5550 9700
 Connection ~ 5550 9700
 Wire Wire Line
-	5250 9500 5250 9700
-Connection ~ 5250 9700
-Wire Wire Line
-	5100 9500 5100 9700
-Connection ~ 5100 9700
-Wire Wire Line
-	4950 9500 4950 9700
+	4950 9700 4950 9500
 Connection ~ 4950 9700
 Wire Wire Line
 	4800 9500 4800 9700
@@ -874,28 +760,6 @@ Connection ~ 5950 8600
 Wire Wire Line
 	6150 9050 6150 8700
 Connection ~ 6150 8700
-Wire Wire Line
-	6350 8800 6350 9050
-Connection ~ 6350 8800
-$Comp
-L JUMPER JP1
-U 1 1 61816530
-P 5600 8050
-F 0 "JP1" H 5600 8200 60  0000 C CNN
-F 1 "ADC_CAL" H 5600 7970 40  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_2x01" H 5600 8050 60  0001 C CNN
-F 3 "" H 5600 8050 60  0000 C CNN
-	1    5600 8050
-	1    0    0    -1  
-$EndComp
-Text GLabel 5200 8050 0    60   Input ~ 0
-DAC_Calibration
-Wire Wire Line
-	5200 8050 5300 8050
-Text GLabel 6000 8050 2    60   Output ~ 0
-ADC5
-Wire Wire Line
-	5900 8050 6000 8050
 $Comp
 L GND #PWR012
 U 1 1 61816D5A
@@ -908,36 +772,10 @@ F 3 "" H 4500 9850 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 4500 9700
-Text GLabel 4250 8400 0    60   Output ~ 0
-ADC0
-Text GLabel 4250 8500 0    60   Output ~ 0
-ADC1
-Text GLabel 4250 8600 0    60   Output ~ 0
-ADC2
-Text GLabel 4250 8700 0    60   Output ~ 0
-ADC3
-Text GLabel 4250 8800 0    60   Output ~ 0
-ADC4
-Text GLabel 4250 8900 0    60   Output ~ 0
-ADC5
 Connection ~ 4500 8400
 Connection ~ 4650 8500
 Connection ~ 4800 8600
 Connection ~ 4950 8700
-Connection ~ 5100 8800
-Connection ~ 5250 8900
-Text GLabel 7600 8400 2    60   Input ~ 0
-VIN0
-Text GLabel 7600 8500 2    60   Input ~ 0
-VIN1
-Text GLabel 7600 8600 2    60   Input ~ 0
-VIN2
-Text GLabel 7600 8700 2    60   Input ~ 0
-VIN3
-Text GLabel 7600 8800 2    60   Input ~ 0
-VIN4
-Text GLabel 7600 8900 2    60   Input ~ 0
-VIN5
 Wire Wire Line
 	7600 8400 7400 8400
 Wire Wire Line
@@ -946,48 +784,6 @@ Wire Wire Line
 	7400 8600 7600 8600
 Wire Wire Line
 	7400 8700 7600 8700
-Wire Wire Line
-	7400 8800 7600 8800
-Wire Wire Line
-	7400 8900 7600 8900
-Text GLabel 8500 8400 0    60   Output ~ 0
-VIN0
-Text GLabel 8500 8500 0    60   Output ~ 0
-VIN1
-Text GLabel 8500 8600 0    60   Output ~ 0
-VIN2
-Text GLabel 8500 8700 0    60   Output ~ 0
-VIN3
-Text GLabel 8500 8800 0    60   Output ~ 0
-VIN4
-Text GLabel 8500 8900 0    60   Output ~ 0
-VIN5
-$Comp
-L CONN_6 P1
-U 1 1 6181A53D
-P 9100 8650
-F 0 "P1" V 9050 8650 60  0000 C CNN
-F 1 "Voltages" V 9150 8650 60  0000 C CNN
-F 2 "Connect:bornier6" H 9100 8650 60  0001 C CNN
-F 3 "" H 9100 8650 60  0001 C CNN
-	1    9100 8650
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	8750 8400 8500 8400
-Wire Wire Line
-	8500 8500 8750 8500
-Wire Wire Line
-	8500 8600 8750 8600
-Wire Wire Line
-	8500 8700 8750 8700
-Wire Wire Line
-	8500 8800 8750 8800
-Wire Wire Line
-	8500 8900 8750 8900
-Wire Wire Line
-	6550 9050 6550 8900
-Connection ~ 6550 8900
 $Comp
 L CONN_1 P3
 U 1 1 618234EB
@@ -1081,4 +877,61 @@ Wire Wire Line
 	11950 8450 11750 8450
 Wire Wire Line
 	11750 8450 11750 8250
+$Comp
+L ADS1115 U101
+U 1 1 618A6751
+P 2650 8450
+F 0 "U101" H 2600 8600 60  0000 C CNN
+F 1 "ADS1115" H 2600 8750 60  0000 C CNN
+F 2 "Divers:ADS1115" H 2650 8450 60  0001 C CNN
+F 3 "" H 2650 8450 60  0001 C CNN
+	1    2650 8450
+	0    1    -1   0   
+$EndComp
+Wire Wire Line
+	6150 9700 6150 9450
+Text GLabel 1950 8700 0    60   Input ~ 0
+3v3
+Wire Wire Line
+	1900 8700 2350 8700
+$Comp
+L GND #PWR013
+U 1 1 618A7CF3
+P 1600 8650
+F 0 "#PWR013" H 1600 8650 30  0001 C CNN
+F 1 "GND" H 1600 8580 30  0001 C CNN
+F 2 "" H 1600 8650 60  0001 C CNN
+F 3 "" H 1600 8650 60  0001 C CNN
+	1    1600 8650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2350 8600 1600 8600
+Wire Wire Line
+	1600 8600 1600 8650
+$Comp
+L CONN_4 P102
+U 1 1 618A7F5C
+P 7950 8550
+F 0 "P102" V 7900 8550 50  0000 C CNN
+F 1 "CONN_4" V 8000 8550 50  0000 C CNN
+F 2 "Connect:bornier4" H 7950 8550 60  0001 C CNN
+F 3 "" H 7950 8550 60  0001 C CNN
+	1    7950 8550
+	1    0    0    -1  
+$EndComp
+Text GLabel 1900 8500 0    60   BiDi ~ 0
+SCL
+Text GLabel 1900 8400 0    60   BiDi ~ 0
+SDA
+Wire Wire Line
+	2350 8400 1900 8400
+Wire Wire Line
+	1900 8500 2350 8500
+Text Notes 1550 8150 0    60   ~ 0
+A0-A3 have ESD capable of sinking max 10mA. \nWith 100K that allows the inputs to see 1KV before any damage is done.\nHence no external diodes required.\nInternal resistance of the ADC at 4v FSD is 6M single ended, 15M double ended.  At 0.256v Single ended the interal resistance is 100M\nBoth single and double ended will measure + - voltages.
+Text Notes 6700 9100 0    60   ~ 0
+Measuring Voltage can be single ended, but measuring a shunt may\nhave to be differential since there will be voltage drop over the negative\nsupply line between the shunt and the pcd, unless the pcb has its -ve at the shunt.
+Text Notes 4100 10050 0    60   ~ 0
+15*2.2/12.2=2.7049v\nRemove for shunt measurements
 $EndSCHEMATC

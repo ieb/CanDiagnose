@@ -9,10 +9,15 @@
 // without interrupt.
 
 #include <Arduino.h>
+#include <Wire.h>
+
 
 #define ESP32_CAN_TX_PIN GPIO_NUM_19
 #define ESP32_CAN_RX_PIN GPIO_NUM_18
-#define N2k_CAN_INT_PIN 21
+#define ONEWIRE_GPIO_PIN GPIO_NUM_21
+#define SDA_PIN GPIO_NUM_23
+#define SCL_PIN GPIO_NUM_22
+
 
 
 //#define N2k_SPI_CS_PIN 53    // Pin for SPI select for mcp_can
@@ -27,28 +32,36 @@
 #include "listdevices.h"
 #include "datadisplay.h"
 #include "dataoutput.h"
-
-
-#define BLUETOOTHCLASSIC 1
-#ifdef BLUETOOTHCLASSIC
-#include <BlueToothSerial.h>
-BluetoothSerial SerialBT;
-#endif
-
-
-ListDevices *pListDevices;
-DataDisplay *pDataDisplay;
-DataOutput *pDataOutput;
+#include "httpserver.h"
+#include "local_secrets.h"
+#include "temperature.h"
+#include "bme280sensor.h"
+#include "adc.h"
 
 
 
+Stream *OutputStream = &Serial;
+DataDisplay dataDisplay(OutputStream);
+DataCollector dataCollector(OutputStream);
+ListDevices listDevices(&NMEA2000, OutputStream);
+EngineDataOutput engineDataOutput(&dataCollector);
+BoatDataOutput boatDataOutput(&dataCollector);
+NavigationDataOutput navigationDataOutput(&dataCollector);
+EnvironmentDataOutput environmentDataOutput(&dataCollector);
+TemperatureDataOutput temperatureDataOutput(&dataCollector);
+Temperature temperature(ONEWIRE_GPIO_PIN);
+BME280Sensor bme280Sensor(SDA_PIN, SCL_PIN);
+ADCSensor adcSensor;
 
-Stream *OutputStream;
+WebServer webServer(OutputStream);
+
+
+
 
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
-    pListDevices->HandleMsg(N2kMsg);
-    pDataDisplay->HandleMsg(N2kMsg);
-    pDataOutput->HandleMsg(N2kMsg);
+    listDevices.HandleMsg(N2kMsg);
+    dataDisplay.HandleMsg(N2kMsg);
+    dataCollector.HandleMsg(N2kMsg);
 }
 
 void showHelp() {
@@ -59,27 +72,35 @@ void showHelp() {
   OutputStream->println("  - Send 'o' to toggle output, can be high volume");
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
   OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
+  OutputStream->println("  - Send 'c' to check adc sensor calibration");
+  
 
 }
 
-void outputPackets(int pnum) {
-  switch (pnum) {
-    case 0:
-     OutputStream->printf("{ id:%d}\n", pnum);
-    break;
-    default:
-     OutputStream->println("{}");
-  }
-}
 void setup() {
-#ifdef BLUETOOTHCLASSIC
-  SerialBT.begin("CanAnalyzer"); delay(500);
-  OutputStream=&SerialBT;
-#else
   Serial.begin(115200); delay(500);
-  OutputStream=&Serial;
+  //   while (!Serial) 
+#ifndef WIFI_SSID
+#error "WIFI_SSID not defined, add in local_secrets.h file"
 #endif
-//   while (!Serial) 
+#ifndef WIFI_PASS
+#error "WIFI_PASS not defined, add in local_secrets.h file"
+#endif
+ temperature.begin();
+ bme280Sensor.begin();
+ adcSensor.begin();
+ 
+  webServer.addDataSet(0,&listDevices);
+  webServer.addDataSet(1,&engineDataOutput);
+  webServer.addDataSet(2,&boatDataOutput);
+  webServer.addDataSet(3,&navigationDataOutput);
+  webServer.addDataSet(4,&environmentDataOutput);
+  webServer.addDataSet(5,&temperatureDataOutput);
+  webServer.addDataSet(6,&temperature);  
+  webServer.addDataSet(7,&bme280Sensor);  
+  webServer.addDataSet(8,&adcSensor);  
+
+  webServer.begin(WIFI_SSID,WIFI_PASS);
 
 
   // Set Product information
@@ -106,9 +127,6 @@ void setup() {
   NMEA2000.SetN2kCANReceiveFrameBufSize(150);
   NMEA2000.SetN2kCANMsgBufSize(8);
 
-  pListDevices = new ListDevices(&NMEA2000, OutputStream);
-  pDataDisplay = new DataDisplay(OutputStream);
-  pDataOutput = new DataOutput(OutputStream);
   NMEA2000.SetMsgHandler(HandleNMEA2000Msg);
 
   NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, 50);
@@ -136,20 +154,17 @@ void CheckCommand() {
   if (OutputStream->available()) {
     char chr = OutputStream->read();
     switch ( chr ) {
-      case '0': pDataOutput->outputPackets(0); break;
-      case '1': pDataOutput->outputPackets(1); break;
-      case '2': pDataOutput->outputPackets(2); break;
-      case '3': pDataOutput->outputPackets(3); break;
-      case '4': pDataOutput->outputPackets(4); break;
-      case '5': pDataOutput->outputPackets(5); break;
-      case '6': pDataOutput->outputPackets(6); break;
-      case '7': pDataOutput->outputPackets(7); break;
-      case '8': pDataOutput->outputPackets(8); break;
-      case '9': pDataOutput->outputPackets(9); break;
+      case '0': engineDataOutput.outputText(OutputStream); break;
+      case '1': boatDataOutput.outputText(OutputStream); break;
+      case '2': navigationDataOutput.outputText(OutputStream); break;
+      case '3': environmentDataOutput.outputText(OutputStream); break;
+      case '4': temperatureDataOutput.outputText(OutputStream); break;
       case 'h': showHelp(); break;
-      case 'u': pListDevices->list(true); break;
-      case 'o': Serial.println("Output Toggle"); pDataDisplay->showData = !pDataDisplay->showData;  break;
+      case 'u': listDevices.list(true); break;
+      case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
+      case 'c': adcSensor.checkCalibration(); break;
+      case 'v': adcSensor.printVoltages(); break;
     }
   }
 }
@@ -160,6 +175,7 @@ void CheckCommand() {
 //*****************************************************************************
 void loop() { 
   NMEA2000.ParseMessages();
-  pListDevices->list();
+  listDevices.list();
+  adcSensor.measure();
   CheckCommand();
 }
