@@ -18,14 +18,11 @@
 #define SDA_PIN GPIO_NUM_23
 #define SCL_PIN GPIO_NUM_22
 
+// Calibrations to take account of resistor tollerances, this is specific to the board being flashed.
+// should probably be in a config file eventually.
+#define  ADC_CALIBRATIONS  5.620350747, 5.5351667, 5.544718786, 5.548646647
 
 
-//#define N2k_SPI_CS_PIN 53    // Pin for SPI select for mcp_can
-//#define N2k_CAN_INT_PIN 21   // Interrupt pin for mcp_can
-//#define USE_MCP_CAN_CLOCK_SET 8  // Uncomment this, if your mcp_can shield has 8MHz chrystal
-//#define ESP32_CAN_TX_PIN GPIO_NUM_16 // Uncomment this and set right CAN TX pin definition, if you use ESP32 and do not have TX on default IO 16
-//#define ESP32_CAN_RX_PIN GPIO_NUM_17 // Uncomment this and set right CAN RX pin definition, if you use ESP32 and do not have RX on default IO 4
-//#define NMEA2000_ARDUINO_DUE_CAN_BUS tNMEA2000_due::CANDevice1    // Uncomment this, if you want to use CAN bus 1 instead of 0 for Arduino DUE
 #include <NMEA2000_esp32.h>
 #include <NMEA2000_CAN.h>
 
@@ -33,6 +30,7 @@
 #include "datadisplay.h"
 #include "dataoutput.h"
 #include "httpserver.h"
+// secrets, should probably be in a config file eventually.
 #include "local_secrets.h"
 #include "temperature.h"
 #include "bme280sensor.h"
@@ -72,7 +70,7 @@ void showHelp() {
   OutputStream->println("  - Send 'o' to toggle output, can be high volume");
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
   OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
-  OutputStream->println("  - Send 'c' to check adc sensor calibration");
+  OutputStream->println("  - Send 'v' to print voltages");
   
 
 }
@@ -88,7 +86,10 @@ void setup() {
 #endif
  temperature.begin();
  bme280Sensor.begin();
+ float calibrations[] = {ADC_CALIBRATIONS};
+ adcSensor.calibrate(&calibrations[0], 4);
  adcSensor.begin();
+
  
   webServer.addDataSet(0,&listDevices);
   webServer.addDataSet(1,&engineDataOutput);
@@ -163,7 +164,6 @@ void CheckCommand() {
       case 'u': listDevices.list(true); break;
       case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
-      case 'c': adcSensor.checkCalibration(); break;
       case 'v': adcSensor.printVoltages(); break;
     }
   }
@@ -176,6 +176,8 @@ void CheckCommand() {
 void loop() { 
   NMEA2000.ParseMessages();
   listDevices.list();
-  adcSensor.measure();
+  adcSensor.read();
+  bme280Sensor.read();
+  temperature.read();
   CheckCommand();
 }

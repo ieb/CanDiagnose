@@ -54,12 +54,12 @@ class JsonOutput {
             jsonOutput->print("\":");
             jsonOutput->print(value);
         };
-        void append(const char *key, double value) {
+        void append(const char *key, double value, int precision=2) {
             appendCommaIfRequired();
             jsonOutput->print("\"");
             jsonOutput->print(key);
             jsonOutput->print("\":");
-            jsonOutput->print(value);
+            jsonOutput->print(value,precision);
         };
         void append(const char *key, unsigned int value) {
             appendCommaIfRequired();
@@ -110,6 +110,7 @@ class JsonOutput {
             jsonOutput = outputStream;
             jsonOutput->print("{");
             level=0;
+            levels[level] = true;
         };
         void endJson() {
             jsonOutput->print("}");

@@ -3,33 +3,38 @@
 
 
 #include <Arduino.h>
+#include <Adafruit_ADS1X15.h>
+
 #include "httpserver.h"
-#include "esp_adc_cal.h"
-#define MAX_ADC_CHANNELS 6
-#define MA_SAMPLES 5
-#define ADC_SAMPLES 64
+#define MAX_ADC_CHANNELS 4
+
+  //                                                                ADS1015  ADS1115
+  //                                                                -------  -------
+  // ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+  // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
 
 
 class ADCSensor : public JsonOutput {
     public:
-        ADCSensor() {
-
-        };
+        ADCSensor(unsigned long readPeriod=5000) : readPeriod{readPeriod} {};
         void begin();
-        void checkCalibration();
-        void outputJson(AsyncResponseStream *outputStream);
-        void measure();
         void printVoltages();
-    private:
+        void outputJson(AsyncResponseStream *outputStream);
+        void calibrate(float *calibrations, int n);
         void read();
-        uint16_t readRaw(int gpio);
-        uint16_t convertMv(uint16_t raw);
-
-        uint16_t voltages[MAX_ADC_CHANNELS];
-        uint16_t adcRawReading[MAX_ADC_CHANNELS];
-        int adcPins[MAX_ADC_CHANNELS] = { GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33 };
+    private:
+        Adafruit_ADS1115 ads;
+        int16_t raw[MAX_ADC_CHANNELS];
+        float adcv[MAX_ADC_CHANNELS];
+        float voltage[MAX_ADC_CHANNELS];
+        adsGain_t gain[MAX_ADC_CHANNELS] = {GAIN_ONE, GAIN_ONE, GAIN_ONE, GAIN_ONE};
+        float scale[MAX_ADC_CHANNELS] = {12.2/2.2, 12.2/2.2, 12.2/2.2, 12.2/2.2};
         unsigned long lastRead = 0;
-        unsigned long readPeriod = 1000;
+        unsigned long readPeriod = 5000;
 
 };
 

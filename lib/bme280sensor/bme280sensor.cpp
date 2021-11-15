@@ -32,18 +32,22 @@ void BME280Sensor::begin() {
 }
 
 void BME280Sensor::read() {
-    bme_temp->getEvent(&temp_event);
-    bme_pressure->getEvent(&pressure_event);
-    bme_humidity->getEvent(&humidity_event);
-    lastModified = millis();  
+    unsigned long now = millis();
+    if ( now > lastRead + readPeriod )  {
+        lastRead = now;  
+        bme_temp->getEvent(&temp_event);
+        bme_pressure->getEvent(&pressure_event);
+        bme_humidity->getEvent(&humidity_event);
+    }
 }
+
 
 void BME280Sensor::outputJson(AsyncResponseStream *outputStream) {
     read();
     startJson(outputStream);
     append("t",millis());
     startObject("bmp280");
-    append("lastModified", lastModified);
+    append("lastModified", lastRead);
     append("temp",temp_event.temperature);
     append("pressure",pressure_event.pressure);
     append("humidity",humidity_event.relative_humidity);

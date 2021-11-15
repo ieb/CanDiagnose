@@ -20,16 +20,14 @@ typedef struct TemperatureSensor {
 
 class Temperature : public JsonOutput {
     public:
-        Temperature(int oneWirePin, unsigned long readPeriod = 10000L, unsigned long readLatency = 100L): 
+        Temperature(int oneWirePin, unsigned long readPeriod = 10000L): 
             oneWirePin{oneWirePin}, 
-            readPeriod{readPeriod}, 
-            readLatency{readLatency} {};
+            readPeriod{readPeriod} {};
         void outputJson(AsyncResponseStream *outputStream);
         void begin();
+        void read();
 
     private:
-        void startRead();
-        void read();
         void outputSensorJson(AsyncResponseStream *outputStream, int si);
         void printSensor(int si);
         bool isAvailable(int si);
@@ -39,8 +37,8 @@ class Temperature : public JsonOutput {
         TemperatureSensor temperatureSensor[MAX_TEMPERATURE_SENSORS];
         unsigned long lastRead = 0;
         unsigned long readPeriod = 10000;
-        unsigned long readLatency = 100;
         bool readRequested = false;
+
 };
 
 

@@ -1,0 +1,14 @@
+{
+  "name": "@ib236/einkwebapp",
+  "version": "0.0.1",
+  "description": "eink UI CanDiagnore data",
+  "scripts": {
+  },
+  "keywords": [
+  ],
+  "author": "Ian Boston <ianboston@gmail,com>",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+  }
+}

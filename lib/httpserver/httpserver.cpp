@@ -50,20 +50,52 @@ void WebServer::begin(const char * ssid, const char * password) {
         
         if ( id >= 0 && id < MAX_DATASETS && this->dataSets[id] != NULL) {
             AsyncResponseStream *response = request->beginResponseStream("application/json");
+            response->addHeader("Access-Control-Allow-Origin", "*");
             response->setCode(200);
             this->dataSets[id]->outputJson(response);
             request->send(response);
         } else {
-            request->send(404, "text/plain", "DataSet Not found");
+            AsyncResponseStream *response = request->beginResponseStream("application/json");
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            response->setCode(404);
+            request->send(response);
         }
         Serial.print(" ");
         Serial.println(millis() - start);
     });
+    server.on("/api/data/all", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        unsigned long start = millis();
+        Serial.print("http GET /api/data/all");
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        response->setCode(200);
+        response->print("{");
+        bool first = true;
+        for (int i = 0; i < MAX_DATASETS; i++) {
+            if (this->dataSets[i] != NULL) {
+                if (!first) {
+                    response->print(",");
+                }
+                first = false;
+                response->print("\"");response->print(i);response->print("\":");
+                this->dataSets[i]->outputJson(response);
+            }
+        }
+        response->print("}");
+        request->send(response);
+        Serial.print(" ");
+        Serial.println(millis() - start);
+    });
+
     server.onNotFound([](AsyncWebServerRequest *request) {
         if (request->method() == HTTP_OPTIONS) {
-            request->send(200);
+            AsyncWebServerResponse *response = request->beginResponse(200);
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            request->send(response);
         } else {
-            request->send(404);
+            AsyncWebServerResponse *response = request->beginResponse(404);
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            request->send(response);
         }
     });
 

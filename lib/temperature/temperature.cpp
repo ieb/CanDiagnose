@@ -22,18 +22,22 @@ void Temperature::begin() {
 
 
 void Temperature::read() {
-    for(int i=0; i< MAX_TEMPERATURE_SENSORS; i++) {
-        if(isAvailable(i)) {
-            unsigned long now = millis();
-            float t = sensors.getTempC(temperatureSensor[i].address);
-            if  (t == DEVICE_DISCONNECTED_C ) {
-                temperatureSensor[i].connected = 0;
-            } else {
-                temperatureSensor[i].connected = 1;
-                temperatureSensor[i].temperature = t;
-                temperatureSensor[i].lastModified = millis();
+    unsigned long now = millis();
+    if ( now > lastRead + readPeriod )  {
+        lastRead = now;  
+        for(int i=0; i< MAX_TEMPERATURE_SENSORS; i++) {
+            if(isAvailable(i)) {
+                unsigned long now = millis();
+                float t = sensors.getTempC(temperatureSensor[i].address);
+                if  (t == DEVICE_DISCONNECTED_C ) {
+                    temperatureSensor[i].connected = 0;
+                } else {
+                    temperatureSensor[i].connected = 1;
+                    temperatureSensor[i].temperature = t;
+                    temperatureSensor[i].lastModified = millis();
+                }
+                temperatureSensor[i].readTime = millis()-now;
             }
-            temperatureSensor[i].readTime = millis()-now;
         }
     }
 }
@@ -41,7 +45,6 @@ void Temperature::read() {
 
 
 void Temperature::outputJson(AsyncResponseStream *outputStream) {
-    read();
     startJson(outputStream);
     append("t",millis());
     startArray("temperatures");

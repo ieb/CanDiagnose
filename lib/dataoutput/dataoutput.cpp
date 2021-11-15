@@ -473,6 +473,7 @@ void EngineDataOutput::outputText(Stream *outputStream) {
 void EngineDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
+    append("nmea2000",true);
     startArray("engine");
     for (int i=0; i<MAX_ENGINE_SOURCES; i++) {
         EngineData *engine =  &dataCollector->engine[i];
@@ -609,6 +610,7 @@ void BoatDataOutput::outputText(Stream *outputStream) {
 void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
+    append("nmea2000",true);
     startArray("heading");
     for (int i=0; i<MAX_SPEED_SOURCES; i++) {
         HeadingData *heading =  &dataCollector->heading[i];
@@ -734,6 +736,7 @@ void NavigationDataOutput::outputText(Stream *outputStream) {
 void NavigationDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
+    append("nmea2000",true);
     startArray("cogSog");
     for (int i=0; i<MAX_COGSOG_SOURCES; i++) {
         CogSogData *cogSog =  &dataCollector->cogSog[i];
@@ -831,6 +834,7 @@ void EnvironmentDataOutput::outputText(Stream *outputStream) {
 void EnvironmentDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
+    append("nmea2000",true);
     startArray("outsideEnvironment");
     for (int i=0; i<MAX_OUTSIDE_ENVIRONMENTAL_SOURCES; i++) {
         OutsideEnvironmentData *outsideEnvironmental =  &dataCollector->outsideEnvironmental[i];
@@ -916,6 +920,7 @@ void TemperatureDataOutput::outputText(Stream *outputStream) {
 void TemperatureDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
+    append("nmea2000",true);
     startArray("temperature");
     for (int i=0; i<MAX_TEMPERATURE_SOURCES; i++) {
         TemperatureData *temperature =  &dataCollector->temperature[i];

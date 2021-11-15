@@ -1,0 +1,355 @@
+{
+	"0": {
+		"devices": [{
+			"source": 24,
+			"mcode": 0,
+			"id": 3,
+			"swcode": "1.2.3.4 (2017-06-11)",
+			"version": "5.6.7.8 (2017-06-11)",
+			"info": "https://github.com/ieb/EngineManagement",
+			"desc1": "Engine Monitor",
+			"desc2": "Luna Technical Area",
+			"tpgn": [127488, 127489, 127505, 130316, 127508, 126464, 60928, 126996, 126998, 59392],
+			"rpgn": [59392, 59904, 60928]
+		}]
+	},
+	"1": {
+		"t": 62735,
+		"nmea2000": 1,
+		"engine": [{
+			"id": 0,
+			"lastModified": 62265,
+			"hours": 288825.00,
+			"speed": 0.00,
+			"coolantTemp": 273.15,
+			"altenatorVoltage": 0.00,
+			"status1": 0,
+			"status2": 0
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"hours": 0.00,
+			"speed": 0.00,
+			"coolantTemp": 0.00,
+			"altenatorVoltage": 0.00,
+			"status1": 0,
+			"status2": 0
+		}],
+		"battery": [{
+			"id": 0,
+			"lastModified": 55515,
+			"instance": 0,
+			"voltage": 0.00,
+			"current": -1000000000.00,
+			"temperature": 273.15
+		}, {
+			"id": 1,
+			"lastModified": 55516,
+			"instance": 1,
+			"voltage": 0.00,
+			"current": -1000000000.00,
+			"temperature": 273.15
+		}, {
+			"id": 2,
+			"lastModified": 0,
+			"instance": 0,
+			"voltage": 0.00,
+			"current": 0.00,
+			"temperature": 0.00
+		}, {
+			"id": 3,
+			"lastModified": 55517,
+			"instance": 2,
+			"voltage": 0.00,
+			"current": -1000000000.00,
+			"temperature": 273.15
+		}],
+		"fluidLevel": [{
+			"id": 0,
+			"lastModified": 61431,
+			"level": 0.00,
+			"capacity": 60.00,
+			"fluidType": 0
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"level": 0.00,
+			"capacity": 0.00,
+			"fluidType": 0
+		}]
+	},
+	"2": {
+		"t": 62736,
+		"nmea2000": 1,
+		"heading": [{
+			"id": 0,
+			"lastModified": 0,
+			"heading": 0.00,
+			"deviation": 0.00,
+			"variation": 0.00,
+			"reference": 0
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"heading": 0.00,
+			"deviation": 0.00,
+			"variation": 0.00,
+			"reference": 0
+		}, {
+			"id": 2,
+			"lastModified": 0,
+			"heading": 0.00,
+			"deviation": 0.00,
+			"variation": 0.00,
+			"reference": 0
+		}],
+		"speed": [{
+			"id": 0,
+			"lastModified": 0,
+			"sow": 0.00,
+			"sog": 0.00,
+			"swrt": 0
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"sow": 0.00,
+			"sog": 0.00,
+			"swrt": 0
+		}, {
+			"id": 2,
+			"lastModified": 0,
+			"sow": 0.00,
+			"sog": 0.00,
+			"swrt": 0
+		}],
+		"waterDepth": [{
+			"id": 0,
+			"lastModified": 0,
+			"depthBelowTransducer": 0.00,
+			"offset": 0.00
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"depthBelowTransducer": 0.00,
+			"offset": 0.00
+		}],
+		"rudder": [{
+			"id": 0,
+			"lastModified": 0,
+			"directionOrder": 0,
+			"position": 0.00,
+			"angleOrder": 0.00
+		}],
+		"attitude": [{
+			"id": 0,
+			"lastModified": 0,
+			"roll": 0.00,
+			"pitch": 0.00,
+			"yaw": 0.00
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"roll": 0.00,
+			"pitch": 0.00,
+			"yaw": 0.00
+		}]
+	},
+	"3": {
+		"t": 62744,
+		"nmea2000": 1,
+		"cogSog": [{
+			"id": 0,
+			"lastModified": 0,
+			"cog": 0.00,
+			"sog": 0.00,
+			"reference": 0
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"cog": 0.00,
+			"sog": 0.00,
+			"reference": 0
+		}],
+		"gnss": [{
+			"id": 0,
+			"lastModified": 0,
+			"daysSince1970": 0,
+			"secondsSinceMidnight": 0.00,
+			"latitude": 0.00,
+			"longitude": 0.00,
+			"altitude": 0.00,
+			"type": 0,
+			"method": 0,
+			"nSatellites": 0,
+			"HDOP": 0.00,
+			"PDOP": 0.00,
+			"geoidalSeparation": 0.00,
+			"nReferenceStations": 0,
+			"referenceStationType": 0,
+			"ageOfCorrection": 0.00
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"daysSince1970": 0,
+			"secondsSinceMidnight": 0.00,
+			"latitude": 0.00,
+			"longitude": 0.00,
+			"altitude": 0.00,
+			"type": 0,
+			"method": 0,
+			"nSatellites": 0,
+			"HDOP": 0.00,
+			"PDOP": 0.00,
+			"geoidalSeparation": 0.00,
+			"nReferenceStations": 0,
+			"referenceStationType": 0,
+			"ageOfCorrection": 0.00
+		}]
+	},
+	"4": {
+		"t": 62752,
+		"nmea2000": 1,
+		"outsideEnvironment": [{
+			"id": 0,
+			"lastModified": 0,
+			"waterTemperature": 0.00,
+			"outsideAmbientAirTemperature": 0.00,
+			"atmosphericPressure": 0.00
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"waterTemperature": 0.00,
+			"outsideAmbientAirTemperature": 0.00,
+			"atmosphericPressure": 0.00
+		}],
+		"humidity": [{
+			"id": 0,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}],
+		"pressure": [{
+			"id": 0,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00
+		}]
+	},
+	"5": {
+		"t": 62757,
+		"nmea2000": 1,
+		"temperature": [{
+			"id": 0,
+			"lastModified": 62114,
+			"instance": 0,
+			"source": 14,
+			"actual": 273.15,
+			"set": -1000000000.00
+		}, {
+			"id": 1,
+			"lastModified": 62115,
+			"instance": 1,
+			"source": 3,
+			"actual": 273.15,
+			"set": -1000000000.00
+		}, {
+			"id": 2,
+			"lastModified": 62115,
+			"instance": 3,
+			"source": 15,
+			"actual": 273.15,
+			"set": -1000000000.00
+		}, {
+			"id": 3,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}, {
+			"id": 4,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}],
+		"temperatureExt": [{
+			"id": 0,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}, {
+			"id": 1,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}, {
+			"id": 2,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}, {
+			"id": 3,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}, {
+			"id": 4,
+			"lastModified": 0,
+			"instance": 0,
+			"source": 0,
+			"actual": 0.00,
+			"set": 0.00
+		}]
+	},
+	"6": {
+		"t": 62769,
+		"temperatures": []
+	},
+	"7": {
+		"t": 62769,
+		"bmp280": {
+			"lastModified": 60006,
+			"temp": 24.43,
+			"pressure": 1015.50,
+			"humidity": 44.12
+		}
+	},
+	"8": {
+		"t": 62770,
+		"lastModified": 60014,
+		"voltages": [{
+			"channel": 0,
+			"adcr": 14,
+			"adcv": 0.001750,
+			"v": 0.009836
+		}, {
+			"channel": 1,
+			"adcr": 16,
+			"adcv": 0.002000,
+			"v": 0.011070
+		}, {
+			"channel": 2,
+			"adcr": 16,
+			"adcv": 0.002000,
+			"v": 0.011089
+		}, {
+			"channel": 3,
+			"adcr": 16,
+			"adcv": 0.002000,
+			"v": 0.011097
+		}]
+	}
+}
