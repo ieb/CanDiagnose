@@ -14,8 +14,8 @@
     layout.append(EInkTextBox.number("1.engine.0.speed","engine","rpm",0));
     layout.append(EInkTextBox.number("1.engine.0.altenatorVoltage","alternator","V"));
     layout.append(EInkTextBox.number("1.engine.0.hours","hours","h", 2, 1/3600));
-    layout.append(EInkTextBox.number("1.engine.0.status1","engine","status1", 0));
-    layout.append(EInkTextBox.number("1.engine.0.status1","engine","status1", 0));
+    layout.append(EInkTextBox.number("1.engine.0.coolantTemp","coolant","C", 1));
+    layout.append(new EInkEngineStatus("1.engine.0"));
     layout.append(EInkTextBox.number("1.fluidLevel.0.level","fuel","%",0));
     // No need to call new page as its full already.
     //layout.newPage();
@@ -30,6 +30,33 @@
     layout.append(EInkTextBox.number("7.bmp280.temp","bmp280","C",1));
     layout.append(EInkTextBox.number("7.bmp280.humidity","bmp280","%RH",1));
 
+
+    layout.newPage();
+    layout.setPageTitle("Temperature");
+    layout.append(EInkTextBox.number("6.temperatures.0.temperature","Engine Room","C", 2));
+    layout.append(EInkTextBox.number("6.temperatures.1.temperature","Exhaust","C", 2));
+    layout.append(EInkTextBox.number("6.temperatures.2.temperature","Battery S","C", 2));
+    layout.append(EInkTextBox.number("6.temperatures.3.temperature","Alternator","C", 2));
+
+
+    layout.newPage();
+    layout.setPageTitle("Voltage");
+    layout.append(EInkTextBox.number("8.voltages.0.v","service","V", 2));
+    layout.append(EInkTextBox.number("8.voltages.1.v","engine","V", 2));
+    layout.append(EInkTextBox.number("8.voltages.2.v","service A","A", 2, 1000));
+    layout.append(EInkTextBox.number("8.voltages.3.v","engine A","A", 2, 1000));
+
+
+
+// 0 =  devices not this page 
+// done 1 == can engine
+// 2 == can nav data
+// 3 == can boat data from 
+// 4 == can env data
+// 5 == can temperature data
+// // 6 == temperature 1 wire sensors
+// done 7 == pressure bpm280
+// done 8 == voltages
 
 
 
@@ -94,16 +121,18 @@
         };
         var isPortrait = !(Object.create === undefined);
         var drawingOptions = {
-            canvas: document.getElementById("canvas"),            
+            canvas: document.getElementById("canvas"),
+            body: document.getElementsByTagName("body")[0],            
             themes: themes,
             portrait: !isKindle, 
             theme: "night",
             layout: layout
         };
         var drawingContext = new EInkDrawingContext(drawingOptions);
+        console.log("Using DataServer", window.DataServerAddress);
 
         var updater =  new EInkUpdater({
-            url: "http://boatsystems.local/api/data/all",
+            url: `${window.DataServerAddress}/api/data/all`,
             calculations: new Calcs(),
             context: drawingContext,
             period: 5000
@@ -133,7 +162,7 @@
             debug("got scroll");
         });
 
-
+        drawingContext.render();
 
 })();
 

@@ -1,0 +1,773 @@
+swagger: "2.0"
+info:
+  description: "This is Luna boat systems api exposed by ESP32 Firmware "
+  version: "1.0.0"
+  title: "Boat Systems"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@tfd.co.uk"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "boatsystem.local"
+basePath: "/api"
+tags:
+- name: "sensors"
+  description: "Environment data"
+- name: "bus"
+  description: "Boat data"
+- name: "systems"
+  description: "Boat Systems"
+schemes:
+- "http"
+paths:
+  /data/0:
+    get:
+      tags:
+      - "systems"
+      summary: "NMEA2000 Device info"
+      description: "NMEA2000 Device technical info from all devices on the bus"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/deviceinfo"
+  /data/1:
+    get:
+      tags:
+      - "bus"
+      summary: "Engine Data"
+      description: "Engine data"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/engine"
+  /data/2:
+    get:
+      tags:
+      - "bus"
+      summary: "Boat Data"
+      description: "Boat Data"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/boat"
+  /data/3:
+    get:
+      tags:
+      - "bus"
+      summary: "Navigation data"
+      description: "Navigation data"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/nav"
+  /data/4:
+    get:
+      tags:
+      - "bus"
+      summary: "Environment data"
+      description: "Environmental data"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/env"
+  /data/5:
+    get:
+      tags:
+      - "bus"
+      summary: "Temperature"
+      description: "Temperature data from the bus"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/temp"
+  /data/6:
+    get:
+      tags:
+      - "sensors"
+      summary: "Temperature sensors"
+      description: "1 wire temperature sensors read directly"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/sensor_temp"
+  /data/7:
+    get:
+      tags:
+      - "sensors"
+      summary: "Pressure, Humidity, Temperature"
+      description: "Pressure humidity temperature sensor inside the server"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/sensor_pressure"
+  /data/8:
+    get:
+      tags:
+      - "sensors"
+      summary: "Voltages"
+      description: "Voltages read by the server"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/sensor_volts"
+
+  /data/all:
+    get:
+      tags:
+      - "systems"
+      - "sensors"
+      - "bus"
+      summary: "All data at once"
+      description: "All data"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "Ok"
+          schema:
+            $ref: "#/definitions/all"
+
+
+
+definitions:
+# {,"t":2184166,"nmea2000":1,"engine":[{"id":0,"lastModified":2184053,"hours":276465.00,"speed":0.00,"coolantTemp":273.15,"altenatorVoltage":0.00,"status1":0,"status2":0},{"id":1,"lastModified":0,"hours":0.00,"speed":0.00,"coolantTemp":0.00,"altenatorVoltage":0.00,"status1":0,"status2":0}],"battery":[{"id":0,"lastModified":2176226,"instance":0,"voltage":0.00,"current":-1000000000.00,"temperature":273.15},{"id":1,"lastModified":2176227,"instance":1,"voltage":0.00,"current":-1000000000.00,"temperature":273.15},{"id":2,"lastModified":0,"instance":0,"voltage":0.00,"current":0.00,"temperature":0.00},{"id":3,"lastModified":2176227,"instance":2,"voltage":0.00,"current":-1000000000.00,"temperature":273.15}],"fluidLevel":[{"id":0,"lastModified":2177130,"level":0.00,"capacity":60.00,"fluidType":0},{"id":1,"lastModified":0,"level":0.00,"capacity":0.00,"fluidType":0}]}
+  engineData:
+    type: "object"
+    properties:
+      t:
+        type: integer
+        format: int64
+      nmea2000:
+        type: integer
+        enum:
+          - 0
+          - 1
+      engine:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastmodified:
+              type: integer
+              format: int64
+            hours:
+              type: number
+              format: double
+            speed:
+              type: number
+              format: double
+            coolantTemp:
+              type: number
+              format: double
+            altenatorVoltage:
+              type: number
+              format: double
+            status1:
+              type: integer
+              format: int16
+            status2:
+              type: integer
+              format: int16
+      battery:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            instance:
+              type: integer
+              format: int16
+            voltage:
+              type: number
+              format: double
+            current:
+              type: number
+              format: double
+            temperature:
+              type: number
+              format: double
+      fluidLevel:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            level:
+              type: number
+              format: double
+            capacity:
+              type: number
+              format: double
+            fluidType:
+              type: integer
+              format: int8
+
+            
+  boatData:
+  # {,"t":3111852,"nmea2000":1,"heading":[{"id":0,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":1,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":2,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0}],"speed":[{"id":0,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0},{"id":1,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0},{"id":2,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0}],"waterDepth":[{"id":0,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00},{"id":1,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00}],"rudder":[{"id":0,"lastModified":0,"directionOrder":0,"position":0.00,"angleOrder":0.00}],"attitude":[{"id":0,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00},{"id":1,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00}]}
+    type: "object"
+    properties:
+      t:
+        type: integer
+        format: int64
+      nmea2000:
+        type: integer
+        enum:
+          - 0
+          - 1
+      heading:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            heading:
+              type: number
+              format: double
+            deviation:
+              type: number
+              format: double
+            variation:
+              type: number
+              format: double
+            reference:
+              type: integer
+              format: int8
+      speed:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            sow:
+              type: number
+              format: double
+            sog:
+              type: number
+              format: double
+            swrt:
+              type: integer
+              format: int8
+      waterDepth:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            depthBelowTransducer:
+              type: number
+              format: double
+            offset:
+              type: number
+              format: double
+      rudder:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            directionOrder:
+              type: integer
+              format: int8
+            position:
+              type: number
+              format: double
+            angleOrder:
+              type: integer
+              format: int8
+      attitude:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            roll:
+              type: number
+              format: double
+            pitch:
+              type: number
+              format: double
+            yaw:
+              type: number
+              format: double
+        
+
+    
+  navData: 
+# {,"t":3653814,"nmea2000":1,"cogSog":[{"id":0,"lastModified":0,"cog":0.00,"sog":0.00,"reference":0},{"id":1,"lastModified":0,"cog":0.00,"sog":0.00,"reference":0}],"gnss":[{"id":0,"lastModified":0,"daysSince1970":0,"secondsSinceMidnight":0.00,"latitude":0.00,"longitude":0.00,"altitude":0.00,"type":0,"method":0,"nSatellites":0,"HDOP":0.00,"PDOP":0.00,"geoidalSeparation":0.00,"nReferenceStations":0,"referenceStationType":0,"ageOfCorrection":0.00},{"id":1,"lastModified":0,"daysSince1970":0,"secondsSinceMidnight":0.00,"latitude":0.00,"longitude":0.00,"altitude":0.00,"type":0,"method":0,"nSatellites":0,"HDOP":0.00,"PDOP":0.00,"geoidalSeparation":0.00,"nReferenceStations":0,"referenceStationType":0,"ageOfCorrection":0.00}]}
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      nmea2000:
+        type: integer
+        enum:
+          - 0
+          - 1
+      cogSog:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            cog:
+              type: number
+              format: double
+            sog:
+              type: number
+              format: double
+            reference:
+              type: integer
+              format: int16
+              
+      gnss:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            daysSince1970:
+              type: integer
+              format: int64
+            secondsSinceMidnight:
+              type: number
+              format: double
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+            altitude:
+              type: number
+              format: double
+            type:
+              type: integer
+              format: int16
+            method:
+              type: integer
+              format: int16
+            nSatellites:
+              type: integer
+              format: int16
+            HDOP:
+              type: number
+              format: double
+            PDOP:
+              type: number
+              format: double
+            geoidalSeparation:
+              type: number
+              format: double
+            nReferenceStations:
+              type: integer
+              format: int16
+            referenceStationType:
+              type: integer
+              format: int16
+            ageOfCorrection:
+              type: number
+              format: double
+  envData:
+#{,"t":3962547,"nmea2000":1,"outsideEnvironment":[{"id":0,"lastModified":0,"waterTemperature":0.00,"outsideAmbientAirTemperature":0.00,"atmosphericPressure":0.00},{"id":1,"lastModified":0,"waterTemperature":0.00,"outsideAmbientAirTemperature":0.00,"atmosphericPressure":0.00}],"humidity":[{"id":0,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00}],"pressure":[{"id":0,"lastModified":0,"instance":0,"source":0,"actual":0.00}]}
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      nmea2000:
+        type: integer
+        enum:
+          - 0
+          - 1
+      outsideEnvironment:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            waterTemperature:
+              type: number
+              format: double
+            outsideAmbientAirTemperature:
+              type: number
+              format: double
+            atmosphericPressure:
+              type: number
+              format: double
+            
+      humidity:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            instance:
+              type: integer
+              format: int16
+            source:
+              type: integer
+              format: int16
+            actual:
+              type: number
+              format: double
+            set:
+              type: number
+              format: double
+            
+      pressure:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            instance:
+              type: integer
+              format: int16
+            source:
+              type: integer
+              format: int16
+            actual:
+              type: number
+              format: double
+            
+  tempData:
+  # {,"t":4750009,"nmea2000":1,"temperature":[{"id":0,"lastModified":4749154,"instance":0,"source":14,"actual":273.15,"set":-1000000000.00},{"id":1,"lastModified":4749155,"instance":1,"source":3,"actual":273.15,"set":-1000000000.00},{"id":2,"lastModified":4749156,"instance":3,"source":15,"actual":273.15,"set":-1000000000.00},{"id":3,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00},{"id":4,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00}],"temperatureExt":[{"id":0,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00},{"id":1,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00},{"id":2,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00},{"id":3,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00},{"id":4,"lastModified":0,"instance":0,"source":0,"actual":0.00,"set":0.00}]}
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      nmea2000:
+        type: integer
+        enum:
+          - 0
+          - 1
+      temperature:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            instance:
+              type: integer
+              format: int16
+            source:
+              type: integer
+              format: int16
+            actual:
+              type: number
+              format: double
+            set:
+              type: number
+              format: double
+            
+      temperatureExt:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int64
+            instance:
+              type: integer
+              format: int16
+            source:
+              type: integer
+              format: int16
+            actual:
+              type: number
+              format: double
+            set:
+              type: number
+              format: double
+      
+  sensor_tempData:
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      temperatures:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int16
+            lastModified:
+              type: integer
+              format: int32
+            readTime:
+              type: integer
+              format: int32
+            connected:
+              type: boolean
+            address:
+              type: string
+            temperature:
+              type: number
+              format: double
+
+  sensor_pressureData:
+  # {,"t":5148333,"bmp280":{"lastModified":5140514,"temp":24.73,"pressure":1014.61,"humidity":43.85}}
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      bmp280: 
+        type: object
+        properties:
+          lastModified:
+            type: integer
+            format: int32
+          temp:
+            type: number
+            format: double
+          pressure:
+            type: number
+            format: double
+          humidity:
+            type: number
+            format: double
+    
+  sensor_voltsData:
+# {,"t":5271325,"lastModified":5271056,"voltages":[{"channel":0,"adc":13.000000,"v":0.009133},{"channel":1,"adc":19.000000,"v":0.013146},{"channel":2,"adc":17.000000,"v":0.011783},{"channel":3,"adc":18.000000,"v":0.012484}]}
+    type: object
+    properties:
+      t:
+        type: integer
+        format: int64
+      lastModified:
+        type: integer
+        format: int32
+      voltages:
+        type: array
+        items:
+          type: object
+          properties:
+            channel:
+              type: integer
+              format: int32
+            adc:
+              type: integer
+              format: int32
+            adcv:
+              type: number
+              format: double
+            v:
+              type: number
+              format: double
+  all:
+    type: object
+    properties:
+      0:
+        $ref: "#/definitions/deviceinfoData"
+      1:
+        $ref: "#/definitions/engine"
+      2:
+        $ref: "#/definitions/boat"
+      3:
+        $ref: "#/definitions/nav"
+      4:
+        $ref: "#/definitions/env"
+      5:
+        $ref: "#/definitions/temp"
+      6:
+        $ref: "#/definitions/sensor_temp"
+      7:
+        $ref: "#/definitions/sensor_pressure"
+      8:
+        $ref: "#/definitions/sensor_volts"
+
+  deviceinfo:
+    type: "object"
+    properties:
+      0:
+        $ref: "#/definitions/deviceinfoData"
+  engine:
+    type: "object"
+    properties:
+      1:
+        $ref: "#/definitions/engineData"
+  nav:
+    type: "object"
+    properties:
+      2:
+        $ref: "#/definitions/navData"
+  boat:
+    type: "object"
+    properties:
+      3:
+        $ref: "#/definitions/boatData"
+  env:
+    type: "object"
+    properties:
+      4:
+        $ref: "#/definitions/envData"
+  temp:
+    type: "object"
+    properties:
+      5:
+        $ref: "#/definitions/tempData"
+  sensor_temp:
+    type: "object"
+    properties:
+      6:
+        $ref: "#/definitions/sensor_tempData"
+  sensor_pressure:
+    type: "object"
+    properties:
+      7:
+        $ref: "#/definitions/sensor_pressureData"
+  sensor_volts:
+    type: "object"
+    properties:
+      8:
+        $ref: "#/definitions/sensor_voltsData"
+
+
+  deviceinfoData:
+  
+# {,"devices":[{"source":24,"mcode":0,"id":3,"swcode":"1.2.3.4 (2017-06-11)","version":"5.6.7.8 (2017-06-11)","info":"https://github.com/ieb/EngineManagement","desc1":"Engine Monitor","desc2":"Luna Technical Area","tpgn":[127488,127489,127505,130316,127508,126464,60928,126996,126998,59392],"rpgn":[59392,59904,60928]}]}
+    type: "object"
+    properties:
+      devices:
+        type: array
+        items: 
+          type: object
+          properties:
+            source:
+              type: integer
+              format: int16
+            mcode:
+              type: integer
+              format: int16
+            id:
+              type: integer
+              format: int16
+            swcode:
+              type: string
+            version:
+              type: string
+            info:
+              type: string
+            desc1:
+              type: string
+            desc2:
+              type: string
+            tpgn:
+              type: array
+              items: 
+                type: integer
+                format: int32
+            rpgn:
+              type: array
+              items: 
+                type: integer
+                format: int32
+
+  

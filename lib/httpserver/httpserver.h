@@ -128,6 +128,7 @@ class JsonOutput {
 class WebServer {
     public:
         WebServer(Stream *outputStream) : outputStream{outputStream} {};
+        void configureIP();
         bool ipConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns1=IPAddress(8,8,8,8), IPAddress dns2=IPAddress(4,4,4,4));
         void begin(const char * ssid, const char * password);
         void addDataSet(int id, JsonOutput *dataSet) {
@@ -136,9 +137,11 @@ class WebServer {
             }
         };
         
-    private:
-        Stream *outputStream;
+    private:    
+        String handleTemplate(AsyncWebServerRequest * request, const String &var);
+        bool getIP(const char * msg, IPAddress *ip);
         JsonOutput *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+        Stream *outputStream;
 };
 
 

@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "description": "eink UI CanDiagnore data",
   "scripts": {
+    "build": "parcel build src/index.html --public-url ./ ",
+    "watch": "parcel src/index.html --public-url ./ "
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "Ian Boston <ianboston@gmail,com>",
   "license": "ISC",
-  "dependencies": {},
   "devDependencies": {
+    "minify": "^8.0.3"
   }
 }

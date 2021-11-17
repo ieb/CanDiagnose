@@ -71,6 +71,7 @@ void showHelp() {
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
   OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
   OutputStream->println("  - Send 'v' to print voltages");
+  OutputStream->println("  - Send 'i' to Be prompted for IP settings");
   
 
 }
@@ -100,6 +101,10 @@ void setup() {
   webServer.addDataSet(6,&temperature);  
   webServer.addDataSet(7,&bme280Sensor);  
   webServer.addDataSet(8,&adcSensor);  
+
+  #ifdef WIFI_IP
+  webServer.ipConfig(WIFI_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_DNS1);
+  #endif
 
   webServer.begin(WIFI_SSID,WIFI_PASS);
 
@@ -165,6 +170,7 @@ void CheckCommand() {
       case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
       case 'v': adcSensor.printVoltages(); break;
+      case 'i': webServer.configureIP(); break;
     }
   }
 }

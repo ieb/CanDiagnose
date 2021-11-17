@@ -101,6 +101,7 @@ FlowLayout.prototype.next = function() {
 EInkDrawingContext = function(options) {
     this.dataStoreFactory = new EInkDataStoreFactory();
     this.canvas = options.canvas;
+    this.body = options.body;
     this.themes = options.themes || {};
     this.layout = options.layout;
     this.page = 0;
@@ -116,6 +117,17 @@ EInkDrawingContext = function(options) {
         options.height = window.innerHeight || document.documentElement.clientHeight ||
           document.body.clientHeight;
     }
+
+/*
+May need this for kindle or a fixed size
+var win = window,
+    doc = document,
+    docElem = doc.documentElement,
+    body = doc.getElementsByTagName('body')[0],
+    x = win.innerWidth || docElem.clientWidth || body.clientWidth,
+    y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+alert(x + ' × ' + y);
+*/
     console.log("Width ",  options.width, "Height", options.height);
     this.setOrientation(options.portrait, options.width, options.height);
 };
@@ -145,16 +157,17 @@ EInkDrawingContext.prototype.nextPage = function() {
     if ( this.page >= this.layout.pages.length) {
         this.page = 0;
     }
-    console.log("Page Now", this.layout.pages[this.page]);
+    this.body.setAttribute("style","background-color:"+this.theme.background);
     this.canvas.setAttribute("style","background-color:"+this.theme.background);
     this.ctx.clearRect(-10,-10,this.width+10,this.height+10);
     this.render();
 }
 EInkDrawingContext.prototype.prevPage = function() {
-    page--;
-    if ( page < 0 ) {
-        page = this.layout.pages.length-1;
+    this.page--;
+    if ( this.page < 0 ) {
+        this.page = this.layout.pages.length-1;
     }
+    this.body.setAttribute("style","background-color:"+this.theme.background);
     this.canvas.setAttribute("style","background-color:"+this.theme.background);
     this.ctx.clearRect(-10,-10,this.width+10,this.height+10);
     this.render();
@@ -165,8 +178,10 @@ EInkDrawingContext.prototype.setTheme = function(theme) {
     if ( this.themeName != theme ) {
         this.theme = this.themes[theme];
         this.themeName = theme;
+        this.body.setAttribute("style","background-color:"+this.theme.background);
         this.canvas.setAttribute("style","background-color:"+this.theme.background);
         this.ctx.clearRect(-10,-10,this.width+10,this.height+10);
+        this.render();
     }
 }
 
@@ -226,6 +241,74 @@ EInkUIController = function(options) {
             debug(that.themes[that.theme]);
         });        
     }
+
+    // Kindle 1st gen doesnt have a viable mouse, so there is no need to support this on a gen 1 kindle device
+    // paperwhite browser has a thouch screen and has zones to tap for page turns.
+    // andriod and other browsers have touch support or mouse.
+    // not supporting iphone as the devices are simply to expensive to support, might work, might not.
+    var startX, startY, startTouch;
+    this.drawingContext.canvas.addEventListener("touchstart", function(event) {
+        startX = event.touches[0].pageX;
+        startY = event.touches[0].pageY;
+        startTouch = new Date().getTime();
+    });
+    this.drawingContext.canvas.addEventListener("touchmove", function(event) {
+        event.preventDefault();
+    });
+    this.drawingContext.canvas.addEventListener("touchend", function(event) {
+        var moveX = startX - event.changedTouches[0].pageX;
+        var moveY = startY - event.changedTouches[0].pageY;
+        var elapsed = new Date().getTime() - startTouch;
+        if (elapsed < 1000) {
+            if ( Math.abs(moveX) > 150 && Math.abs(moveY) < 100 ) {
+                if ( moveX > 0 ) {
+                    that.drawingContext.nextPage();
+                } else {
+                    that.drawingContext.prevPage();
+                }
+            } else if ( Math.abs(moveY) > 150 && Math.abs(moveX) < 100 ) {
+                that.theme++;
+                if (that.theme === that.themes.length) {
+                    that.theme = 0;
+                }
+                that.drawingContext.setTheme(that.themes[that.theme]);    
+            }
+        }
+    });
+    var mouseStartX, mouseStartY, startMouse;
+    this.drawingContext.canvas.addEventListener("mousedown", function(event) {
+        mouseStartX = event.pageX;
+        mouseStartY = event.pageY;
+        startMouse = new Date().getTime();
+    });
+    this.drawingContext.canvas.addEventListener("mousemove", function(event) {
+        event.preventDefault();
+    });
+    this.drawingContext.canvas.addEventListener("mouseup", function(event) {
+        var moveX = mouseStartX - event.pageX;
+        var moveY = mouseStartY - event.pageY;
+        var elapsed = new Date().getTime() - startMouse;
+        if (elapsed < 1000) {
+            if ( Math.abs(moveX) > 150 && Math.abs(moveY) < 100 ) {
+                if ( moveX > 0 ) {
+                    that.drawingContext.nextPage();
+                } else {
+                    that.drawingContext.prevPage();
+                }
+            } else if ( Math.abs(moveY) > 150 && Math.abs(moveX) < 100 ) {
+                that.theme++;
+                if (that.theme === that.themes.length) {
+                    that.theme = 0;
+                }
+                that.drawingContext.setTheme(that.themes[that.theme]);  
+            }
+        }
+    });
+
+    
+
+
+
 
 }
 
@@ -434,6 +517,7 @@ EInkTextBox = function(options) {
     this.precision = (options.precision ===undefined)?1:options.precision;
     this.out = "no data";
     this.data = undefined;
+    this.suppliedDisplayFn = options.suppliedDisplayFn;
     this.dims = {
         w: 10,
         h: 10,
@@ -460,6 +544,9 @@ EInkTextBox.number = function(path, name, units, precision, scale) {
         precision: (precision==undefined)?2:precision
     });
 };
+
+
+
 
 EInkTextBox.prototype.resolve = function(state, path) {
     var pathElements = this.pathElements;
@@ -498,6 +585,9 @@ EInkTextBox.prototype.toDispay = function(v, precision, displayUnits, neg, pos) 
 
 
 EInkTextBox.prototype.formatOutput = function(data, scale, precision) {
+    if ( this.suppliedDisplayFn) {
+        return this.suppliedDisplayFn(data); 
+    }
     scale = scale || this.scale;
     if ( !this.withStats) {
         this.out = this.toDispay(data.currentValue*scale, precision);
@@ -631,6 +721,57 @@ EInkTextBox.prototype.render = function(ctx, theme, dataStoreFactory) {
   }
   this.endDraw(ctx, this.dims);
 }
+
+
+EInkTextBox.text = function(path, name, units, displayFn) {
+    return  new EInkTextBox({
+        path: path,
+        labels: {
+            bl: name,
+            br: units
+        },
+        withStats: false,
+        suppliedDisplayFn: displayFn
+    });
+
+
+};
+
+EInkEngineStatus = function(path) {
+    var options = {
+        path: path,
+        withStats: false
+    }
+    EInkTextBox.call(this, options);
+    this.engineStatus = undefined;
+}
+extend(EInkEngineStatus, EInkTextBox);
+
+EInkEngineStatus.prototype.update = function( state, dataStoreFactory) {
+    var d = this.resolve(state);
+    if ( d == undefined ) {
+        return;
+    }
+    this.engineStatus = d;
+}
+
+
+EInkEngineStatus.prototype.render = function(ctx, theme, dataStoreFactory) {
+    
+    this.startDraw(ctx,theme);
+    ctx.font =  this.dims.sz/2+"px arial";
+    ctx.textBaseline="middle";
+    ctx.textAlign="center";
+    if ( this.engineStatus  &&  this.engineStatus.status1 === 0 && this.engineStatus.status2 === 0 ) {
+        ctx.fillText("ok", this.dims.w*0.5,this.dims.h/2);
+    } else {
+        ctx.fillText("alarm", this.dims.w*0.5,this.dims.h/2);
+    }
+    this.baseLine(ctx, "alarm", "status");
+    ctx.textAlign="center";
+    ctx.fillText("engine", this.dims.w*0.5, (this.dims.sz/4));
+    this.endDraw(ctx, this.dims);
+};
 
 
 EInkPilot = function(x, y) {
