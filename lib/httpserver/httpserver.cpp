@@ -160,6 +160,36 @@ void WebServer::begin(const char * ssid, const char * password) {
         Serial.println(millis() - start);
     });
 
+
+    // management
+    server.on("/admin/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        response->setCode(200);
+        size_t total = SPIFFS.totalBytes();
+        size_t used = SPIFFS.usedBytes();
+        size_t free = total-used;
+        response->print("{ \"heap\":");response->print(ESP.getFreeHeap());
+        response->print(", \"disk\": { \"tota\":");response->print(total);
+        response->print(", \"used\":");response->print(used);
+        response->print(", \"free\":");response->print(free);
+        response->println("}}");
+        request->send(response);
+    });
+    server.on("/admin/reboot", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"reboot in 1s\" }");
+        Serial.println("Rebooting in 1s, requested by Browser");
+        delay(1000);
+        ESP.restart();
+    });
+    server.on("/admin/config.txt", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/config.txt", "text/plain");
+    });
+    server.onFileUpload([this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+         //Handle upload
+        this->handleAllFileUploads(request, filename, index, data, len, final);
+    });
+
     server.onNotFound([](AsyncWebServerRequest *request) {
         if (request->method() == HTTP_OPTIONS) {
             AsyncWebServerResponse *response = request->beginResponse(200);
@@ -182,4 +212,24 @@ String WebServer::handleTemplate(AsyncWebServerRequest * request, const String &
         return url;
     }
     return String();
+}
+
+
+void WebServer::handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    if ( request->url().equals("/admin/config.txt")) {
+          File file = SPIFFS.open("/config.txt", FILE_WRITE);
+          if ( file ) {
+              if ( file.write(data,len) == len ) {
+                  file.close();
+                  request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"saved\" }");
+              } else {
+                  file.close();
+                  request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"upload incomplete\" }");
+              }
+          } else {
+                request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"Unable to update config file\" }");
+          }
+    } else {
+        request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"multi part posts not supported\" }");
+    }
 }

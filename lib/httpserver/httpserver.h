@@ -139,6 +139,7 @@ class WebServer {
         
     private:    
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
+        void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
         bool getIP(const char * msg, IPAddress *ip);
         JsonOutput *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         Stream *outputStream;
