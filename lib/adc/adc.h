@@ -18,13 +18,14 @@
   // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
 
 
+
+
 class ADCSensor : public JsonOutput {
     public:
         ADCSensor(unsigned long readPeriod=5000) : readPeriod{readPeriod} {};
-        void begin();
+        void begin(const char * configurationFile="/config.txt");
         void printVoltages();
         void outputJson(AsyncResponseStream *outputStream);
-        void calibrate(float *calibrations, int n);
         void read();
     private:
         Adafruit_ADS1115 ads;
@@ -32,7 +33,7 @@ class ADCSensor : public JsonOutput {
         float adcv[MAX_ADC_CHANNELS];
         float voltage[MAX_ADC_CHANNELS];
         adsGain_t gain[MAX_ADC_CHANNELS] = {GAIN_ONE, GAIN_ONE, GAIN_ONE, GAIN_ONE};
-        float scale[MAX_ADC_CHANNELS] = {12.2/2.2, 12.2/2.2, 12.2/2.2, 12.2/2.2};
+        float scale[MAX_ADC_CHANNELS] = {5.620350747, 5.5351667, 5.544718786, 5.548646647};
         unsigned long lastRead = 0;
         unsigned long readPeriod = 5000;
 

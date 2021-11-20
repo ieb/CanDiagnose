@@ -6,120 +6,42 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
+#include "local_secrets.h"
+
+#ifndef WIFI_SSID
+#error "WIFI_SSID not defined, add in local_secrets.h file"
+#endif
+#ifndef WIFI_PASS
+#error "WIFI_PASS not defined, add in local_secrets.h file"
+#endif
+
 
 
 class JsonOutput {
     public:
         JsonOutput() {};
         virtual void outputJson(AsyncResponseStream* outputStream);
-        void append(const char *key, const char *value) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":\"");
-            jsonOutput->print(value);
-            jsonOutput->print("\"");
-        };
-        void append(const char *value) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(value);
-            jsonOutput->print("\"");
-        }
-        void append(int value) {
-            appendCommaIfRequired();
-            jsonOutput->print(value);
-        }
-        void append(double value) {
-            appendCommaIfRequired();
-            jsonOutput->print(value);
-        }
-        void append(unsigned long value) {
-            appendCommaIfRequired();
-            jsonOutput->print(value);
-        }
-
-        void appendCommaIfRequired() {
-            if (levels[level]) {
-                levels[level] = false;
-            } else {
-                jsonOutput->print(",");
-            }
-        };
-
-        void append(const char *key, int value) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":");
-            jsonOutput->print(value);
-        };
-        void append(const char *key, double value, int precision=2) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":");
-            jsonOutput->print(value,precision);
-        };
-        void append(const char *key, unsigned int value) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":");
-            jsonOutput->print(value);
-        };
-
-        void append(const char *key, unsigned long value) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":");
-            jsonOutput->print(value);
-        };
-        void startObject() {
-            appendCommaIfRequired();
-            jsonOutput->print("{");
-            level++;
-            levels[level] = true;
-        };
-        void startObject(const char *key) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":{");
-            level++;
-            levels[level] = true;
-        };
-        void endObject() {
-            jsonOutput->print("}");
-            level--;
-        };
-        void startArray(const char *key) {
-            appendCommaIfRequired();
-            jsonOutput->print("\"");
-            jsonOutput->print(key);
-            jsonOutput->print("\":[");
-            level++;
-            levels[level] = true;
-        };
-        void endArray() {
-            jsonOutput->print("]");
-            level--;
-        };
-        void startJson(AsyncResponseStream *outputStream) {
-            jsonOutput = outputStream;
-            jsonOutput->print("{");
-            level=0;
-            levels[level] = true;
-        };
-        void endJson() {
-            jsonOutput->print("}");
-            jsonOutput = NULL;
-        };
+        void append(const char *key, const char *value);
+        void append(const char *value);
+        void append(int value);
+        void append(double value);
+        void append(unsigned long value);
+        void appendCommaIfRequired();
+        void append(const char *key, int value);
+        void append(const char *key, double value, int precision=2);
+        void append(const char *key, unsigned int value);
+        void append(const char *key, unsigned long value);
+        void startObject();
+        void startObject(const char *key);
+        void endObject();
+        void startArray(const char *key);
+        void endArray();
+        void startJson(AsyncResponseStream *outputStream);
+        void endJson();
     protected:
         bool levels[10];
         int level = 0;
-        AsyncResponseStream *jsonOutput;
+        AsyncResponseStream *outputStream;
 
 };
 
@@ -128,9 +50,7 @@ class JsonOutput {
 class WebServer {
     public:
         WebServer(Stream *outputStream) : outputStream{outputStream} {};
-        void configureIP();
-        bool ipConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns1=IPAddress(8,8,8,8), IPAddress dns2=IPAddress(4,4,4,4));
-        void begin(const char * ssid, const char * password);
+        void begin(const char * configurationFile = "/config.txt");
         void addDataSet(int id, JsonOutput *dataSet) {
             if ( id >= 0 && id < MAX_DATASETS ) {
                 dataSets[id] = dataSet;
@@ -140,9 +60,11 @@ class WebServer {
     private:    
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
         void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-        bool getIP(const char * msg, IPAddress *ip);
+        bool authorized(AsyncWebServerRequest *request);
         JsonOutput *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         Stream *outputStream;
+        String httpauth;
+
 };
 
 

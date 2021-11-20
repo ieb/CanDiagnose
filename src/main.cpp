@@ -20,7 +20,7 @@
 
 // Calibrations to take account of resistor tollerances, this is specific to the board being flashed.
 // should probably be in a config file eventually.
-#define  ADC_CALIBRATIONS  5.620350747, 5.5351667, 5.544718786, 5.548646647
+
 
 
 #include <NMEA2000_esp32.h>
@@ -30,8 +30,6 @@
 #include "datadisplay.h"
 #include "dataoutput.h"
 #include "httpserver.h"
-// secrets, should probably be in a config file eventually.
-#include "local_secrets.h"
 #include "temperature.h"
 #include "bme280sensor.h"
 #include "adc.h"
@@ -77,19 +75,11 @@ void showHelp() {
 }
 
 void setup() {
-  Serial.begin(115200); delay(500);
+Serial.begin(115200); delay(500);
   //   while (!Serial) 
-#ifndef WIFI_SSID
-#error "WIFI_SSID not defined, add in local_secrets.h file"
-#endif
-#ifndef WIFI_PASS
-#error "WIFI_PASS not defined, add in local_secrets.h file"
-#endif
- temperature.begin();
- bme280Sensor.begin();
- float calibrations[] = {ADC_CALIBRATIONS};
- adcSensor.calibrate(&calibrations[0], 4);
- adcSensor.begin();
+  temperature.begin();
+  bme280Sensor.begin();
+  adcSensor.begin();
 
  
   webServer.addDataSet(0,&listDevices);
@@ -101,12 +91,9 @@ void setup() {
   webServer.addDataSet(6,&temperature);  
   webServer.addDataSet(7,&bme280Sensor);  
   webServer.addDataSet(8,&adcSensor);  
+  webServer.begin();
 
-  #ifdef WIFI_IP
-  webServer.ipConfig(WIFI_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_DNS1);
-  #endif
 
-  webServer.begin(WIFI_SSID,WIFI_PASS);
 
 
   // Set Product information
@@ -170,7 +157,6 @@ void CheckCommand() {
       case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
       case 'v': adcSensor.printVoltages(); break;
-      case 'i': webServer.configureIP(); break;
     }
   }
 }

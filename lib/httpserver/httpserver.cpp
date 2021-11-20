@@ -4,80 +4,61 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
 #include <SPIFFS.h>
-
+#include "config.h"
+#include <sys/random.h>
+#include <base64.h>
 
 AsyncWebServer server(80);
 
 
-bool WebServer::getIP(const char * msg, IPAddress *ip) {
-    for(int i = 0; i < 3; i++) {
-        Serial.println(msg);
-        String ipStr = Serial.readStringUntil('\n');
-        if ( ip->fromString(ipStr) ) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-void WebServer::configureIP() {
-    // prompt for IP configuration
-    Serial.println("Reconfigure IP");
-    Serial.println("Current Settings");
-    Serial.print("IP Address: ");Serial.println(WiFi.localIP());
-    Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
-    Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
-    Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
-    Serial.print("Static or DHCP (s/d):");
-    unsigned long to = Serial.getTimeout();
-    Serial.setTimeout(60000);
-    String change = Serial.readStringUntil('\n');
-    Serial.print(change);
-    if ( change.startsWith("s") ) {
-        IPAddress newIp, newSubnet, newGateway, newDns;
-        if ( getIP("Enter new IP Address", &newIp) 
-           && getIP("Enter new Subnet Mask", &newSubnet)
-           && getIP("Enter new Gateway IP", &newGateway)
-           && getIP("Enter new DNS IP", &newDns) ) {
-            WiFi.config(newIp, newSubnet, newGateway, newDns);
-            Serial.println("New Settings");
-            Serial.print("IP Address: ");Serial.println(WiFi.localIP());
-            Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
-            Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
-            Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
-        } else {
-            Serial.println("Aborted, no change");
-        }
-    } else if ( change.startsWith("d") ) {
-        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        Serial.println("New Settings");
-        Serial.print("IP Address: ");Serial.println(WiFi.localIP());
-        Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
-        Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
-        Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
-    } else {
-        Serial.println("No change");
-    }
-    Serial.setTimeout(to);
-
-}
-
-
-bool WebServer::ipConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns1, IPAddress dns2) {
-    // perhaps read from eprom or filesystem, probably can read from SPIFFS
-    return WiFi.config(ip, gw, sn, dns1, dns2);
-}
-
-void WebServer::begin(const char * ssid, const char * password) {
+void WebServer::begin(const char * configurationFile) {
       // Initialize SPIFFS
     if(!SPIFFS.begin(true)){
         Serial.println("An Error has occurred while mounting SPIFFS");
         return;
     }
+    String ssid = WIFI_SSID;
+    String password = WIFI_PASS;
+    ConfigurationFile::get(configurationFile, "wifi.ssid:", ssid);
+    Serial.print("Wifi ssid");Serial.println(ssid);
+
+    if ( !ConfigurationFile::get(configurationFile, ssid+".password:", password) ) {
+        Serial.println("Warning: no password configured, using detault");
+    }
+    String v;
+    if ( ConfigurationFile::get(configurationFile, ssid+".ip", v)) {
+        IPAddress local_ip;
+        local_ip.fromString(v);
+        IPAddress subnet(255,255,255,0), 
+            gateway(local_ip[0],local_ip[1],local_ip[2],1), 
+            dns1(local_ip[0],local_ip[1],local_ip[2],1), 
+            dns2;
+        dns2 = IPADDR_NONE;
+        if (ConfigurationFile::get(configurationFile, ssid+".netmask", v) ) {
+            subnet.fromString(v);
+        }
+        if (ConfigurationFile::get(configurationFile, ssid+".gateway", v) ) {
+            gateway.fromString(v);
+        }
+        if (ConfigurationFile::get(configurationFile, ssid+".dns1", v) ) {
+            dns1.fromString(v);
+        }
+        if (ConfigurationFile::get(configurationFile, ssid+".dns2", v) ) {
+            dns2.fromString(v);
+        }
+        WiFi.config(local_ip, gateway, subnet, dns1, dns2);
+        Serial.println("Network config loaded.");
+    } else {
+#ifdef IP_METHOD
+        WiFi.config(WIFI_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_DNS1);
+        Serial.println("Using network config defaults.");
+#else
+        Serial.print("Using DHCP");
+#endif
+    }
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    WiFi.begin(ssid.c_str(), password.c_str());
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
@@ -85,8 +66,10 @@ void WebServer::begin(const char * ssid, const char * password) {
     // Print local IP address and start web server
     outputStream->println("");
     outputStream->println("WiFi connected.");
-    outputStream->println("IP address: ");
-    outputStream->println(WiFi.localIP());
+    Serial.print("IP Address: ");Serial.println(WiFi.localIP());
+    Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
+    Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
+    Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
 
     MDNS.begin("boatsystems");
     MDNS.addService("_http","_tcp",80);
@@ -163,27 +146,33 @@ void WebServer::begin(const char * ssid, const char * password) {
 
     // management
     server.on("/admin/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        AsyncResponseStream *response = request->beginResponseStream("application/json");
-        response->addHeader("Access-Control-Allow-Origin", "*");
-        response->setCode(200);
-        size_t total = SPIFFS.totalBytes();
-        size_t used = SPIFFS.usedBytes();
-        size_t free = total-used;
-        response->print("{ \"heap\":");response->print(ESP.getFreeHeap());
-        response->print(", \"disk\": { \"tota\":");response->print(total);
-        response->print(", \"used\":");response->print(used);
-        response->print(", \"free\":");response->print(free);
-        response->println("}}");
-        request->send(response);
+        if ( this->authorized(request) ) {
+            AsyncResponseStream *response = request->beginResponseStream("application/json");
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            response->setCode(200);
+            size_t total = SPIFFS.totalBytes();
+            size_t used = SPIFFS.usedBytes();
+            size_t free = total-used;
+            response->print("{ \"heap\":");response->print(ESP.getFreeHeap());
+            response->print(", \"disk\": { \"tota\":");response->print(total);
+            response->print(", \"used\":");response->print(used);
+            response->print(", \"free\":");response->print(free);
+            response->println("}}");
+            request->send(response);
+        }
     });
     server.on("/admin/reboot", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"reboot in 1s\" }");
-        Serial.println("Rebooting in 1s, requested by Browser");
-        delay(1000);
-        ESP.restart();
+        if ( this->authorized(request) ) {
+            request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"reboot in 1s\" }");
+            Serial.println("Rebooting in 1s, requested by Browser");
+            delay(1000);
+            ESP.restart();
+        }
     });
     server.on("/admin/config.txt", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/config.txt", "text/plain");
+        if ( this->authorized(request) ) {
+            request->send(SPIFFS, "/config.txt", "text/plain");
+        }
     });
     server.onFileUpload([this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
          //Handle upload
@@ -202,7 +191,26 @@ void WebServer::begin(const char * ssid, const char * password) {
         }
     });
 
+
+    if ( !ConfigurationFile::get(configurationFile, "httpauth:", httpauth) ) {
+        byte buffer[12];
+        getrandom(&buffer[0], 12, 0);
+        String basicAuth = "admin:";
+        for(int i = 0; i < 12; i++) {
+            basicAuth += (char)((48+buffer[i]%(125-48)));
+        }
+        httpauth = "Basic "+base64::encode(basicAuth);
+        Serial.printf("Using generated http basic auth admin password: %s\n", basicAuth.c_str());
+        Serial.printf("Use Header: Authorization: %s\n", httpauth.c_str());
+    } else {
+        Serial.println("Configured http basic auth");
+    }
+
+
     server.begin();
+
+
+
 };
 
 String WebServer::handleTemplate(AsyncWebServerRequest * request, const String &var) {
@@ -216,20 +224,142 @@ String WebServer::handleTemplate(AsyncWebServerRequest * request, const String &
 
 
 void WebServer::handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-    if ( request->url().equals("/admin/config.txt")) {
-          File file = SPIFFS.open("/config.txt", FILE_WRITE);
-          if ( file ) {
-              if ( file.write(data,len) == len ) {
-                  file.close();
-                  request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"saved\" }");
-              } else {
-                  file.close();
-                  request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"upload incomplete\" }");
-              }
-          } else {
-                request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"Unable to update config file\" }");
-          }
-    } else {
-        request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"multi part posts not supported\" }");
+    if ( authorized(request) ) {
+        if ( request->url().equals("/admin/config.txt")) {
+            File file = SPIFFS.open("/config.txt", FILE_WRITE);
+            if ( file ) {
+                if ( file.write(data,len) == len ) {
+                    file.close();
+                    request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"saved\" }");
+                } else {
+                    file.close();
+                    request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"upload incomplete\" }");
+                }
+            } else {
+                    request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"Unable to update config file\" }");
+            }
+        } else {
+            request->send(500, "application/json", "{ \"ok\":false, \"msg\":\"multi part posts not supported\" }");
+        }
     }
 }
+
+bool WebServer::authorized(AsyncWebServerRequest *request) {
+    AsyncWebHeader *authorization = request->getHeader("Authorization");
+    if ( authorization == NULL || !httpauth.equals(authorization->value()) ) {
+        AsyncWebServerResponse * response = request->beginResponse(401,"application/json","{ \"ok\": false, \"msg\":\"not authorized\"}");
+        response->addHeader("WWW-Authenticate","Basic realm=\"BoatSystems Admin\", charset=\"UTF-8\"");
+        request->send(response);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
+
+
+void JsonOutput::append(const char *key, const char *value) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":\"");
+    outputStream->print(value);
+    outputStream->print("\"");
+};
+void JsonOutput::append(const char *value) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(value);
+    outputStream->print("\"");
+}
+void JsonOutput::append(int value) {
+    appendCommaIfRequired();
+    outputStream->print(value);
+}
+void JsonOutput::append(double value) {
+    appendCommaIfRequired();
+    outputStream->print(value);
+}
+void JsonOutput::append(unsigned long value) {
+    appendCommaIfRequired();
+    outputStream->print(value);
+}
+
+void JsonOutput::appendCommaIfRequired() {
+    if (levels[level]) {
+        levels[level] = false;
+    } else {
+        outputStream->print(",");
+    }
+};
+
+void JsonOutput::append(const char *key, int value) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":");
+    outputStream->print(value);
+};
+void JsonOutput::append(const char *key, double value, int precision) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":");
+    outputStream->print(value,precision);
+};
+void JsonOutput::append(const char *key, unsigned int value) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":");
+    outputStream->print(value);
+};
+
+void JsonOutput::append(const char *key, unsigned long value) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":");
+    outputStream->print(value);
+};
+void JsonOutput::startObject() {
+    appendCommaIfRequired();
+    outputStream->print("{");
+    level++;
+    levels[level] = true;
+};
+void JsonOutput::startObject(const char *key) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":{");
+    level++;
+    levels[level] = true;
+};
+void JsonOutput::endObject() {
+    outputStream->print("}");
+    level--;
+};
+void JsonOutput::startArray(const char *key) {
+    appendCommaIfRequired();
+    outputStream->print("\"");
+    outputStream->print(key);
+    outputStream->print("\":[");
+    level++;
+    levels[level] = true;
+};
+void JsonOutput::endArray() {
+    outputStream->print("]");
+    level--;
+};
+void JsonOutput::startJson(AsyncResponseStream *outputStream) {
+    this->outputStream = outputStream;
+    outputStream->print("{");
+    level=0;
+    levels[level] = true;
+};
+void JsonOutput::endJson() {
+    outputStream->print("}");
+    outputStream = NULL;
+};

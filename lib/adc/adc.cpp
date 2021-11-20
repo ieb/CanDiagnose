@@ -1,10 +1,86 @@
 
 
 #include "adc.h"
+#include "config.h"
 
 
 
-void ADCSensor::begin() {
+void ADCSensor::begin(const char * configurationFile) {
+  String v;
+  if ( ConfigurationFile::get(configurationFile, "adc.gain", v)) {
+      int s = 0, iadc = 0;
+      int e = v.indexOf(',');
+      if ( e < 0 ) {
+          e = v.length();
+      }
+      Serial.print("Gains ");
+      while(s < v.length() && iadc < MAX_ADC_CHANNELS) {
+          Serial.print(iadc==0?"":",");
+          int g = v.substring(s,e).toInt();
+          switch(g) {
+              case 1: 
+                gain[iadc] = GAIN_ONE; 
+                Serial.print("one");
+              break;
+              case 2: 
+                gain[iadc] = GAIN_TWO; 
+                Serial.print("two");
+              break;
+              case 4: 
+                gain[iadc] = GAIN_FOUR; 
+                Serial.print("four");
+              break;
+              case 8: 
+                gain[iadc] = GAIN_EIGHT; 
+                Serial.print("eight");
+              break;
+              case 16: 
+                gain[iadc] = GAIN_SIXTEEN; 
+                Serial.print("sixteen");
+              break;
+              default:
+                String vs = v.substring(s,e);
+                if ( vs.equalsIgnoreCase("2/3")) {
+                    gain[iadc] = GAIN_TWOTHIRDS; 
+                    Serial.print("two thirds");
+                } else {
+                    Serial.printf("%s ?? defailt to 1 ", vs.c_str());
+                    gain[iadc] = GAIN_ONE; 
+                }
+          }
+          iadc++;
+          s = e+1;
+          e = v.indexOf(',',s);
+          if ( e < 0 ) {
+              e = v.length();
+          }
+      }
+      Serial.println("");
+  } else {
+      Serial.println("No gain settings using defaults.");
+  }
+  if ( ConfigurationFile::get(configurationFile, "adc.scale", v)) {
+      int s = 0, iadc = 0;
+      int e = v.indexOf(',');
+      if ( e < 0) {
+          e = v.length();
+      }
+      Serial.print("Scales ");
+      while( s < v.length() && iadc < MAX_ADC_CHANNELS) {
+          scale[iadc] = v.substring(s,e).toDouble();
+          Serial.print(iadc==0?"":",");
+          Serial.print(scale[iadc],6);
+          iadc++;
+          s = e+1;
+          e = v.indexOf(',',s);
+          if ( e < 0 ) {
+              e = v.length();
+          }
+      }
+      Serial.println("");
+  } else {
+      Serial.println("No scale settings using defaults.");
+  }
   if (!ads.begin()) {
     Serial.println("Failed to initialize ADS.");
   } else {
@@ -44,13 +120,6 @@ void ADCSensor::printVoltages() {
         Serial.print(v,6); Serial.println("V");
     }
 }
-
-void ADCSensor::calibrate(float * calibrations, int n) {
-    for(int i=0; i< n && i < MAX_ADC_CHANNELS; i++) {
-        scale[i] = calibrations[i];
-    }
-}
-
 
 
 void ADCSensor::outputJson(AsyncResponseStream *outputStream) {
