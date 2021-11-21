@@ -1,0 +1,43 @@
+body {
+    background-color: black;
+    color: white;
+    font-size: x-large;
+    font-family: sans-serif;
+}
+#display {
+    width: 100%;
+}
+#buttons {
+    width: 100%;
+    height: 57px;
+}
+#update, #reboot {
+    width: 49%;
+    height: inherit;
+    font-size: 40px;
+}
+.links  {
+    overflow: hidden;
+    height: 74px;
+    float: left;
+    width: 100%;
+    margin-right: 10px;
+}
+
+.links select {
+    font-size: 34px;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    width: inherit;
+    overflow: hidden;
+    padding-top: 15px;
+    height: 70px;
+    text-indent: 10px;
+    color: #ffffff;
+    -webkit-appearance: none;
+}
+
+.links optgroup {
+    font-size: 14px;
+}

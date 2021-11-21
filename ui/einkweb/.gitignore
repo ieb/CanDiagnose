@@ -3,3 +3,5 @@ dist
 node_modules
 package-lock.json
 src/*.min.*
+src/admin
+src/api

@@ -132,7 +132,7 @@
         console.log("Using DataServer", window.DataServerAddress);
 
         var updater =  new EInkUpdater({
-            url: `${window.DataServerAddress}/api/data/all`,
+            url: `${window.DataServerAddress}/api/data/all.json`,
             calculations: new Calcs(),
             context: drawingContext,
             period: 5000

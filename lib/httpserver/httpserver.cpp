@@ -80,6 +80,24 @@ void WebServer::begin(const char * configurationFile) {
             return this->handleTemplate(request, var);
         });
     });
+    server.on("/admin.html", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if ( this->authorized(request) ) {
+            request->send(SPIFFS, "/admin.html", "text/html", false, [this, request](const String& var){
+                return this->handleTemplate(request, var);
+            });
+        }
+    });
+    server.on("/admin.js", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if ( this->authorized(request) ) {
+            request->send(SPIFFS, "/admin.js", "application/javascript");
+        }
+    });
+    server.on("/admin.css", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        if ( this->authorized(request) ) {
+            request->send(SPIFFS, "/admin.css", "text/css");
+        }
+    });
+
     server.on("^\\/(.*)\\.html$", HTTP_GET, [this](AsyncWebServerRequest *request) {
         String path = String("/") + request->pathArg(0) + String(".html");
         Serial.print("GET ");Serial.println(path);
@@ -98,7 +116,7 @@ void WebServer::begin(const char * configurationFile) {
         request->send(SPIFFS, path, "text/css");
     });
     
-    server.on("^\\/api\\/data\\/([0-9]+)$", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    server.on("^\\/api\\/data\\/([0-9]+).json$", HTTP_GET, [this](AsyncWebServerRequest *request) {
         int id = request->pathArg(0).toInt();
         unsigned long start = millis();
         Serial.print("http GET /api/data/");
@@ -119,7 +137,7 @@ void WebServer::begin(const char * configurationFile) {
         Serial.print(" ");
         Serial.println(millis() - start);
     });
-    server.on("/api/data/all", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    server.on("/api/data/all.json", HTTP_GET, [this](AsyncWebServerRequest *request) {
         unsigned long start = millis();
         Serial.print("http GET /api/data/all");
         AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -144,6 +162,8 @@ void WebServer::begin(const char * configurationFile) {
     });
 
 
+
+
     // management
     server.on("/admin/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
         if ( this->authorized(request) ) {
@@ -161,7 +181,7 @@ void WebServer::begin(const char * configurationFile) {
             request->send(response);
         }
     });
-    server.on("/admin/reboot", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    server.on("/admin/reboot", HTTP_POST, [this](AsyncWebServerRequest *request) {
         if ( this->authorized(request) ) {
             request->send(200, "application/json", "{ \"ok\":true, \"msg\":\"reboot in 1s\" }");
             Serial.println("Rebooting in 1s, requested by Browser");
@@ -203,7 +223,9 @@ void WebServer::begin(const char * configurationFile) {
         Serial.printf("Using generated http basic auth admin password: %s\n", basicAuth.c_str());
         Serial.printf("Use Header: Authorization: %s\n", httpauth.c_str());
     } else {
-        Serial.println("Configured http basic auth");
+        httpauth = "Basic "+base64::encode(httpauth);
+        Serial.print("Configured http Authorzation header to be ");
+        Serial.println(httpauth);
     }
 
 

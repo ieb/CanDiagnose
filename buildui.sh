@@ -18,6 +18,9 @@ do
 done
 
 cp src/index.html ../../data/index.html
+cp src/admin.html ../../data/admin.html
+cp src/admin.js ../../data/admin.js
+cp src/admin.css ../../data/admin.css
 
 cd ../../
 

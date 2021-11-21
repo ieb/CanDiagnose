@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <link href="/admin.css" rel="stylesheet" >
+    <body>
+        <h1>Boat Systems</h1>
+        <div class="links" >
+            <select id="links">
+                <optgroup>
+                    <option url="/api/data/0.json">Device List      (nmea2000)</option>
+                    <option url="/api/data/1.json">Engine Data      (nmea2000)</option>
+                    <option url="/api/data/2.json">Boat Data        (nmea2000)</option>
+                    <option url="/api/data/3.json">Navigation Data  (nmea2000)</option>
+                    <option url="/api/data/4.json">Environment Data (nmea2000)</option>
+                    <option url="/api/data/5.json">Temperature Data (nmea2000)</option>
+                    <option url="/api/data/6.json">Temperature      Sensors</option>
+                    <option url="/api/data/7.json">bmp280           Sensor</option>
+                    <option url="/api/data/8.json">Voltages         Sensor</option>
+                    <option url="/api/data/all.json">All</option>                    
+                    <option url="/admin/config.txt" showbuttons="true" updatename="config" updatefile="config.txt" updatetype="text/plain" >Configuration</option>
+                </optgroup>
+            </select>                
+        </div>
+        <form>
+            <textarea id="display" name="display" rows="20" cols="40">
+            </textarea>
+            <div id="buttons" hidden="true" >
+                <input type="button" id="update" value="Update" />
+                <input type="button" id="reboot" value="Reboot" />    
+            </div>
+            <div id="http_status"></div>
+            <div id="status">
+                Heap <span id="heap"></span>KB 
+                Disk <span id="disk_used"></span>KB/<span id="disk_total"></span>KB (free <span id="disk_free"></span>KB) 
+            </div>
+        </form>
+        <script src="/admin.js"></script>
+        <script src="/json2.min.js"></script>
+        <script> var admin = new Admin();</script>
+    </body>
+
+</html>

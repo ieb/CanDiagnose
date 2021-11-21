@@ -44,16 +44,20 @@ void ListDevices::outputJson(AsyncResponseStream *outputStream) {
       append("desc2",pDevice->GetInstallationDescription2());
       startArray("tpgn");
       const unsigned long *tpgn = pDevice->GetTransmitPGNs();
-      while(tpgn[0]!=0) {
-        append(tpgn[0]);
-        tpgn++;
+      if ( tpgn ) {
+        while(tpgn[0]!=0) {
+          append(tpgn[0]);
+          tpgn++;
+        }
       }
       endArray();
       startArray("rpgn");
       const unsigned long *rpgn = pDevice->GetReceivePGNs();
-      while(rpgn[0]!=0) {
-        append(rpgn[0]);
-        rpgn++;
+      if ( rpgn ) {
+        while(rpgn[0]!=0) {
+          append(rpgn[0]);
+          rpgn++;
+        }
       }
       endArray();
       endObject();
