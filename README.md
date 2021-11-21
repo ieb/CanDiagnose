@@ -9,8 +9,8 @@ Based on Datadisplay and DeviceAnalyser from the NMEA2000 libraries.
 * [x] Implement webserver
 * [x] Serve files from Flash (SPIFFS)
 * [x] Implement data api /api/data/<n> where n == 0-10.
-* [ ] Expose set of standard CAN messages on /api/data
-* [ ] Implement simple UI in ReactJS hosted on SPIFFS
+* [x] Expose set of standard CAN messages on /api/data
+* [x] Implement simple UI in Javascript hosted on SPIFFS, targetting eink and normal browsers (based on SignalK eink)
 * [x] Implement BPM280 source
 * [x] Implement calibration mechanism using DAC
 * [Fail] Implement ADC Source
@@ -25,5 +25,7 @@ On that basis, I am giving up on using the ESP32 ADC for this purpose.
 
 It still provides a good platform for a Wifi data server, and Can reader.
 
-* [ ] Redesign PCB to use 16bit ADC over i2c
-* [ ] Implement ADC sensor code.
+* [x] Redesign PCB to use 16bit ADC over i2c  (ADS1115)
+* [x] Implement ADC sensor code.
+* [x] Implement admin interface.
+* [x] Support configuration and calibration via web browser.

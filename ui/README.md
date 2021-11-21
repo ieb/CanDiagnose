@@ -5,5 +5,5 @@ They all use the http API to fetch data from the ESP32 once loaded, defined in s
 
 # einkweb
 
-Is a minimal eink browser implementation targetting Generation 1 Kindle devices.
+Is a minimal eink browser implementation targetting Generation 1 Kindle devices, but also works on modern browsers and Andriod.
 
