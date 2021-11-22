@@ -20,10 +20,10 @@ void WebServer::begin(const char * configurationFile) {
     String ssid = WIFI_SSID;
     String password = WIFI_PASS;
     ConfigurationFile::get(configurationFile, "wifi.ssid:", ssid);
-    Serial.print("Wifi ssid");Serial.println(ssid);
+    Serial.print("Wifi ssid ");Serial.println(ssid);
 
     if ( !ConfigurationFile::get(configurationFile, ssid+".password:", password) ) {
-        Serial.println("Warning: no password configured, using detault");
+        Serial.println("Warning: no password configured, using default");
     }
     String v;
     if ( ConfigurationFile::get(configurationFile, ssid+".ip", v)) {
@@ -59,17 +59,31 @@ void WebServer::begin(const char * configurationFile) {
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
+    for  (int i = 0; i < 30; i++) {
+        if ( WiFi.status() == WL_CONNECTED ) {
+            break;
+        }
         delay(500);
         Serial.print(".");
     }
-    // Print local IP address and start web server
-    outputStream->println("");
-    outputStream->println("WiFi connected.");
-    Serial.print("IP Address: ");Serial.println(WiFi.localIP());
-    Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
-    Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
-    Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
+    if ( WiFi.status() != WL_CONNECTED ) {
+        WiFi.disconnect(true, true);
+        String password = "nopassword";
+        ConfigurationFile::get(configurationFile, "softap.password:", password);
+        outputStream->print("WiFi connect failed, switching to SofAP on SSID boatsys PW ");Serial.println(password);
+        WiFi.softAP("boatsys", password.c_str());
+        Serial.print("IP address: ");
+        Serial.println(WiFi.softAPIP());
+    } else {
+        // Print local IP address and start web server
+        outputStream->println("");
+        outputStream->println("WiFi connected.");
+        Serial.print("IP Address: ");Serial.println(WiFi.localIP());
+        Serial.print("Subnet Mask: ");Serial.println(WiFi.subnetMask());
+        Serial.print("Gateway IP: ");Serial.println(WiFi.gatewayIP());
+        Serial.print("DNS Server: ");Serial.println(WiFi.dnsIP());
+
+    }
 
     MDNS.begin("boatsystems");
     MDNS.addService("_http","_tcp",80);

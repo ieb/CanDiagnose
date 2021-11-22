@@ -29,3 +29,4 @@ It still provides a good platform for a Wifi data server, and Can reader.
 * [x] Implement ADC sensor code.
 * [x] Implement admin interface.
 * [x] Support configuration and calibration via web browser.
+* [ ] Install test and calibrate.
