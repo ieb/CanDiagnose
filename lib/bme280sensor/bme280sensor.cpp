@@ -55,4 +55,57 @@ void BME280Sensor::outputJson(AsyncResponseStream *outputStream) {
     endJson();
 }
 
+bool BME280Sensor::drawPage(Adafruit_SSD1306 * display) {
+    display->clearDisplay();
+    display->setTextSize(2);              // Normal 1:1 pixel scale
+    display->setTextColor(SSD1306_WHITE); // Draw white text
+
+#if OLED_HEIGHT == 32
+    display->setCursor(0,0);              // Start at top-left corner
+    switch(subPage) {
+        case 0:
+
+            display->printf("% 6.1fmbar\n",pressure_event.pressure);
+            display->cp437(true);         // Use full 256 char 'Code Page 437' font
+            display->printf("6%c%2.0f 12%c%2.0f\n",24,5.0,25,14.2);
+            display->cp437(false);         // Use full 256 char 'Code Page 437' font
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            display->print(temp_event.temperature,1);display->println(" C");
+            display->print(humidity_event.relative_humidity,1);display->println(" %RH");
+            display->display();
+            subPage = 0;
+            return true;
+        default:
+            subPage = 0;
+            return false;
+    }
+#else
+    display->setCursor(0,12);              
+    switch(subPage) {
+        case 0:
+
+            display->printf("% 6.1fmbar\n",pressure_event.pressure);
+            display->setCursor(0,36);              
+            display->cp437(true);         // Use full 256 char 'Code Page 437' font
+            display->printf("6%c%2.0f 12%c%2.0f\n",24,5.0,25,14.2);
+            display->cp437(false);         // Use full 256 char 'Code Page 437' font
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            display->print(temp_event.temperature,1);display->println(" C");
+            display->setCursor(0,36);              
+            display->print(humidity_event.relative_humidity,1);display->println(" %RH");
+            display->display();
+            subPage = 0;
+            return true;
+        default:
+            subPage = 0;
+            return false;
+    }
+#endif
+}
 

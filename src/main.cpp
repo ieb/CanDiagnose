@@ -33,6 +33,7 @@
 #include "temperature.h"
 #include "bme280sensor.h"
 #include "adc.h"
+#include "display.h"
 
 
 
@@ -50,6 +51,7 @@ BME280Sensor bme280Sensor(SDA_PIN, SCL_PIN);
 ADCSensor adcSensor;
 
 WebServer webServer(OutputStream);
+OledDisplay display;
 
 
 
@@ -70,16 +72,17 @@ void showHelp() {
   OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
   OutputStream->println("  - Send 'v' to print voltages");
   OutputStream->println("  - Send 'i' to Be prompted for IP settings");
+  OutputStream->println("  - Send 'b' to change brightness");
   
 
 }
 
 void setup() {
-Serial.begin(115200); delay(500);
-  //   while (!Serial) 
+  Serial.begin(115200); 
   temperature.begin();
   bme280Sensor.begin();
   adcSensor.begin();
+  display.begin();
 
  
   webServer.addDataSet(0,&listDevices);
@@ -93,7 +96,8 @@ Serial.begin(115200); delay(500);
   webServer.addDataSet(8,&adcSensor);  
   webServer.begin();
 
-
+  display.addDisplayPage(&adcSensor);
+  display.addDisplayPage(&bme280Sensor);
 
 
   // Set Product information
@@ -157,6 +161,7 @@ void CheckCommand() {
       case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
       case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
       case 'v': adcSensor.printVoltages(); break;
+      case 'b': display.dim(); break;
     }
   }
 }
@@ -171,5 +176,6 @@ void loop() {
   adcSensor.read();
   bme280Sensor.read();
   temperature.read();
+  display.update();
   CheckCommand();
 }

@@ -5,9 +5,10 @@
 #include <SPI.h>
 #include <Adafruit_BME280.h>
 #include "httpserver.h"
+#include "display.h"
 
 
-class BME280Sensor : public JsonOutput {
+class BME280Sensor : public JsonOutput, public DisplayPage {
     public:
         BME280Sensor(int sdaPin=GPIO_NUM_23, int sclPin=GPIO_NUM_22, unsigned long readPeriod=10000) : 
                 sdaPin{sdaPin}, sclPin{sclPin}, readPeriod{readPeriod} {
@@ -19,6 +20,8 @@ class BME280Sensor : public JsonOutput {
         void begin();
         void read();
         void outputJson(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+
     private:
         Adafruit_BME280 bme=Adafruit_BME280(); 
         int sdaPin;
