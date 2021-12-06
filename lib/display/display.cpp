@@ -13,6 +13,7 @@ void OledDisplay::begin() {
     Serial.println(F("SSD1306 allocation failed"));
     return;
   }
+  Serial.print(F("SSD1306 started"));Serial.println(address,HEX);
 
   addDisplayPage(this);
 
@@ -21,21 +22,44 @@ void OledDisplay::begin() {
 
 void OledDisplay::update() {
     unsigned long now = millis();
-    if ( now > lastDisplay + displayPeriod )  {
-        lastDisplay = now;
-        lastDim = now;
-        if ( displayPages[page]->drawPage(&display) ) {
-            page++;
-            if ( page == lastPage || displayPages[page] == NULL ) {
-                page = 0;
+    if ( dimming ) {
+        if ( now > lastDim + dimPeriod ) {
+            lastDim = now;
+            dim();
+        }
+    } else {
+        if ( now > staticPagePress+15000 && now > lastDisplay + displayPeriod )  {
+            lastDisplay = now;
+            lastDim = now;
+            if ( displayPages[page]->drawPage(&display) ) {
+                page++;
+                if ( page == lastPage || displayPages[page] == NULL ) {
+                    page = 0;
+                }
             }
         }
     }
     
 
-    if ( now > lastDim + dimPeriod ) {
-        lastDim = now;
+}
+
+void OledDisplay::nextPage() {
+    staticPagePress = millis();
+    Serial.print("Static Page");Serial.println(staticPage);
+    if ( staticPages[staticPage]->drawPage(&display) ) {
+        staticPage++;
+        if ( staticPage == lastStaticPage || staticPages[staticPage] == NULL ) {
+            staticPage = 0;
+        }
     }
+}
+void OledDisplay::startDim() {
+    dimming = true;
+    update();
+}
+void OledDisplay::endDim() {
+    dimming = false;
+    update();
 }
 
 void OledDisplay::dim() {

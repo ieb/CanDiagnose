@@ -42,12 +42,15 @@ class OledDisplay : public DisplayPage {
                 lastPage++;
             }
             if (lastStaticPage < MAX_DISPLAYPAGES) {
-                staticPages[lastPage] = displayPage;
+                staticPages[lastStaticPage] = displayPage;
                 lastStaticPage++;
             }
         };
         bool drawPage(Adafruit_SSD1306 * display);
         void dim();
+        void nextPage();
+        void startDim();
+        void endDim();
 
     private:
         Adafruit_SSD1306 display;
@@ -56,6 +59,8 @@ class OledDisplay : public DisplayPage {
         unsigned long displayPeriod = 4000;
         unsigned long lastDim = 0;
         unsigned long dimPeriod = 1000;
+        unsigned long staticPagePress = 0;
+        bool dimming = false;
         uint8_t dimmer = 9;
         int8_t page = 0;
         int8_t lastPage = 0;

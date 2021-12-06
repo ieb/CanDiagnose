@@ -17,8 +17,8 @@ void WebServer::begin(const char * configurationFile) {
         Serial.println("An Error has occurred while mounting SPIFFS");
         return;
     }
-    String ssid = WIFI_SSID;
-    String password = WIFI_PASS;
+    ssid = WIFI_SSID;
+    password = WIFI_PASS;
     ConfigurationFile::get(configurationFile, "wifi.ssid:", ssid);
     Serial.print("Wifi ssid ");Serial.println(ssid);
 
@@ -68,10 +68,12 @@ void WebServer::begin(const char * configurationFile) {
     }
     if ( WiFi.status() != WL_CONNECTED ) {
         WiFi.disconnect(true, true);
-        String password = "nopassword";
+        password = "nopassword";
+        ssid = "boatsys";
         ConfigurationFile::get(configurationFile, "softap.password:", password);
         outputStream->print("WiFi connect failed, switching to SofAP on SSID boatsys PW ");Serial.println(password);
-        WiFi.softAP("boatsys", password.c_str());
+        WiFi.softAP(ssid.c_str(), password.c_str());
+        
         Serial.print("IP address: ");
         Serial.println(WiFi.softAPIP());
     } else {
@@ -130,7 +132,7 @@ void WebServer::begin(const char * configurationFile) {
         request->send(SPIFFS, path, "text/css");
     });
     
-    server.on("^\\/api\\/data\\/([0-9]+).json$", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    server.on("^\\/api\\/data\\/([0-9]*).json$", HTTP_GET, [this](AsyncWebServerRequest *request) {
         int id = request->pathArg(0).toInt();
         unsigned long start = millis();
         Serial.print("http GET /api/data/");
@@ -226,10 +228,10 @@ void WebServer::begin(const char * configurationFile) {
     });
 
 
-    if ( !ConfigurationFile::get(configurationFile, "httpauth:", httpauth) ) {
+    if ( !ConfigurationFile::get(configurationFile, "httpauth:", basicAuth) ) {
         byte buffer[12];
         getrandom(&buffer[0], 12, 0);
-        String basicAuth = "admin:";
+        basicAuth = "admin:";
         for(int i = 0; i < 12; i++) {
             basicAuth += (char)((48+buffer[i]%(125-48)));
         }
@@ -237,7 +239,7 @@ void WebServer::begin(const char * configurationFile) {
         Serial.printf("Using generated http basic auth admin password: %s\n", basicAuth.c_str());
         Serial.printf("Use Header: Authorization: %s\n", httpauth.c_str());
     } else {
-        httpauth = "Basic "+base64::encode(httpauth);
+        httpauth = "Basic "+base64::encode(basicAuth);
         Serial.print("Configured http Authorzation header to be ");
         Serial.println(httpauth);
     }
@@ -399,3 +401,46 @@ void JsonOutput::endJson() {
     outputStream->print("}");
     outputStream = NULL;
 };
+
+
+bool WebServer::drawPage(Adafruit_SSD1306 * display) {
+    display->clearDisplay();
+    display->setTextSize(1);              // Normal 1:1 pixel scale
+    display->setTextColor(SSD1306_WHITE); // Draw white text
+    display->setCursor(0,0);              // Start at top-left corner
+#if OLED_HEIGHT == 32
+    switch(subPage) {
+        case 0:
+            display->setTextSize(1);   // 21 chars, 4 lines
+            display->print("SSID:");display->println(ssid);
+            if ( ssid.equals("boatsys")) {
+                display->print("Password:");display->println(password);
+            } 
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            display->setTextSize(1);   // 21 chars, 4 lines
+            display->print("IP:");display->println(WiFi.localIP());
+            display->print("Auth:");display->println(basicAuth);
+            display->display();
+            subPage = 0;
+            return true;
+        default:
+            subPage = 0;
+            return false;
+    }
+#else
+    // no subpage required
+    display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
+    display->print("SSID:");display->println(ssid);
+    if ( ssid.equals("boatsys")) {
+        display->print("Password:");display->println(password);
+    } 
+    display->print("IP:");display->println(WiFi.localIP());
+    display->print("Auth:");display->println(basicAuth);
+    display->display();
+    return true;
+#endif
+    
+}

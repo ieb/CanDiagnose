@@ -4,6 +4,7 @@
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 #include "httpserver.h"
+#include "display.h"
 
 #define MAX_HEADDING_SOURCES 5
 #define MAX_ENGINE_SOURCES 2
@@ -153,6 +154,47 @@ typedef struct EngineData {
         uint16_t Status2;
 } EngineData;
 
+typedef struct XteData {
+    unsigned long lastModified=0;
+    double xte;
+} XteData;
+
+typedef struct VariationData {
+    unsigned long lastModified=0;
+    uint16_t daysSince1970;
+    double variation;
+} VariationData;
+
+typedef struct WindData {
+    unsigned long lastModified=0;
+    double windSpeed;
+    double windAngle;
+    tN2kWindReference windReference;
+} WindData;
+
+typedef struct LogData {
+    unsigned long lastModified=0;
+    uint16_t daysSince1970;
+    double secondsSinceMidnight;
+    uint32_t log;
+    uint32_t tripLog;
+} LogData;
+
+typedef struct PossitionData {
+    unsigned long lastModified=0;
+    double latitude;
+    double longitude;
+} PossitionData;
+
+
+typedef struct LeewayData {
+    unsigned long lastModified=0;
+    double leeway;
+} LeewayData;
+
+
+
+
 
 
 class DataCollector {
@@ -178,6 +220,15 @@ class DataCollector {
 
         TemperatureData temperature[MAX_TEMPERATURE_SOURCES];   // 5
         TemperatureData temperatureExt[MAX_TEMPERATURE_SOURCES]; // 5
+
+        XteData xte;
+        VariationData variation;
+        WindData wind;
+        LogData log;
+        PossitionData possition;
+        LeewayData leeway;
+
+
     private:
         void EngineRapid(const tN2kMsg &N2kMsg);
         void EngineDynamicParameters(const tN2kMsg &N2kMsg);
@@ -196,6 +247,12 @@ class DataCollector {
         void Speed(const tN2kMsg &N2kMsg);
         void DCStatus(const tN2kMsg &N2kMsg);
         void DCBatteryStatus(const tN2kMsg &N2kMsg);
+        void Xte(const tN2kMsg &N2kMsg);
+        void MagneticVariation(const tN2kMsg &N2kMsg);
+        void WindSpeed(const tN2kMsg &N2kMsg);
+        void Log(const tN2kMsg &N2kMsg);
+        void LatLon(const tN2kMsg &N2kMsg);
+        void Leeway(const tN2kMsg &N2kMsg);
 /*        void SystemTime(const tN2kMsg &N2kMsg);
         void TransmissionParameters(const tN2kMsg &N2kMsg);
         void TripFuelConsumption(const tN2kMsg &N2kMsg);
@@ -219,11 +276,12 @@ class DataCollector {
         
 };
 
-class EngineDataOutput: public JsonOutput {
+class EngineDataOutput: public JsonOutput, public DisplayPage {
     public:
         EngineDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
-        void outputText(Stream *outputStream);
         void outputJson(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+
     private:
         DataCollector *dataCollector;
 
@@ -232,7 +290,6 @@ class EngineDataOutput: public JsonOutput {
 class BoatDataOutput: public JsonOutput {
     public:
         BoatDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
-        void outputText(Stream *outputStream);
         void outputJson(AsyncResponseStream *outputStream);
     private:
         DataCollector *dataCollector;
@@ -240,7 +297,6 @@ class BoatDataOutput: public JsonOutput {
 class NavigationDataOutput: public JsonOutput {
     public:
         NavigationDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
-        void outputText(Stream *outputStream);
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
@@ -250,7 +306,6 @@ class NavigationDataOutput: public JsonOutput {
 class EnvironmentDataOutput: public JsonOutput {
     public:
         EnvironmentDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
-        void outputText(Stream *outputStream);
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
@@ -259,13 +314,65 @@ class EnvironmentDataOutput: public JsonOutput {
 class TemperatureDataOutput: public JsonOutput {
     public:
         TemperatureDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
-        void outputText(Stream *outputStream);
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector *dataCollector;
 };
 
+class XteDataOutput: public JsonOutput {
+    public:
+        XteDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
 
+class MagneticVariationDataOutput: public JsonOutput {
+    public:
+        MagneticVariationDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+
+class WindSpeedDataOutput: public JsonOutput, public DisplayPage {
+    public:
+        WindSpeedDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+class LogDataOutput: public JsonOutput, public DisplayPage {
+    public:
+        LogDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+class LatLonDataOutput: public JsonOutput, public DisplayPage {
+    public:
+        LatLonDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
+class LeewayDataOutput: public JsonOutput {
+    public:
+        LeewayDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        void outputJson(AsyncResponseStream *outputStream);
+    private:
+        Stream *outputStream;
+        DataCollector *dataCollector;
+};
 
 #endif

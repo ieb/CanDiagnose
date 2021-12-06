@@ -46,6 +46,13 @@ BoatDataOutput boatDataOutput(&dataCollector);
 NavigationDataOutput navigationDataOutput(&dataCollector);
 EnvironmentDataOutput environmentDataOutput(&dataCollector);
 TemperatureDataOutput temperatureDataOutput(&dataCollector);
+XteDataOutput xteDataOutput(&dataCollector);
+MagneticVariationDataOutput magneticVariationDataOutput(&dataCollector);
+WindSpeedDataOutput windSpeedDataOutput(&dataCollector);
+LogDataOutput logDataOutput(&dataCollector);
+LatLonDataOutput latLonDataOutput(&dataCollector);
+LeewayDataOutput leewayDataOutput(&dataCollector);
+
 Temperature temperature(ONEWIRE_GPIO_PIN);
 BME280Sensor bme280Sensor(SDA_PIN, SCL_PIN);
 ADCSensor adcSensor;
@@ -79,6 +86,7 @@ void showHelp() {
 
 void setup() {
   Serial.begin(115200); 
+  pinMode(GPIO_NUM_32, INPUT_PULLUP);
   temperature.begin();
   bme280Sensor.begin();
   adcSensor.begin();
@@ -94,11 +102,19 @@ void setup() {
   webServer.addDataSet(6,&temperature);  
   webServer.addDataSet(7,&bme280Sensor);  
   webServer.addDataSet(8,&adcSensor);  
+  webServer.addDataSet(9,&xteDataOutput);  
+  webServer.addDataSet(10,&magneticVariationDataOutput);  
+  webServer.addDataSet(11,&logDataOutput);  
+  webServer.addDataSet(12,&latLonDataOutput);  
+  webServer.addDataSet(13,&leewayDataOutput);  
   webServer.begin();
 
   display.addDisplayPage(&adcSensor);
   display.addDisplayPage(&bme280Sensor);
-
+  display.addDisplayPage(&windSpeedDataOutput);
+  display.addDisplayPage(&latLonDataOutput);
+  display.addDisplayPage(&logDataOutput);
+  display.addDisplayPage(&webServer);
 
   // Set Product information
   NMEA2000.SetProductInformation("00000003", // Manufacturer's Model SerialIO code
@@ -151,11 +167,6 @@ void CheckCommand() {
   if (OutputStream->available()) {
     char chr = OutputStream->read();
     switch ( chr ) {
-      case '0': engineDataOutput.outputText(OutputStream); break;
-      case '1': boatDataOutput.outputText(OutputStream); break;
-      case '2': navigationDataOutput.outputText(OutputStream); break;
-      case '3': environmentDataOutput.outputText(OutputStream); break;
-      case '4': temperatureDataOutput.outputText(OutputStream); break;
       case 'h': showHelp(); break;
       case 'u': listDevices.list(true); break;
       case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
@@ -166,6 +177,57 @@ void CheckCommand() {
   }
 }
 
+void onPress() {
+  display.nextPage();
+}
+void onLongRelease() {
+  display.endDim();
+}
+void onLongPress() {
+  display.startDim();
+}
+
+void checkPress() {
+  static bool  pressed = false;
+  static uint8_t bits = 0;
+  static unsigned long lastCalled = 0, startPress = 0;
+  unsigned long now = millis();
+
+
+  // called every 100ms
+  if ( now > lastCalled+10) {
+    lastCalled = now;
+
+    int dr = digitalRead(GPIO_NUM_32);
+    if (  dr == HIGH ) {
+      bits = bits<<1 & 0xfe;
+    } else {
+      bits = bits<<1 | 1;
+    }
+    // count the bits
+
+    // Serial.println(bits,BIN);
+
+    if (pressed && ((bits&0b00000111) == 0)  ) {
+      // released for the last 150ms
+      pressed = false;
+      if ( now > (startPress+3000) ) {
+        onLongRelease();
+      } else {
+        onPress();
+      }
+      Serial.println("released (stable for 150ms)");
+    } else if ( !pressed && ((bits&0b00000111) == 0b00000111) ) {
+      // touched for the last 300ms
+      pressed = true;
+      startPress = now;
+      Serial.println("pressed (stable for 150ms)");
+    } 
+    if ( pressed && (now > (startPress+3000))) {
+      onLongPress();
+    }
+  }
+}
 
 
 
@@ -178,4 +240,5 @@ void loop() {
   temperature.read();
   display.update();
   CheckCommand();
+  checkPress();
 }

@@ -7,6 +7,7 @@
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include "local_secrets.h"
+#include "display.h"
 
 #ifndef WIFI_SSID
 #error "WIFI_SSID not defined, add in local_secrets.h file"
@@ -47,7 +48,7 @@ class JsonOutput {
 
 #define MAX_DATASETS 10
 
-class WebServer {
+class WebServer : public DisplayPage {
     public:
         WebServer(Stream *outputStream) : outputStream{outputStream} {};
         void begin(const char * configurationFile = "/config.txt");
@@ -56,7 +57,7 @@ class WebServer {
                 dataSets[id] = dataSet;
             }
         };
-        
+        bool drawPage(Adafruit_SSD1306 * display);
     private:    
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
         void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
@@ -64,6 +65,9 @@ class WebServer {
         JsonOutput *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         Stream *outputStream;
         String httpauth;
+        String ssid;
+        String password;
+        String basicAuth;
 
 };
 
