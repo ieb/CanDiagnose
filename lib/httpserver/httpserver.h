@@ -46,7 +46,7 @@ class JsonOutput {
 
 };
 
-#define MAX_DATASETS 10
+#define MAX_DATASETS 14
 
 class WebServer : public DisplayPage {
     public:

@@ -13,7 +13,7 @@ AsyncWebServer server(80);
 
 void WebServer::begin(const char * configurationFile) {
       // Initialize SPIFFS
-    if(!SPIFFS.begin(true)){
+    if(!SPIFFS.begin(false)){
         Serial.println("An Error has occurred while mounting SPIFFS");
         return;
     }
@@ -114,6 +114,7 @@ void WebServer::begin(const char * configurationFile) {
         }
     });
 
+
     server.on("^\\/(.*)\\.html$", HTTP_GET, [this](AsyncWebServerRequest *request) {
         String path = String("/") + request->pathArg(0) + String(".html");
         Serial.print("GET ");Serial.println(path);
@@ -131,7 +132,47 @@ void WebServer::begin(const char * configurationFile) {
         Serial.print("GET ");Serial.println(path);
         request->send(SPIFFS, path, "text/css");
     });
-    
+
+
+
+    server.on("/api/logbook.json", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        response->addHeader("Access-Control-Allow-Origin", "*");
+        response->setCode(200);
+        response->print("{ logbooks: [ \"/api/logbookj.json\" ");
+
+        Serial.println("GET /api/logbook.json");
+        File f = SPIFFS.open("/logbook");
+        File lf = f.openNextFile();
+        while(lf) {
+            response->printf(",\n{ \"name\"=\"%s\", \"size\"=%d }",lf.name(),lf.size());
+            lf = f.openNextFile();
+        }
+        response->print("\n]}");
+        request->send(response);
+    });
+
+    server.on("^\\/logbook/(.*)$", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        String path = String("/logbook/") + request->pathArg(0);
+        Serial.print("GET ");Serial.println(path);
+        request->send(SPIFFS, path, "text/plain");
+    });
+
+    server.on("^\\/logbook/(.*)$", HTTP_DELETE, [this](AsyncWebServerRequest *request) {
+        String path = String("/logbook/") + request->pathArg(0);
+        Serial.print("DELETE ");Serial.println(path);
+        if ( SPIFFS.exists(path)) {
+            SPIFFS.remove(path);
+            request->send(200,"application/json","{ \"ok\":true,\"msg\":\"deleted\"}");
+        } else {
+            request->send(404);
+        }
+    });
+
+
+
+
+
     server.on("^\\/api\\/data\\/([0-9]*).json$", HTTP_GET, [this](AsyncWebServerRequest *request) {
         int id = request->pathArg(0).toInt();
         unsigned long start = millis();
@@ -423,6 +464,8 @@ bool WebServer::drawPage(Adafruit_SSD1306 * display) {
             display->setTextSize(1);   // 21 chars, 4 lines
             display->print("IP:");display->println(WiFi.localIP());
             display->print("Auth:");display->println(basicAuth);
+
+
             display->display();
             subPage = 0;
             return true;
@@ -439,6 +482,9 @@ bool WebServer::drawPage(Adafruit_SSD1306 * display) {
     } 
     display->print("IP:");display->println(WiFi.localIP());
     display->print("Auth:");display->println(basicAuth);
+    display->print("Free Heap:");display->println(ESP.getFreeHeap());
+    display->printf("Fs:%d/%d\n",SPIFFS.usedBytes(), SPIFFS.totalBytes());
+
     display->display();
     return true;
 #endif

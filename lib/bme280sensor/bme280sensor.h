@@ -8,10 +8,10 @@
 #include "display.h"
 
 
-class BME280Sensor : public JsonOutput, public DisplayPage {
+class BME280Sensor : public JsonOutput, public DisplayPage, public History128over24 {
     public:
-        BME280Sensor(int sdaPin=GPIO_NUM_23, int sclPin=GPIO_NUM_22, unsigned long readPeriod=10000) : 
-                sdaPin{sdaPin}, sclPin{sclPin}, readPeriod{readPeriod} {
+        BME280Sensor(unsigned long readPeriod=10000) : 
+                History128over24{800.0,100.0,675000}, readPeriod{readPeriod} {
             bme_temp = bme.getTemperatureSensor();
             bme_pressure = bme.getPressureSensor();
             bme_humidity = bme.getHumiditySensor();
@@ -21,11 +21,10 @@ class BME280Sensor : public JsonOutput, public DisplayPage {
         void read();
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
+        double getPressure() { return pressure_event.pressure; }
 
     private:
         Adafruit_BME280 bme=Adafruit_BME280(); 
-        int sdaPin;
-        int sclPin;
         unsigned long readPeriod = 10000;
         Adafruit_Sensor *bme_temp;
         Adafruit_Sensor *bme_pressure;
@@ -34,7 +33,6 @@ class BME280Sensor : public JsonOutput, public DisplayPage {
         sensors_event_t pressure_event;
         sensors_event_t humidity_event;
         unsigned long lastRead = 0;
-
 };
 
 

@@ -34,6 +34,7 @@
 #include "bme280sensor.h"
 #include "adc.h"
 #include "display.h"
+#include "logbook.h"
 
 
 
@@ -53,9 +54,12 @@ LogDataOutput logDataOutput(&dataCollector);
 LatLonDataOutput latLonDataOutput(&dataCollector);
 LeewayDataOutput leewayDataOutput(&dataCollector);
 
+
 Temperature temperature(ONEWIRE_GPIO_PIN);
-BME280Sensor bme280Sensor(SDA_PIN, SCL_PIN);
+BME280Sensor bme280Sensor;
 ADCSensor adcSensor;
+
+LogBook logbook(&dataCollector, &bme280Sensor);
 
 WebServer webServer(OutputStream);
 OledDisplay display;
@@ -86,11 +90,29 @@ void showHelp() {
 
 void setup() {
   Serial.begin(115200); 
+
+  if (!Wire.begin(SDA_PIN, SCL_PIN) ) {
+    Serial.println("I2C failed to start");
+  } else {
+    Serial.println("I2C scanning ");
+    for (uint8_t addr = 0; addr < 255; addr++) {
+        Wire.beginTransmission(addr);
+        if (Wire.endTransmission() == 0) {
+            Serial.print(" ");
+            Serial.print(addr,HEX);
+        } else {
+            Serial.print(" --");
+        }
+    }
+    Serial.println("Done ");
+  }
+
+  display.begin();
+
   pinMode(GPIO_NUM_32, INPUT_PULLUP);
   temperature.begin();
   bme280Sensor.begin();
   adcSensor.begin();
-  display.begin();
 
  
   webServer.addDataSet(0,&listDevices);
@@ -178,6 +200,7 @@ void CheckCommand() {
 }
 
 void onPress() {
+
   display.nextPage();
 }
 void onLongRelease() {
@@ -187,7 +210,7 @@ void onLongPress() {
   display.startDim();
 }
 
-void checkPress() {
+long checkPress() {
   static bool  pressed = false;
   static uint8_t bits = 0;
   static unsigned long lastCalled = 0, startPress = 0;
@@ -227,6 +250,7 @@ void checkPress() {
       onLongPress();
     }
   }
+  return startPress; 
 }
 
 
@@ -238,7 +262,13 @@ void loop() {
   adcSensor.read();
   bme280Sensor.read();
   temperature.read();
-  display.update();
+  logbook.log();
+  logbook.demoMode();
   CheckCommand();
-  checkPress();
+  if ( checkPress() + 60000 > millis() ) {
+    display.wake();
+  } else {
+    display.sleep();
+  }
+  display.update();
 }

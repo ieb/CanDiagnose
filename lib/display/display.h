@@ -26,6 +26,46 @@ class DisplayPage {
 
 };
 
+class History128over24 {
+    public:
+        History128over24(float offset, float scale, unsigned long periodMs=675000) : 
+            offset{offset}, 
+            scale{scale}, 
+            historyPeriod{periodMs} { };
+        void storeHistory(double v);
+        float changeSince(unsigned long tms);
+        void startIterator();
+        bool hasNext();
+        float nextValue();
+        bool drawHistory(Adafruit_SSD1306 * display);
+        unsigned long getPeriodMs() { return historyPeriod; }
+        unsigned long getTimeWindowMs() { return historyPeriod*128; }
+    private:
+        uint16_t nextValueRaw();
+        uint8_t index(unsigned long t) { return (t/historyPeriod)%128; }
+        float offset;
+        float scale;
+        float graphRangeMin = 5; // 5mBar by default.
+        unsigned long historyPeriod =  675000;
+        static const unsigned long historyLength =  128;
+        int currentSlot=-1;
+        double pmean;
+        int hend;
+        int iv;
+        uint8_t historyDrawState = 0;
+        uint8_t iteratorState;
+        uint16_t history[128];
+};
+
+typedef enum DisplayState {
+    AWAKE,
+    START_SLEEP,
+    WAIT_SLEEP_END,
+    SLEEPING,
+    START_WAKE
+} DisplayState;
+
+
 
 class OledDisplay : public DisplayPage {
     public:
@@ -51,6 +91,8 @@ class OledDisplay : public DisplayPage {
         void nextPage();
         void startDim();
         void endDim();
+        void sleep();
+        void wake();
 
     private:
         Adafruit_SSD1306 display;
@@ -60,7 +102,9 @@ class OledDisplay : public DisplayPage {
         unsigned long lastDim = 0;
         unsigned long dimPeriod = 1000;
         unsigned long staticPagePress = 0;
+        unsigned long sleepEndAt = 0;
         bool dimming = false;
+        DisplayState displayState = AWAKE;
         uint8_t dimmer = 9;
         int8_t page = 0;
         int8_t lastPage = 0;

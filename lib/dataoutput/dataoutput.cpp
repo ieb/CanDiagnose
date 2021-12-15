@@ -900,9 +900,9 @@ bool LogDataOutput::drawPage(Adafruit_SSD1306 * display) {
 #else
     display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
     display->setCursor(0,12);              
-    display->printf("L:%5.1f Nm\n", dataCollector->log.log/1852.0); // Log
+    display->printf("L:%6.1fNm\n", dataCollector->log.log/1852.0); // Log
     display->setCursor(0,36);             
-    display->printf("T:%5.1f Nm\n", dataCollector->log.tripLog/1852.0); // Trip
+    display->printf("T:%6.1fNm\n", dataCollector->log.tripLog/1852.0); // Trip
     display->display();
     return true;
 #endif
@@ -923,15 +923,17 @@ bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
     display->cp437(true);         // Use full 256 char 'Code Page 437' font
     int deg = (int) dataCollector->possition.latitude;
     double min = (double) 60.0*(dataCollector->possition.latitude-deg);
-    if ( deg >= 0 ) {
+    Serial.printf("Lat %d %f\n",deg,min);
+    if ( deg >= 0 && min >= 0) {
         display->printf(" %02d%c%05.2fN\n", deg, 248, min); 
     } else {
         display->printf(" %02d%c%05.2fS\n", -deg, 248, -min); 
     }
-    deg = (int) dataCollector->possition.latitude;
-    min = (double) 60.0*(dataCollector->possition.latitude-deg);
+    deg = (int) dataCollector->possition.longitude;
+    min = (double) 60.0*(dataCollector->possition.longitude-deg);
+    Serial.printf("Long %d %f\n",deg,min);
     display->setCursor(0,36);             
-    if ( deg >= 0 ) {
+    if ( deg >= 0 && min >= 0) {
         display->printf("%03d%c%05.2fE\n", deg,248,min); 
     } else {
         display->printf("%03d%c%05.2fW\n", -deg,248,-min); 
