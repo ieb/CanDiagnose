@@ -111,6 +111,7 @@ void ADCSensor::read() {
                     break;
             }
         }
+        storeHistory(getServiceVoltage());
     }
 }
 
@@ -193,6 +194,16 @@ void ADCSensor::outputJson(AsyncResponseStream *outputStream) {
     endArray();
     endJson();
 }
+double ADCSensor::getServiceVoltage() {
+    return channel[0].voltage;
+}
+double ADCSensor::getEngineVoltage() {
+    return channel[1].voltage;
+}
+double ADCSensor::getServiceCurrent() {
+    return channel[2].voltage*1000.0;
+}
+
 
 bool ADCSensor::drawPage(Adafruit_SSD1306 * display) {
     display->clearDisplay();
@@ -212,23 +223,47 @@ bool ADCSensor::drawPage(Adafruit_SSD1306 * display) {
             display->setTextSize(2);
             display->printf("%5.2f V En\n",channel[1].voltage); // ADC1 is engine battery
             display->display();
-            subPage = 0;
-            return true;
+            subPage = 2;
+            return false;
+        case 2:
+            if ( drawHistory(display,true,10.0,15.0) ) {
+                display->display();
+                subPage = 0;
+                return true;
+            } else {
+                display->display();
+                return false;
+            }
         default:
             subPage = 0;
             return false;
     }
 #else
-    // no subpage required
-    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    display->setCursor(0,4);  
-    display->printf("%5.2f V Ev\n",channel[1].voltage); // ADC1 is engine battery
-    display->setCursor(0,24); // 4+16+4
-    display->printf("%5.2f V Sv\n", channel[0].voltage); // ADC0 is service battery 
-    display->setCursor(0,44); // 24+16+4
-    display->printf("%5.1f A Sa\n", channel[2].voltage*1000.0); // ADC2-3 is service battery shunt .1A==100A
-    display->display();
-    return true;
+    switch(subPage) {
+        case 0:
+            display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
+            display->setCursor(0,4);  
+            display->printf("%5.2f V Ev\n",channel[1].voltage); // ADC1 is engine battery
+            display->setCursor(0,24); // 4+16+4
+            display->printf("%5.2f V Sv\n", channel[0].voltage); // ADC0 is service battery 
+            display->setCursor(0,44); // 24+16+4
+            display->printf("%5.1f A Sa\n", channel[2].voltage*1000.0); // ADC2-3 is service battery shunt .1A==100A
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            if ( drawHistory(display,true,10.0,15.0) ) {
+                display->display();
+                subPage = 0;
+                return true;
+            } else {
+                display->display();
+                return false;
+            }
+        default:
+            subPage = 0;
+            return false;
+    }
 #endif
     
 }

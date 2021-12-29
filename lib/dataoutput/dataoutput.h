@@ -19,124 +19,176 @@
 #define MAX_WATER_DEPTH_SOURCES 2
 #define MAX_RUDDER_SOURCES 1
 #define MAX_ATTITUDE_SOURCES 2
-#define MAX_FLUID_LEVEL_SOURCES 2
+#define MAX_FLUID_LEVEL_SOURCES 4
+#define MAX_XTE_SOURCES 2
+#define MAX_VARIATION_SOURCES 2
+#define MAX_WIND_SOURCES 2
+#define MAX_LOG_SOURCES 2
+#define MAX_POSSITION_SOURCES 3
+#define MAX_LEEWAY_SOURCES 2
 
 
-typedef struct AttitudeData {
-    unsigned long lastModified=0;
-    double roll;
-    double pitch;
-    double yaw;
-} AttitudeData;
+class MessageStore {
+    public:
+        unsigned char source = 255;
+        unsigned long lastModified = 0;
+        bool use(unsigned char msgSource, bool useOld) {
+            unsigned long now = millis();
+            if (source == 255) {
+                source = msgSource;
+                lastModified = now;
+                return true; 
+            } else if (source == msgSource) {
+                lastModified = now;
+                return true;
+            } else if (useOld && now > lastModified+600000 ) {
+                // no update for 10m so assume not transmitting any more
+                source = msgSource;
+                lastModified = now;
+                return true; 
+            }
+            return false;
+        };
+};
 
-typedef struct FluidLevelData {
-    unsigned long lastModified=0;
-    tN2kFluidType fluidType;
-    double level;
-    double capacity;
-} FluidLevelData;
-
-
-typedef struct RudderData {
-    unsigned long lastModified=0;
-    tN2kRudderDirectionOrder directionOrder;
-    double position;
-    double angleOrder;
-} RudderData;
-
-
-typedef struct WaterDepthData {
-    unsigned long lastModified=0;
-  double offset;
-  double depthBelowTransducer; 
-} WaterDepthData;
-
-typedef struct SpeedData {
-    unsigned long lastModified=0;
-    double sow;
-    double sog;
-    tN2kSpeedWaterReferenceType swrt;
-} SpeedData;
-
-
-typedef struct DcBatteryData {
-    unsigned long lastModified=0;
-    byte instance;
-    double voltage;
-    double current;
-    double temperature;
-} DcBatteryData;
-
-
-
-
-typedef struct PressureData {
-    unsigned long lastModified=0;
-    unsigned char instance;
-    tN2kPressureSource source;
-    double actual;
-} PressureData;
-
-typedef struct HumidityData {
-    unsigned long lastModified=0;
-    unsigned char instance;
-    tN2kHumiditySource source;
-    double actual;
-    double set;
-} HumidityData;
-
-typedef struct TemperatureData {
-    unsigned long lastModified=0;
-    unsigned char instance;
-    tN2kTempSource source;
-    double actual;
-    double set;
-} TemperatureData;
+class MessageStoreWithInstance : public MessageStore {
+    public:
+        byte instance;
+        bool use(unsigned char msgSource) {
+            return false;
+        };
+        bool use(unsigned char msgSource,  byte msgInstance, bool useOld) {
+            unsigned long now = millis();
+            if ( source == 255) {
+                source = msgSource;
+                instance = msgInstance;
+                lastModified = millis();
+                return true;
+            } else if ( source == msgSource && instance == msgInstance ) {
+                lastModified = millis();
+                return true;
+            } else if (useOld && now > lastModified+600000 ) {
+                // no update for 10m so assume not transmitting any more
+                source = msgSource;
+                lastModified = now;
+                return true; 
+            }
+            return false;
+        }; 
+};
 
 
-typedef struct OutsideEnvironmentData {
-    unsigned long lastModified=0;
-  double waterTemperature;
-  double outsideAmbientAirTemperature;
-  double atmosphericPressure;
-} OutsideEnvironmentData;
+class AttitudeData: public MessageStore {
+    public:
+        double roll;
+        double pitch;
+        double yaw;
+};
 
-typedef struct GnssData {
-    unsigned long lastModified=0;
-    uint16_t daysSince1970;
-    double secondsSinceMidnight; 
-    double latitude;
-    double longitude;
-    double altitude; 
-    tN2kGNSStype type;
-    tN2kGNSSmethod method;
-    unsigned char nSatellites;
-    double HDOP;
-    double PDOP;
-    double geoidalSeparation;
-    unsigned char nReferenceStations;
-    tN2kGNSStype referenceStationType;
-    uint16_t referenceStationID;
-    double ageOfCorrection;
-} GnssData;
+class FluidLevelData: public MessageStoreWithInstance  {
+    public:
+        tN2kFluidType fluidType;
+        double level;
+        double capacity;
+};
 
-typedef struct CogSogData {
-    unsigned long lastModified=0;
-    tN2kHeadingReference reference;
-    double cog;
-    double sog;
-} CogSogData;
 
-typedef struct HeadingData {
-    unsigned long lastModified=0;
-    double heading;
-    double deviation;
-    double variation;
-    tN2kHeadingReference reference;
-} HeadingData;
+class RudderData: public MessageStoreWithInstance {
+    public:
+        tN2kRudderDirectionOrder directionOrder;
+        double position;
+        double angleOrder;
+};
 
-typedef struct EngineData {
-    unsigned long lastModified=0;
+
+class WaterDepthData: public MessageStore {
+    public:
+        double offset;
+        double depthBelowTransducer; 
+};
+
+class SpeedData: public MessageStore {
+    public:
+        double sow;
+        double sog;
+        tN2kSpeedWaterReferenceType swrt;
+};
+
+
+class DcBatteryData : public MessageStoreWithInstance {
+    public:
+        double voltage;
+        double current;
+        double temperature;
+};
+
+
+
+class PressureData: public MessageStoreWithInstance {
+    public:
+        tN2kPressureSource sourceSensor;
+        double actual;
+};
+
+class HumidityData: public MessageStoreWithInstance {
+    public:
+        unsigned char instance;
+        tN2kHumiditySource sourceSensor;
+        double actual;
+        double set;
+};
+
+class TemperatureData : public MessageStoreWithInstance {
+    public:
+        tN2kTempSource sourceSensor;
+        double actual;
+        double set;
+};
+
+
+class OutsideEnvironmentData : public MessageStore {
+    public:
+        double waterTemperature;
+        double outsideAmbientAirTemperature;
+        double atmosphericPressure;
+};
+
+class GnssData : public MessageStore {
+    public:
+        uint16_t daysSince1970;
+        double secondsSinceMidnight; 
+        double latitude;
+        double longitude;
+        double altitude; 
+        tN2kGNSStype type;
+        tN2kGNSSmethod method;
+        unsigned char nSatellites;
+        double HDOP;
+        double PDOP;
+        double geoidalSeparation;
+        unsigned char nReferenceStations;
+        tN2kGNSStype referenceStationType;
+        uint16_t referenceStationID;
+        double ageOfCorrection;
+};
+
+class CogSogData: public MessageStore {
+    public:
+        tN2kHeadingReference reference;
+        double cog;
+        double sog;
+};
+
+class HeadingData : public MessageStore {
+    public:
+        double heading;
+        double deviation;
+        double variation;
+        tN2kHeadingReference reference;
+};
+
+class EngineData : public MessageStoreWithInstance {
+    public:
         double speed;
         double boostPressure;
         double tiltTrim;
@@ -152,45 +204,45 @@ typedef struct EngineData {
         int8_t Torque;
         uint16_t Status1;
         uint16_t Status2;
-} EngineData;
+};
 
-typedef struct XteData {
-    unsigned long lastModified=0;
-    double xte;
-} XteData;
+class XteData : public MessageStoreWithInstance  {
+    public:
+        double xte;
+};
 
-typedef struct VariationData {
-    unsigned long lastModified=0;
-    uint16_t daysSince1970;
-    double variation;
-} VariationData;
+class VariationData : public MessageStore {
+    public:
+        uint16_t daysSince1970;
+        double variation;
+};
 
-typedef struct WindData {
-    unsigned long lastModified=0;
-    double windSpeed;
-    double windAngle;
-    tN2kWindReference windReference;
-} WindData;
+class WindData : public MessageStoreWithInstance {
+    public:
+        double windSpeed;
+        double windAngle;
+        tN2kWindReference windReference;
+};
 
-typedef struct LogData {
-    unsigned long lastModified=0;
-    uint16_t daysSince1970;
-    double secondsSinceMidnight;
-    uint32_t log;
-    uint32_t tripLog;
-} LogData;
+class LogData : public MessageStore {
+    public:
+        uint16_t daysSince1970;
+        double secondsSinceMidnight;
+        uint32_t log;
+        uint32_t tripLog;
+};
 
-typedef struct PossitionData {
-    unsigned long lastModified=0;
-    double latitude;
-    double longitude;
-} PossitionData;
+class PossitionData : public MessageStore {
+    public:
+        double latitude;
+        double longitude;
+};
 
 
-typedef struct LeewayData {
-    unsigned long lastModified=0;
-    double leeway;
-} LeewayData;
+class LeewayData: public MessageStoreWithInstance {
+    public:
+        double leeway;
+};
 
 
 
@@ -221,12 +273,20 @@ class DataCollector {
         TemperatureData temperature[MAX_TEMPERATURE_SOURCES];   // 5
         TemperatureData temperatureExt[MAX_TEMPERATURE_SOURCES]; // 5
 
-        XteData xte;
-        VariationData variation;
-        WindData wind;
-        LogData log;
-        PossitionData possition;
-        LeewayData leeway;
+        XteData xte[MAX_XTE_SOURCES];
+        VariationData variation[MAX_VARIATION_SOURCES];
+        WindData wind[MAX_WIND_SOURCES];
+        LogData log[MAX_LOG_SOURCES];
+        PossitionData possition[MAX_POSSITION_SOURCES];
+        LeewayData leeway[MAX_LEEWAY_SOURCES];
+        LogData *getLog();
+        WindData * getWindInstance(byte instance, tN2kWindReference reference=N2kWind_Apparent);
+        EngineData * getEngineInstance(byte instance);
+        FluidLevelData * getFluidLevelInstance(byte instance);
+        PossitionData * getPossition();
+        GnssData * getGnss();
+        bool getLatLong(double &latitude, double &longitude, int16_t &age);
+
 
 
     private:
@@ -253,6 +313,9 @@ class DataCollector {
         void Log(const tN2kMsg &N2kMsg);
         void LatLon(const tN2kMsg &N2kMsg);
         void Leeway(const tN2kMsg &N2kMsg);
+        void saveFailed(const tN2kMsg &N2kMsg, byte instance=255);
+        void parseFailed(const tN2kMsg &N2kMsg);
+
 /*        void SystemTime(const tN2kMsg &N2kMsg);
         void TransmissionParameters(const tN2kMsg &N2kMsg);
         void TripFuelConsumption(const tN2kMsg &N2kMsg);
@@ -278,101 +341,101 @@ class DataCollector {
 
 class EngineDataOutput: public JsonOutput, public DisplayPage {
     public:
-        EngineDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        EngineDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
 
     private:
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 
 };
 
 class BoatDataOutput: public JsonOutput {
     public:
-        BoatDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        BoatDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 class NavigationDataOutput: public JsonOutput {
     public:
-        NavigationDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        NavigationDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 
 class EnvironmentDataOutput: public JsonOutput {
     public:
-        EnvironmentDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        EnvironmentDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 class TemperatureDataOutput: public JsonOutput {
     public:
-        TemperatureDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        TemperatureDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 
 class XteDataOutput: public JsonOutput {
     public:
-        XteDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        XteDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 
 class MagneticVariationDataOutput: public JsonOutput {
     public:
-        MagneticVariationDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        MagneticVariationDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 
 class WindSpeedDataOutput: public JsonOutput, public DisplayPage {
     public:
-        WindSpeedDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        WindSpeedDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
 
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 class LogDataOutput: public JsonOutput, public DisplayPage {
     public:
-        LogDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        LogDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 class LatLonDataOutput: public JsonOutput, public DisplayPage {
     public:
-        LatLonDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        LatLonDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 class LeewayDataOutput: public JsonOutput {
     public:
-        LeewayDataOutput(DataCollector *dataCollector): dataCollector{dataCollector} {};
+        LeewayDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
-        DataCollector *dataCollector;
+        DataCollector &dataCollector;
 };
 
 #endif

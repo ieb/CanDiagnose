@@ -35,6 +35,7 @@
 #include "adc.h"
 #include "display.h"
 #include "logbook.h"
+#include "nmea2000out.h"
 
 
 
@@ -42,24 +43,26 @@ Stream *OutputStream = &Serial;
 DataDisplay dataDisplay(OutputStream);
 DataCollector dataCollector(OutputStream);
 ListDevices listDevices(&NMEA2000, OutputStream);
-EngineDataOutput engineDataOutput(&dataCollector);
-BoatDataOutput boatDataOutput(&dataCollector);
-NavigationDataOutput navigationDataOutput(&dataCollector);
-EnvironmentDataOutput environmentDataOutput(&dataCollector);
-TemperatureDataOutput temperatureDataOutput(&dataCollector);
-XteDataOutput xteDataOutput(&dataCollector);
-MagneticVariationDataOutput magneticVariationDataOutput(&dataCollector);
-WindSpeedDataOutput windSpeedDataOutput(&dataCollector);
-LogDataOutput logDataOutput(&dataCollector);
-LatLonDataOutput latLonDataOutput(&dataCollector);
-LeewayDataOutput leewayDataOutput(&dataCollector);
+EngineDataOutput engineDataOutput(dataCollector);
+BoatDataOutput boatDataOutput(dataCollector);
+NavigationDataOutput navigationDataOutput(dataCollector);
+EnvironmentDataOutput environmentDataOutput(dataCollector);
+TemperatureDataOutput temperatureDataOutput(dataCollector);
+XteDataOutput xteDataOutput(dataCollector);
+MagneticVariationDataOutput magneticVariationDataOutput(dataCollector);
+WindSpeedDataOutput windSpeedDataOutput(dataCollector);
+LogDataOutput logDataOutput(dataCollector);
+LatLonDataOutput latLonDataOutput(dataCollector);
+LeewayDataOutput leewayDataOutput(dataCollector);
 
 
 Temperature temperature(ONEWIRE_GPIO_PIN);
 BME280Sensor bme280Sensor;
 ADCSensor adcSensor;
 
-LogBook logbook(&dataCollector, &bme280Sensor);
+LogBook logbook(dataCollector, bme280Sensor, adcSensor);
+
+Nmea2000Output nmea2000Output(&NMEA2000, adcSensor, bme280Sensor, temperature);
 
 WebServer webServer(OutputStream);
 OledDisplay display;
@@ -113,6 +116,7 @@ void setup() {
   temperature.begin();
   bme280Sensor.begin();
   adcSensor.begin();
+  nmea2000Output.begin();
 
  
   webServer.addDataSet(0,&listDevices);
@@ -136,6 +140,7 @@ void setup() {
   display.addDisplayPage(&windSpeedDataOutput);
   display.addDisplayPage(&latLonDataOutput);
   display.addDisplayPage(&logDataOutput);
+  display.addDisplayPage(&engineDataOutput);
   display.addDisplayPage(&webServer);
 
   // Set Product information
@@ -166,6 +171,7 @@ void setup() {
 
   NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, 50);
   NMEA2000.Open();
+
   OutputStream->print("Running...");
   showHelp();
   
@@ -262,8 +268,9 @@ void loop() {
   adcSensor.read();
   bme280Sensor.read();
   temperature.read();
+  nmea2000Output.output();
   logbook.log();
-  logbook.demoMode();
+//  logbook.demoMode();
   CheckCommand();
   if ( checkPress() + 60000 > millis() ) {
     display.wake();

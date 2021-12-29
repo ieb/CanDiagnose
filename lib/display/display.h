@@ -15,7 +15,7 @@
 class DisplayPage {
     public:
         DisplayPage() {};
-        virtual bool drawPage(Adafruit_SSD1306 * display);
+        virtual bool drawPage(Adafruit_SSD1306 * display) { return true;};
         int getSubPage() {
             return subPage;
         };
@@ -37,7 +37,7 @@ class History128over24 {
         void startIterator();
         bool hasNext();
         float nextValue();
-        bool drawHistory(Adafruit_SSD1306 * display);
+        bool drawHistory(Adafruit_SSD1306 * display, bool fixedRange=false, float fixedRangeMin=0.0, float fixedRangeMax=0.0 );
         unsigned long getPeriodMs() { return historyPeriod; }
         unsigned long getTimeWindowMs() { return historyPeriod*128; }
     private:

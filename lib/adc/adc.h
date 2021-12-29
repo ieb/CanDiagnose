@@ -37,9 +37,9 @@ typedef struct AdcChannel {
 } AdcChannel;
 
 
-class ADCSensor : public JsonOutput, public DisplayPage {
+class ADCSensor : public JsonOutput, public DisplayPage, public History128over24 {
     public:
-        ADCSensor(unsigned long readPeriod=5000) : readPeriod{readPeriod} {
+        ADCSensor(unsigned long readPeriod=5000) : History128over24{0.0,1000.0,675000}, readPeriod{readPeriod} {
           for(int i  = 0; i < MAX_ADC_CHANNELS; i++) {
             channel[i].gain = GAIN_ONE;
             channel[i].type = single;
@@ -54,6 +54,9 @@ class ADCSensor : public JsonOutput, public DisplayPage {
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
         void read();
+        double getServiceVoltage();
+        double getEngineVoltage();
+        double getServiceCurrent();
     private:
         const char * asString(ChannelType t);
         const char * asString(adsGain_t t);

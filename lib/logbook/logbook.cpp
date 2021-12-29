@@ -8,7 +8,7 @@
 
 
 
-LogBook::LogBook(DataCollector *dataCollector, BME280Sensor *bme280): dataCollector{dataCollector}, bme280{bme280} {
+LogBook::LogBook(DataCollector &dataCollector, BME280Sensor &bme280, ADCSensor &adc): dataCollector{dataCollector}, bme280{bme280}, adc{adc} {
 };
 
 
@@ -29,16 +29,18 @@ void LogBook::demoMode() {
     unsigned long now = millis();
     if ( now > lastDemoUpdate + 5000) {
         lastDemoUpdate = now;
-         dataCollector->log.lastModified = now;
+         dataCollector.log[0].lastModified = now;
+         dataCollector.log[0].source = 1;
          unsigned long atime = now;
-         dataCollector->log.daysSince1970 = 18973+(atime/(24*3600000));
-         dataCollector->log.secondsSinceMidnight = (atime%(24*3600000))/1000;
-         dataCollector->possition.lastModified = now;
-         dataCollector->possition.longitude = 0.11987607061305089-((1.0*now)/(3600000));
-         dataCollector->possition.latitude = 52.18623058185942-((1.0*now)/(3600000));
-         dataCollector->log.lastModified = now;
-         dataCollector->log.log = 1852  + (1852.0*now)/(6000);
-         dataCollector->log.tripLog = (1852.0*now)/(6000);
+         dataCollector.log[0].daysSince1970 = 18973+(atime/(24*3600000));
+         dataCollector.log[0].secondsSinceMidnight = (atime%(24*3600000))/1000;
+         dataCollector.possition[0].source = 2;
+         dataCollector.possition[0].lastModified = now;
+         dataCollector.possition[0].longitude = 0.11987607061305089-((1.0*now)/(3600000));
+         dataCollector.possition[0].latitude = 52.18623058185942-((1.0*now)/(3600000));
+         dataCollector.log[0].lastModified = now;
+         dataCollector.log[0].log = 1852  + (1852.0*now)/(6000);
+         dataCollector.log[0].tripLog = (1852.0*now)/(6000);
     }
 
 }
@@ -47,10 +49,12 @@ void LogBook::demoMode() {
 void LogBook::log() {
     unsigned long now = millis();
     if ( now > lastLogUpdate + logPeriod) {
-        if ( dataCollector->log.lastModified > lastLogUpdate ) {
+        LogData * log = dataCollector.getLog();
+    
+        if ( log != NULL && log->lastModified > lastLogUpdate ) {
             // new log data is avaiable, this indicates that the NMEA2000 instruments are on 
-            uint16_t daySerial = dataCollector->log.daysSince1970; 
-            double seconds = dataCollector->log.secondsSinceMidnight;
+            uint16_t daySerial = log->daysSince1970; 
+            double seconds = log->secondsSinceMidnight;
             tmElements_t tm;
             // docu
             double tofLog = seconds+daySerial*SECS_PER_DAY; 
@@ -65,36 +69,39 @@ void LogBook::log() {
                 }
                 Serial.print("Creating ");Serial.println(filename);
                 f = SPIFFS.open(filename,"a");
-                f.println("time,logTime,lat,long,log,trip,cog,sog,stw,hdg,awa,aws,mbar,rpm");
+                f.println("time,logTime,lat,long,log,fixage,trip,cog,sog,stw,hdg,awa,aws,mbar,rpm,coolant,serviceVolts,engineVolts,serviceCurrent");
             } else {
-                Serial.print("Opening ");Serial.println(filename);
+                //Serial.print("Opening ");Serial.println(filename);
                 f = SPIFFS.open(filename,"a");
             }
 
 
             f.printf("%04d-%02d-%02dT%02d:%02d:%02dZ",tm.Year+1970, tm.Month, tm.Day,tm.Hour,tm.Minute,tm.Second);
-            f.printf(",%ld",(unsigned long)tofLog);
+            f.printf(",%lu",(unsigned long)tofLog);
             // lat, lon
 
-            if ( dataCollector->possition.lastModified+15000 < dataCollector->gnss[0].lastModified ) {
-                f.printf(",%10.6f,%10.6f",dataCollector->gnss[0].latitude, dataCollector->gnss[0].longitude);
-            } else if (dataCollector->possition.lastModified+30000 > now) {
-                f.printf(",%10.6f,%10.6f",dataCollector->possition.latitude, dataCollector->possition.longitude);
+
+            double latitude, longitude;
+            int16_t age;
+            if ( dataCollector.getLatLong(latitude, longitude, age)) {
+                f.printf(",%10.6f,%10.6f,%d",latitude, longitude,age);
             } else {
-                f.printf(",,");
-            } 
+                f.printf(",,,");
+            }
+
+
             //log,trip
-            if ( dataCollector->log.lastModified+30000 > now) {
-                f.printf(",%6.1f,%6.1f",M_TO_NM(dataCollector->log.log),M_TO_NM(dataCollector->log.tripLog));
+            if ( log != NULL && log->lastModified+30000 > now) {
+                f.printf(",%6.1f,%6.1f",M_TO_NM(log->log),M_TO_NM(log->tripLog));
             } else {
                 f.print(",,");
             }
             // cog,sog  radians, m/s
             int i;
             for ( i = 0; i < MAX_COGSOG_SOURCES; i++) {
-                if (dataCollector->cogSog[i].lastModified+30000 > now ) {
-                    f.printf(",%d,%4.1f",(int)headingAngleToDeg(dataCollector->cogSog[i].cog),
-                         SPEED_MS_TO_KN(dataCollector->cogSog[i].sog));
+                if (dataCollector.cogSog[i].source != 255 && dataCollector.cogSog[i].lastModified+30000 > now ) {
+                    f.printf(",%d,%4.1f",(int)headingAngleToDeg(dataCollector.cogSog[i].cog),
+                         SPEED_MS_TO_KN(dataCollector.cogSog[i].sog));
                     break;
                 } 
             }
@@ -103,8 +110,8 @@ void LogBook::log() {
             }
             // stw m/s
             for ( i=0; i < MAX_SPEED_SOURCES; i++) {
-                if (dataCollector->speed[i].lastModified+30000 > now ) {
-                    f.printf(",%4.1f",SPEED_MS_TO_KN(dataCollector->speed[i].sow));
+                if (dataCollector.speed[i].source != 255 && dataCollector.speed[i].lastModified+30000 > now ) {
+                    f.printf(",%4.1f",SPEED_MS_TO_KN(dataCollector.speed[i].sow));
                     break;
                 } 
             }
@@ -113,8 +120,8 @@ void LogBook::log() {
             }
             //hdg radians
             for ( i=0; i < MAX_HEADDING_SOURCES; i++) {
-                if (dataCollector->heading[i].lastModified+30000 > now ) {
-                    f.printf(",%d",(int)headingAngleToDeg(dataCollector->heading[i].heading));
+                if (dataCollector.heading[i].source != 255 && dataCollector.heading[i].lastModified+30000 > now ) {
+                    f.printf(",%d",(int)headingAngleToDeg(dataCollector.heading[i].heading));
                     break;
                 } 
             }
@@ -124,30 +131,37 @@ void LogBook::log() {
 
 
             //aws, awa m/s, radians
-            if ( dataCollector->wind.lastModified+30000 > now) {
-                f.printf(",%4.1f,%d",SPEED_MS_TO_KN(dataCollector->wind.windSpeed),(int)relativeAngleToDeg(dataCollector->wind.windAngle));
-            } else {
-                f.print(",,");
+            for ( i=0; i < MAX_WIND_SOURCES; i++) {
+                if (dataCollector.wind[i].source != 255 &&
+                         dataCollector.wind[i].windReference == N2kWind_Apparent && 
+                         dataCollector.wind[i].lastModified+30000 > now ) {
+                    f.printf(",%4.1f,%d",SPEED_MS_TO_KN(dataCollector.wind[i].windSpeed),(int)relativeAngleToDeg(dataCollector.wind[i].windAngle));
+                    break;
+                } 
+            }
+            if ( i == MAX_WIND_SOURCES ) {
+                f.print(",");
             }
             // mbar mbar
-            f.printf(",%6.1f",bme280->getPressure());
+            f.printf(",%6.1f",bme280.getPressure());
             // rpm, ct, rpm, K
             for ( i = 0; i < MAX_ENGINE_SOURCES; i++) {
-                if (dataCollector->engine[i].lastModified+30000 > now ) {
-                    f.printf(",%d,%d",(int)dataCollector->engine[i].speed,(int)K_TO_C(dataCollector->engine[i].CoolantTemp));
+                if (dataCollector.engine[i].source != 255 &&  dataCollector.engine[i].lastModified+30000 > now ) { 
+                    f.printf(",%d,%d",(int)dataCollector.engine[i].speed,(int)K_TO_C(dataCollector.engine[i].CoolantTemp));
                     break;
                 } 
             }
             if ( i == MAX_ENGINE_SOURCES ) {
                 f.print(",,");
             }
+            // Voltages
+            f.printf(",%5.2f,%5.2f,%5.1f",adc.getServiceVoltage(),adc.getEngineVoltage(),adc.getServiceCurrent());
             f.print("\n");
             f.close();
         } else {
             // instruments are off. We could add an entry but we dont really know what the time is
             // so we probably should not
         }
-
         lastLogUpdate = now;
     }
 }

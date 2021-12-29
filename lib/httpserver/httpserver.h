@@ -21,7 +21,7 @@
 class JsonOutput {
     public:
         JsonOutput() {};
-        virtual void outputJson(AsyncResponseStream* outputStream);
+        virtual void outputJson(AsyncResponseStream* outputStream) {};
         void append(const char *key, const char *value);
         void append(const char *value);
         void append(int value);

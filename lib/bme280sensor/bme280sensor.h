@@ -22,6 +22,7 @@ class BME280Sensor : public JsonOutput, public DisplayPage, public History128ove
         void outputJson(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
         double getPressure() { return pressure_event.pressure; }
+        double getHumidity() { return humidity_event.relative_humidity; }
 
     private:
         Adafruit_BME280 bme=Adafruit_BME280(); 

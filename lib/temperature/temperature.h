@@ -26,6 +26,7 @@ class Temperature : public JsonOutput {
         void outputJson(AsyncResponseStream *outputStream);
         void begin();
         void read();
+        TemperatureSensor temperatureSensor[MAX_TEMPERATURE_SENSORS];
 
     private:
         void outputSensorJson(AsyncResponseStream *outputStream, int si);
@@ -34,7 +35,6 @@ class Temperature : public JsonOutput {
         int oneWirePin;
         OneWire oneWire;
         DallasTemperature sensors;
-        TemperatureSensor temperatureSensor[MAX_TEMPERATURE_SENSORS];
         unsigned long lastRead = 0;
         unsigned long readPeriod = 10000;
         bool readRequested = false;

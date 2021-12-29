@@ -191,8 +191,12 @@ uint16_t History128over24::nextValueRaw() {
     return cv;
 }
 
-bool History128over24::drawHistory(Adafruit_SSD1306 * display) {
+bool History128over24::drawHistory(Adafruit_SSD1306 * display, bool fixedRange, float fixedRangeMin, float fixedRangeMax ) {
     uint16_t hmax = history[0], hmin = history[0];
+    if (fixedRange) {
+        hmin = (uint16_t)(round((fixedRangeMin-offset)*scale));;
+        hmax = (uint16_t)(round((fixedRangeMax-offset)*scale));;
+    }
     startIterator();
     while(hasNext()) {
         uint16_t v = nextValueRaw();
