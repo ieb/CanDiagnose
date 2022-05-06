@@ -194,6 +194,30 @@ void ADCSensor::outputJson(AsyncResponseStream *outputStream) {
     endArray();
     endJson();
 }
+
+
+
+void ADCSensor::outputCsv(AsyncResponseStream *outputStream) {
+    /*
+    8
+    #voltages,id,lastmodified,voltages...
+    t,83652827
+
+    voltages,83663614,0.23184,0.31135,0.075
+    */
+    read();
+    startBlock(outputStream);
+    startRecord("voltages");
+    appendField(lastRead);
+    for (int i = 0; i < MAX_ADC_CHANNELS; i++){
+        appendField(channel[i].voltage);
+    }    
+    endRecord();
+    endBlock();
+
+}
+
+
 double ADCSensor::getServiceVoltage() {
     return channel[0].voltage;
 }

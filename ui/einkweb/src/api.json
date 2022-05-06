@@ -20,9 +20,9 @@
 			"id": 0,
 			"lastModified": 62265,
 			"hours": 288825.00,
-			"speed": 0.00,
-			"coolantTemp": 273.15,
-			"altenatorVoltage": 0.00,
+			"speed": 2050.5,
+			"coolantTemp": 337.45,
+			"altenatorVoltage": 14.2,
 			"status1": 0,
 			"status2": 0
 		}, {
@@ -39,16 +39,16 @@
 			"id": 0,
 			"lastModified": 55515,
 			"instance": 0,
-			"voltage": 0.00,
+			"voltage": 14.1,
 			"current": -1000000000.00,
-			"temperature": 273.15
+			"temperature": 300.15
 		}, {
 			"id": 1,
 			"lastModified": 55516,
 			"instance": 1,
-			"voltage": 0.00,
+			"voltage": 14.2,
 			"current": -1000000000.00,
-			"temperature": 273.15
+			"temperature": 300.15
 		}, {
 			"id": 2,
 			"lastModified": 0,
@@ -67,7 +67,7 @@
 		"fluidLevel": [{
 			"id": 0,
 			"lastModified": 61431,
-			"level": 0.00,
+			"level": 43.2,
 			"capacity": 60.00,
 			"fluidType": 0
 		}, {
@@ -106,19 +106,19 @@
 		"speed": [{
 			"id": 0,
 			"lastModified": 0,
-			"sow": 0.00,
+			"stw": 0.00,
 			"sog": 0.00,
 			"swrt": 0
 		}, {
 			"id": 1,
 			"lastModified": 0,
-			"sow": 0.00,
+			"stw": 0.00,
 			"sog": 0.00,
 			"swrt": 0
 		}, {
 			"id": 2,
 			"lastModified": 0,
-			"sow": 0.00,
+			"stw": 0.00,
 			"sog": 0.00,
 			"swrt": 0
 		}],

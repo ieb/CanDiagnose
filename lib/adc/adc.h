@@ -37,7 +37,7 @@ typedef struct AdcChannel {
 } AdcChannel;
 
 
-class ADCSensor : public JsonOutput, public DisplayPage, public History128over24 {
+class ADCSensor : public JsonOutput, public CsvOutput, public DisplayPage, public History128over24 {
     public:
         ADCSensor(unsigned long readPeriod=5000) : History128over24{0.0,1000.0,675000}, readPeriod{readPeriod} {
           for(int i  = 0; i < MAX_ADC_CHANNELS; i++) {
@@ -52,6 +52,7 @@ class ADCSensor : public JsonOutput, public DisplayPage, public History128over24
         void begin(const char * configurationFile="/config.txt");
         void printVoltages();
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
         void read();
         double getServiceVoltage();

@@ -18,11 +18,6 @@ try {
 }
 isKindle = (Object.create === undefined);
 debug("Kindle: "+isKindle);
-function log(msg) {
-    if (!isKindle) {
-        //console.log(msg);
-    }
-}
 
 // perform extension of a class
 function extend(extension, base ) {
@@ -128,7 +123,7 @@ var win = window,
     y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
 alert(x + ' × ' + y);
 */
-    console.log("Width ",  options.width, "Height", options.height);
+    //console.log("Width ",  options.width, "Height", options.height);
     this.setOrientation(options.portrait, options.width, options.height);
 };
 
@@ -514,6 +509,7 @@ EInkTextBox = function(options) {
     this.displayNegative = options.displayNegative;
     this.withStats = (options.withStats===undefined)?true:options.withStats;
     this.scale = options.scale || 1 ;
+    this.offset = options.offset || 0;
     this.precision = (options.precision ===undefined)?1:options.precision;
     this.out = "no data";
     this.data = undefined;
@@ -532,7 +528,7 @@ EInkTextBox = function(options) {
     }
 };
 
-EInkTextBox.number = function(path, name, units, precision, scale) {
+EInkTextBox.number = function(path, name, units, precision, scale, offset) {
     return new EInkTextBox({
         path: path,
         labels: {
@@ -541,6 +537,7 @@ EInkTextBox.number = function(path, name, units, precision, scale) {
         },
         withStats: false,
         scale: scale || 1.0,
+        offset: offset|| 0,
         precision: (precision==undefined)?2:precision
     });
 };
@@ -555,7 +552,48 @@ EInkTextBox.prototype.resolve = function(state, path) {
     }
     var n = state;
     for (var i = 0; n && i < pathElements.length; i++) {
-        n = n[pathElements[i]];
+        if (pathElements[i].startsWith("[") && pathElements[i].endsWith("]") )  {
+            var filterElements = pathElements[i].slice(1,-1).split(",");
+            var filters = [];
+            var debug = false;
+            for(var j = 0; j < filterElements.length; j++) {
+                if (filterElements[j] == "debug" ) {
+                    debug = true;
+                } else {
+                    filters.push(filterElements[j].split("=="));
+                }
+            }
+            if ( debug ) {
+                console.log("Processed Filter ",filters);
+            }
+            var nextN = undefined;
+            for( var k in n) {
+                if ( debug ) {
+                    console.log("checking ",n,k[n]);
+                }
+                var matches = 0;
+                for ( var j = 0; j < filters.length; j++) {
+                    if (n[k][filters[j][0]] == filters[j][1]) {
+                        matches++;
+                    }
+                }
+                if ( matches == filters.length ) {
+                    if ( debug ) {
+                        console.log(n[k],"hit",matches);
+                    }
+                    nextN = n[k];
+                    break;
+                } else {
+                    if ( debug ) {
+                        console.log(n[k],"miss",matches);
+                    }
+
+                }
+            }
+            n = nextN;
+        } else {
+            n = n[pathElements[i]];
+        }
     }
     if (n !== undefined && typeof n !== "object") {
         return {
@@ -584,18 +622,19 @@ EInkTextBox.prototype.toDispay = function(v, precision, displayUnits, neg, pos) 
 }
 
 
-EInkTextBox.prototype.formatOutput = function(data, scale, precision) {
+EInkTextBox.prototype.formatOutput = function(data, scale, precision, offset) {
     if ( this.suppliedDisplayFn) {
         return this.suppliedDisplayFn(data); 
     }
     scale = scale || this.scale;
+    offset = offset || this.offset;
     if ( !this.withStats) {
-        this.out = this.toDispay(data.currentValue*scale, precision);
+        this.out = this.toDispay((data.currentValue*scale)+offset, precision);
     } else {
-        this.out = this.toDispay(data.currentValue*scale, precision);
-        this.outmax = this.toDispay(data.max*scale, precision);
-        this.outmin = this.toDispay(data.min*scale, precision);
-        this.outmean = "\u03BC "+this.toDispay(data.mean*scale, precision);
+        this.out = this.toDispay((data.currentValue*scale)+offset, precision);
+        this.outmax = this.toDispay((data.max*scale)+offset, precision);
+        this.outmin = this.toDispay((data.min*scale)+offset, precision);
+        this.outmean = "\u03BC "+this.toDispay((data.mean*scale)+offset, precision);
         this.outstdev = "\u03C3 "+this.toDispay(data.stdev*scale, precision, this.displayUnits, "","");
     }
     return this.out;

@@ -57,6 +57,26 @@ void Temperature::outputJson(AsyncResponseStream *outputStream) {
     endJson();
 }
 
+
+void Temperature::outputCsv(AsyncResponseStream *outputStream) {
+    /*
+    6
+    #temperatures,id,lastmodified,temperatures...
+t,83652827
+
+temperatures,83663614,273.15,
+*/
+    startBlock(outputStream);
+    startRecord("temperatures");
+    appendField(lastRead);
+    for (int i=0; i<MAX_TEMPERATURE_SENSORS; i++) {
+        appendField(temperatureSensor[i].temperature);
+    }
+    endRecord();
+    endBlock();
+}
+
+
 void Temperature::printSensor(int si) {
     Serial.print("Device: ");
     Serial.print(temperatureSensor[si].id);

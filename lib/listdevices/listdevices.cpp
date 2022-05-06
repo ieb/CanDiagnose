@@ -67,6 +67,56 @@ void ListDevices::outputJson(AsyncResponseStream *outputStream) {
   endJson();
 }
 
+void ListDevices::outputCsv(AsyncResponseStream *outputStream) {  
+  startBlock(outputStream);
+  for (uint8_t i = 0; i < N2kMaxBusDevices; i++)  {
+    const tNMEA2000::tDevice *pDevice = FindDeviceBySource(i);
+    if ( pDevice != 0) {
+      startRecord("devices");
+      appendField(pDevice->GetSource());
+      appendField(pDevice->GetManufacturerCode());
+      appendField(pDevice->GetUniqueNumber());
+      appendField(pDevice->GetSwCode());
+      appendField(pDevice->GetModelVersion());
+      appendField(pDevice->GetManufacturerInformation());
+      appendField(pDevice->GetInstallationDescription1());
+      appendField(pDevice->GetInstallationDescription2());
+      endRecord();
+    }
+  }
+  for (uint8_t i = 0; i < N2kMaxBusDevices; i++)  {
+    const tNMEA2000::tDevice *pDevice = FindDeviceBySource(i);
+    if ( pDevice != 0) {
+      startRecord("tpgn");
+      appendField(pDevice->GetSource());
+      const unsigned long *tpgn = pDevice->GetTransmitPGNs();
+      if ( tpgn ) {
+        while(tpgn[0]!=0) {
+          appendField(tpgn[0]);
+          tpgn++;
+        }
+      }
+      endRecord();
+    }
+  }
+  for (uint8_t i = 0; i < N2kMaxBusDevices; i++)  {
+    const tNMEA2000::tDevice *pDevice = FindDeviceBySource(i);
+    if ( pDevice != 0) {
+      startRecord("rpgn");
+      appendField(pDevice->GetSource());
+      const unsigned long *rpgn = pDevice->GetReceivePGNs();
+      if ( rpgn ) {
+        while(rpgn[0]!=0) {
+          appendField(rpgn[0]);
+          rpgn++;
+        }
+      }
+      endRecord();
+    }
+  }
+  endBlock();
+}
+
 //*****************************************************************************
 void ListDevices::printDevice(const tNMEA2000::tDevice *pDevice) {
   if ( pDevice == 0 ) return;

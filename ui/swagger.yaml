@@ -244,7 +244,7 @@ definitions:
 
             
   boatData:
-  # {,"t":3111852,"nmea2000":1,"heading":[{"id":0,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":1,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":2,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0}],"speed":[{"id":0,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0},{"id":1,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0},{"id":2,"lastModified":0,"sow":0.00,"sog":0.00,"swrt":0}],"waterDepth":[{"id":0,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00},{"id":1,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00}],"rudder":[{"id":0,"lastModified":0,"directionOrder":0,"position":0.00,"angleOrder":0.00}],"attitude":[{"id":0,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00},{"id":1,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00}]}
+  # {,"t":3111852,"nmea2000":1,"heading":[{"id":0,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":1,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0},{"id":2,"lastModified":0,"heading":0.00,"deviation":0.00,"variation":0.00,"reference":0}],"speed":[{"id":0,"lastModified":0,"stw":0.00,"sog":0.00,"swrt":0},{"id":1,"lastModified":0,"stw":0.00,"sog":0.00,"swrt":0},{"id":2,"lastModified":0,"stw":0.00,"sog":0.00,"swrt":0}],"waterDepth":[{"id":0,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00},{"id":1,"lastModified":0,"depthBelowTransducer":0.00,"offset":0.00}],"rudder":[{"id":0,"lastModified":0,"directionOrder":0,"position":0.00,"angleOrder":0.00}],"attitude":[{"id":0,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00},{"id":1,"lastModified":0,"roll":0.00,"pitch":0.00,"yaw":0.00}]}
     type: "object"
     properties:
       t:
@@ -289,7 +289,7 @@ definitions:
             lastModified:
               type: integer
               format: int64
-            sow:
+            stw:
               type: number
               format: double
             sog:

@@ -109,7 +109,7 @@ class WaterDepthData: public MessageStore {
 
 class SpeedData: public MessageStore {
     public:
-        double sow;
+        double stw;
         double sog;
         tN2kSpeedWaterReferenceType swrt;
 };
@@ -339,10 +339,11 @@ class DataCollector {
         
 };
 
-class EngineDataOutput: public JsonOutput, public DisplayPage {
+class EngineDataOutput: public JsonOutput,  public CsvOutput, public DisplayPage {
     public:
         EngineDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
 
     private:
@@ -350,92 +351,104 @@ class EngineDataOutput: public JsonOutput, public DisplayPage {
 
 };
 
-class BoatDataOutput: public JsonOutput {
+class BoatDataOutput: public JsonOutput,  public CsvOutput {
     public:
         BoatDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         DataCollector &dataCollector;
 };
-class NavigationDataOutput: public JsonOutput {
+class NavigationDataOutput: public JsonOutput,  public CsvOutput { 
     public:
         NavigationDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
 
-class EnvironmentDataOutput: public JsonOutput {
+class EnvironmentDataOutput: public JsonOutput,  public CsvOutput  {
     public:
         EnvironmentDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
-class TemperatureDataOutput: public JsonOutput {
+class TemperatureDataOutput: public JsonOutput ,  public CsvOutput {
     public:
         TemperatureDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
 
-class XteDataOutput: public JsonOutput {
+class XteDataOutput: public JsonOutput,  public CsvOutput  {
     public:
         XteDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
 
-class MagneticVariationDataOutput: public JsonOutput {
+class MagneticVariationDataOutput: public JsonOutput, public CsvOutput {
     public:
         MagneticVariationDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
 
-class WindSpeedDataOutput: public JsonOutput, public DisplayPage {
+class WindSpeedDataOutput: public JsonOutput, public CsvOutput, public DisplayPage {
     public:
         WindSpeedDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
 
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
-class LogDataOutput: public JsonOutput, public DisplayPage {
+class LogDataOutput: public JsonOutput, public CsvOutput, public DisplayPage {
     public:
         LogDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
-class LatLonDataOutput: public JsonOutput, public DisplayPage {
+class LatLonDataOutput: public JsonOutput, public CsvOutput, public DisplayPage {
     public:
         LatLonDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
-class LeewayDataOutput: public JsonOutput {
+class LeewayDataOutput: public JsonOutput,  public CsvOutput {
     public:
         LeewayDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
+
+
 
 #endif

@@ -46,6 +46,23 @@ class JsonOutput {
 
 };
 
+class CsvOutput {
+    public:
+        CsvOutput() {};
+        virtual void outputCsv(AsyncResponseStream *outputStream) {};
+        void startBlock(AsyncResponseStream *outputStream);
+        void endBlock();
+        void startRecord(const char *);
+        void endRecord();
+        void appendField(const char *value);
+        void appendField(int value);
+        void appendField(double value);
+        void appendField(unsigned long value);
+        void appendField(uint32_t value);
+    protected:
+        AsyncResponseStream *outputStream;
+};
+
 #define MAX_DATASETS 14
 
 class WebServer : public DisplayPage {
@@ -62,7 +79,7 @@ class WebServer : public DisplayPage {
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
         void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
         bool authorized(AsyncWebServerRequest *request);
-        JsonOutput *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+        void *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         Stream *outputStream;
         String httpauth;
         String ssid;

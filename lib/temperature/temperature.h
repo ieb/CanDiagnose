@@ -18,12 +18,13 @@ typedef struct TemperatureSensor {
 } TemperatureSensor;
 
 
-class Temperature : public JsonOutput {
+class Temperature : public JsonOutput, public CsvOutput {
     public:
         Temperature(int oneWirePin, unsigned long readPeriod = 10000L): 
             oneWirePin{oneWirePin}, 
             readPeriod{readPeriod} {};
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         void begin();
         void read();
         TemperatureSensor temperatureSensor[MAX_TEMPERATURE_SENSORS];

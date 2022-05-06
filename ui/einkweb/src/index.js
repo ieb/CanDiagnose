@@ -11,19 +11,19 @@
 
     var layout = new FlowLayout(3,2);
     layout.setPageTitle("Engine");
-    layout.append(EInkTextBox.number("1.engine.0.speed","engine","rpm",0));
-    layout.append(EInkTextBox.number("1.engine.0.altenatorVoltage","alternator","V"));
-    layout.append(EInkTextBox.number("1.engine.0.hours","hours","h", 2, 1/3600));
-    layout.append(EInkTextBox.number("1.engine.0.coolantTemp","coolant","C", 1));
-    layout.append(new EInkEngineStatus("1.engine.0"));
-    layout.append(EInkTextBox.number("1.fluidLevel.0.level","fuel","%",0));
+    layout.append(EInkTextBox.number("1.engine.[instance==0].speed","engine","rpm",0));
+    layout.append(EInkTextBox.number("1.engine.[instance==0].altenatorVoltage","alternator","V"));
+    layout.append(EInkTextBox.number("1.engine.[instance==0].hours","hours","h", 2, 1/3600));
+    layout.append(EInkTextBox.number("1.engine.[instance==0].coolantTemp","coolant","C", 1, 1,  -273.15));
+    layout.append(new EInkEngineStatus("1.engine.[instance==0]"));
+    layout.append(EInkTextBox.number("1.fluidLevel.[instance==0,fluidType==0,debug].level","fuel","%",0)); // should be fuel
     // No need to call new page as its full already.
     //layout.newPage();
     layout.setPageTitle("Batteries");
-    layout.append(EInkTextBox.number("1.battery.0.voltage","engine","V"));
-    layout.append(EInkTextBox.number("1.battery.1.voltage","service","V"));
-    layout.append(EInkTextBox.number("1.battery.2.voltage","alternator","V"));
-    layout.append(EInkTextBox.number("1.battery.3.voltage","other","V"));
+    layout.append(EInkTextBox.number("1.battery.[instance==0].voltage","engine","V"));
+    layout.append(EInkTextBox.number("1.battery.[instance==1].voltage","service","V"));
+    layout.append(EInkTextBox.number("1.engine.[instance==0].altenatorVoltage","alternator","V"));
+    layout.append(EInkTextBox.number("1.battery.[instance==2].voltage","engine controls","V"));
     layout.newPage();
     layout.setPageTitle("Pressure");
     layout.append(EInkTextBox.number("7.bmp280.pressure","bmp280","mbar", 1));
@@ -129,7 +129,7 @@
             layout: layout
         };
         var drawingContext = new EInkDrawingContext(drawingOptions);
-        console.log("Using DataServer", window.DataServerAddress);
+//        console.log("Using DataServer", window.DataServerAddress);
 
         var updater =  new EInkUpdater({
             url: `${window.DataServerAddress}/api/data/all.json`,

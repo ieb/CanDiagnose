@@ -139,13 +139,13 @@ void WebServer::begin(const char * configurationFile) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         response->addHeader("Access-Control-Allow-Origin", "*");
         response->setCode(200);
-        response->print("{ logbooks: [ \"/api/logbookj.json\" ");
+        response->print("{ \"logbooks\": [ \"/api/logbookj.json\" ");
 
         Serial.println("GET /api/logbook.json");
         File f = SPIFFS.open("/logbook");
         File lf = f.openNextFile();
         while(lf) {
-            response->printf(",\n{ \"name\"=\"%s\", \"size\"=%d }",lf.name(),lf.size());
+            response->printf(",\n{ \"name\":\"%s\", \"size\":%d }",lf.name(),lf.size());
             lf = f.openNextFile();
         }
         response->print("\n]}");
@@ -171,6 +171,27 @@ void WebServer::begin(const char * configurationFile) {
 
 
 
+    server.on("^\\/api\\/data\\/([0-9]*).csv$", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        int id = request->pathArg(0).toInt();
+        unsigned long start = millis();
+        Serial.print("http GET /api/data/");
+        Serial.print(id);
+        
+        if ( id >= 0 && id < MAX_DATASETS && this->dataSets[id] != NULL) {
+            AsyncResponseStream *response = request->beginResponseStream("text/csv");
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            response->setCode(200);
+            ((CsvOutput *)(this->dataSets[id]))->outputCsv(response);
+            request->send(response);
+        } else {
+            AsyncResponseStream *response = request->beginResponseStream("text/csv");
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            response->setCode(404);
+            request->send(response);
+        }
+        Serial.print(" ");
+        Serial.println(millis() - start);
+    });
 
 
     server.on("^\\/api\\/data\\/([0-9]*).json$", HTTP_GET, [this](AsyncWebServerRequest *request) {
@@ -183,7 +204,7 @@ void WebServer::begin(const char * configurationFile) {
             AsyncResponseStream *response = request->beginResponseStream("application/json");
             response->addHeader("Access-Control-Allow-Origin", "*");
             response->setCode(200);
-            this->dataSets[id]->outputJson(response);
+            ((JsonOutput *)(this->dataSets[id]))->outputJson(response);
             request->send(response);
         } else {
             AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -209,7 +230,7 @@ void WebServer::begin(const char * configurationFile) {
                 }
                 first = false;
                 response->print("\"");response->print(i);response->print("\":");
-                this->dataSets[i]->outputJson(response);
+                ((JsonOutput *)(this->dataSets[i]))->outputJson(response);
             }
         }
         response->print("}");
@@ -442,6 +463,51 @@ void JsonOutput::endJson() {
     outputStream->print("}");
     outputStream = NULL;
 };
+
+
+
+void CsvOutput::startBlock(AsyncResponseStream *outputStream) {
+        this->outputStream = outputStream;
+        startRecord("t");
+        appendField(millis());
+        endRecord();
+};
+
+void CsvOutput::endBlock() {
+        this->outputStream = NULL;
+};
+
+void CsvOutput::startRecord(const char *name) {
+    outputStream->print(name);
+};
+
+void CsvOutput::endRecord() {
+    outputStream->print("\n");
+};
+
+
+void CsvOutput::appendField(const char *value) {
+    outputStream->print(",");
+    outputStream->print(value);
+}
+void CsvOutput::appendField(int value) {
+    outputStream->print(",");
+    outputStream->print(value);
+}
+void CsvOutput::appendField(double value) {
+    outputStream->print(",");
+    outputStream->print(value);
+}
+void CsvOutput::appendField(unsigned long value) {
+    outputStream->print(",");
+    outputStream->print(value);
+}
+void CsvOutput::appendField(uint32_t value) {
+    outputStream->print(",");
+    outputStream->print(value);
+}
+
+
 
 
 bool WebServer::drawPage(Adafruit_SSD1306 * display) {

@@ -8,7 +8,7 @@
 #include "display.h"
 
 
-class BME280Sensor : public JsonOutput, public DisplayPage, public History128over24 {
+class BME280Sensor : public JsonOutput, public CsvOutput, public DisplayPage, public History128over24 {
     public:
         BME280Sensor(unsigned long readPeriod=10000) : 
                 History128over24{800.0,100.0,675000}, readPeriod{readPeriod} {
@@ -20,6 +20,7 @@ class BME280Sensor : public JsonOutput, public DisplayPage, public History128ove
         void begin();
         void read();
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
         double getPressure() { return pressure_event.pressure; }
         double getHumidity() { return humidity_event.relative_humidity; }

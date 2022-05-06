@@ -111,7 +111,7 @@ void LogBook::log() {
             // stw m/s
             for ( i=0; i < MAX_SPEED_SOURCES; i++) {
                 if (dataCollector.speed[i].source != 255 && dataCollector.speed[i].lastModified+30000 > now ) {
-                    f.printf(",%4.1f",SPEED_MS_TO_KN(dataCollector.speed[i].sow));
+                    f.printf(",%4.1f",SPEED_MS_TO_KN(dataCollector.speed[i].stw));
                     break;
                 } 
             }

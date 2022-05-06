@@ -97,9 +97,9 @@ void DataCollector::FluidLevel(const tN2kMsg &N2kMsg) {
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_FLUID_LEVEL_SOURCES; i++) {
                 if ( fluidLevel[i].use(N2kMsg.Source, Instance, reuse) ) {
-                    fluidLevel[Instance].fluidType = FluidType;
-                    fluidLevel[Instance].level = Level;
-                    fluidLevel[Instance].capacity = Capacity;
+                    fluidLevel[i].fluidType = FluidType;
+                    fluidLevel[i].level = Level;
+                    fluidLevel[i].capacity = Capacity;
                     return;
                 }
             }
@@ -452,16 +452,16 @@ void DataCollector::DCBatteryStatus(const tN2kMsg &N2kMsg) {
 //*****************************************************************************
 void DataCollector::Speed(const tN2kMsg &N2kMsg) {
     unsigned char SID;
-    double SOW;
+    double STW;
     double SOG;
     tN2kSpeedWaterReferenceType SWRT;
 
-    if (ParseN2kBoatSpeed(N2kMsg,SID,SOW,SOG,SWRT) ) {
+    if (ParseN2kBoatSpeed(N2kMsg,SID,STW,SOG,SWRT) ) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_SPEED_SOURCES; i++) {
                 if ( speed[i].use(N2kMsg.Source, reuse)) {
-                    speed[i].sow = SOW;
+                    speed[i].stw = STW;
                     speed[i].sog = SOG;
                     speed[i].swrt = SWRT;
                     return;
@@ -804,7 +804,6 @@ GnssData * DataCollector::getGnss() {
 };
 
 
-
 void EngineDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
@@ -860,8 +859,6 @@ void EngineDataOutput::outputJson(AsyncResponseStream *outputStream) {
 
 
 
-
-
 void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
@@ -887,7 +884,7 @@ void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
         append("id",i);
         append("source",speed->source);
         append("lastModified",speed->lastModified);
-        append("sow",speed->sow);
+        append("stw",speed->stw);
         append("sog",speed->sog);
         append("swrt",speed->swrt);
         endObject();
@@ -934,6 +931,9 @@ void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
     endArray();
     endJson();
 }
+
+
+
 
 
 void NavigationDataOutput::outputJson(AsyncResponseStream *outputStream) {
@@ -1352,3 +1352,5 @@ bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
 #endif
 
 }
+
+

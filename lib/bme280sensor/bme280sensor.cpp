@@ -28,6 +28,29 @@ void BME280Sensor::read() {
 }
 
 
+void BME280Sensor::outputCsv(AsyncResponseStream *outputStream) {
+    /*
+    7
+    #bmp280,id,lastmodified,temp,pressure,humidity,historyInterval,history...
+    t,83652827
+
+    bmp280,83663614,27.48,1012.19,36.58,675000,998.31,998.42,998.4,998.21,998.2
+    */
+    read();
+    startBlock(outputStream);
+    startRecord("bmp280");
+    appendField(lastRead);
+    appendField(temp_event.temperature);
+    appendField(pressure_event.pressure);
+    appendField(humidity_event.relative_humidity);
+    appendField(getPeriodMs());
+    startIterator();
+    while(hasNext()) {
+        appendField(nextValue());
+    }
+    endRecord();
+    endBlock();
+}
 
 
 

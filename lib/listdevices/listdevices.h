@@ -7,11 +7,12 @@
 #include "httpserver.h"
 
 
-class ListDevices: public tN2kDeviceList, public JsonOutput {
+class ListDevices: public tN2kDeviceList, public JsonOutput, public CsvOutput {
     public:
         ListDevices(tNMEA2000 *_pNMEA2000, Stream *outputStream);
         void list(bool force = false);
         void outputJson(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream);
 
 
     private:
