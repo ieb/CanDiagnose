@@ -69,17 +69,24 @@ class WebServer : public DisplayPage {
     public:
         WebServer(Stream *outputStream) : outputStream{outputStream} {};
         void begin(const char * configurationFile = "/config.txt");
-        void addDataSet(int id, JsonOutput *dataSet) {
+        void addJsonOutputHandler(int id, JsonOutput *handler) {
             if ( id >= 0 && id < MAX_DATASETS ) {
-                dataSets[id] = dataSet;
+                jsonHandlers[id] = handler;
             }
         };
+        void addCsvOutputHandler(int id, CsvOutput *handler) {
+            if ( id >= 0 && id < MAX_DATASETS ) {
+                csvHandlers[id] = handler;
+            }
+        };
+
         bool drawPage(Adafruit_SSD1306 * display);
     private:    
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
         void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
         bool authorized(AsyncWebServerRequest *request);
-        void *dataSets[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+        JsonOutput *jsonHandlers[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+        CsvOutput *csvHandlers[MAX_DATASETS]={ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
         Stream *outputStream;
         String httpauth;
         String ssid;

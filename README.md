@@ -34,3 +34,32 @@ It still provides a good platform for a Wifi data server, and Can reader.
 * [ ] Add touch sensor to control oled display
 * [ ] Bench Calibrate expecialy shunt
 * [ ] Install test and calibrate.
+* [ ] Investigate using a shunt amplifier as used by VRA Alternator controller.
+
+
+# Usage
+
+The device will boot and connect to wifi controlled by its burned in config file (data/config.txt). 
+There are 2 modes it can run in, a WiFi client or a AP. If its configured to be an AP, then join its network. If its a client find its ip. From now on this will be <ip>
+
+Go to its ip on http://<ip> and you will see a data view of the data it is capturing.
+Go to http://<ip>/admin.html and you will see a admin view with the ability to upload a new configuration file and reboot.
+
+Both these views ae SPAs served from static files burned into the ESP32 Flash using APIs.
+
+Connecting to the serial port monitor allows lower level control and diagnostics, enter 'h<CR>' to get help.
+
+# Developing
+
+Project uses PlatformIO in VSCode.  WebUI is in  ui/einkweb with build files added to data/ to be built into a flash image using ./buidui.sh
+
+## PIO commands
+
+because I alwaysforget.
+
+* pio run -t upload
+* pio device monitor
+
+See buildui.sh for SPIFFS image commands.
+
+

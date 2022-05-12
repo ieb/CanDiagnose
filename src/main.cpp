@@ -119,20 +119,35 @@ void setup() {
   nmea2000Output.begin();
 
  
-  webServer.addDataSet(0,&listDevices);
-  webServer.addDataSet(1,&engineDataOutput);
-  webServer.addDataSet(2,&boatDataOutput);
-  webServer.addDataSet(3,&navigationDataOutput);
-  webServer.addDataSet(4,&environmentDataOutput);
-  webServer.addDataSet(5,&temperatureDataOutput);
-  webServer.addDataSet(6,&temperature);  
-  webServer.addDataSet(7,&bme280Sensor);  
-  webServer.addDataSet(8,&adcSensor);  
-  webServer.addDataSet(9,&xteDataOutput);  
-  webServer.addDataSet(10,&magneticVariationDataOutput);  
-  webServer.addDataSet(11,&logDataOutput);  
-  webServer.addDataSet(12,&latLonDataOutput);  
-  webServer.addDataSet(13,&leewayDataOutput);  
+  webServer.addJsonOutputHandler(0,&listDevices);
+  webServer.addJsonOutputHandler(1,&engineDataOutput);
+  webServer.addJsonOutputHandler(2,&boatDataOutput);
+  webServer.addJsonOutputHandler(3,&navigationDataOutput);
+  webServer.addJsonOutputHandler(4,&environmentDataOutput);
+  webServer.addJsonOutputHandler(5,&temperatureDataOutput);
+  webServer.addJsonOutputHandler(6,&temperature);  
+  webServer.addJsonOutputHandler(7,&bme280Sensor);  
+  webServer.addJsonOutputHandler(8,&adcSensor);  
+  webServer.addJsonOutputHandler(9,&xteDataOutput);  
+  webServer.addJsonOutputHandler(10,&magneticVariationDataOutput);  
+  webServer.addJsonOutputHandler(11,&logDataOutput);  
+  webServer.addJsonOutputHandler(12,&latLonDataOutput);  
+  webServer.addJsonOutputHandler(13,&leewayDataOutput);  
+
+  webServer.addCsvOutputHandler(0,&listDevices);
+  webServer.addCsvOutputHandler(1,&engineDataOutput);
+  webServer.addCsvOutputHandler(2,&boatDataOutput);
+  webServer.addCsvOutputHandler(3,&navigationDataOutput);
+  webServer.addCsvOutputHandler(4,&environmentDataOutput);
+  webServer.addCsvOutputHandler(5,&temperatureDataOutput);
+  webServer.addCsvOutputHandler(6,&temperature);  
+  webServer.addCsvOutputHandler(7,&bme280Sensor);  
+  webServer.addCsvOutputHandler(8,&adcSensor);  
+  webServer.addCsvOutputHandler(9,&xteDataOutput);  
+  webServer.addCsvOutputHandler(10,&magneticVariationDataOutput);  
+  webServer.addCsvOutputHandler(11,&logDataOutput);  
+  webServer.addCsvOutputHandler(12,&latLonDataOutput);  
+  webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
 
   display.addDisplayPage(&adcSensor);

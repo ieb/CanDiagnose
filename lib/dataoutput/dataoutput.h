@@ -28,34 +28,14 @@
 #define MAX_LEEWAY_SOURCES 2
 
 
-class MessageStore {
+
+class MessageStoreWithInstance  {
     public:
+        byte instance = 255;
         unsigned char source = 255;
         unsigned long lastModified = 0;
-        bool use(unsigned char msgSource, bool useOld) {
-            unsigned long now = millis();
-            if (source == 255) {
-                source = msgSource;
-                lastModified = now;
-                return true; 
-            } else if (source == msgSource) {
-                lastModified = now;
-                return true;
-            } else if (useOld && now > lastModified+600000 ) {
-                // no update for 10m so assume not transmitting any more
-                source = msgSource;
-                lastModified = now;
-                return true; 
-            }
-            return false;
-        };
-};
-
-class MessageStoreWithInstance : public MessageStore {
-    public:
-        byte instance;
-        bool use(unsigned char msgSource) {
-            return false;
+        bool active() {
+            return (source != 255) && (instance != 255);
         };
         bool use(unsigned char msgSource,  byte msgInstance, bool useOld) {
             unsigned long now = millis();
@@ -78,7 +58,7 @@ class MessageStoreWithInstance : public MessageStore {
 };
 
 
-class AttitudeData: public MessageStore {
+class AttitudeData: public MessageStoreWithInstance {
     public:
         double roll;
         double pitch;
@@ -101,13 +81,13 @@ class RudderData: public MessageStoreWithInstance {
 };
 
 
-class WaterDepthData: public MessageStore {
+class WaterDepthData: public MessageStoreWithInstance {
     public:
         double offset;
         double depthBelowTransducer; 
 };
 
-class SpeedData: public MessageStore {
+class SpeedData: public MessageStoreWithInstance {
     public:
         double stw;
         double sog;
@@ -146,14 +126,14 @@ class TemperatureData : public MessageStoreWithInstance {
 };
 
 
-class OutsideEnvironmentData : public MessageStore {
+class OutsideEnvironmentData : public MessageStoreWithInstance {
     public:
         double waterTemperature;
         double outsideAmbientAirTemperature;
         double atmosphericPressure;
 };
 
-class GnssData : public MessageStore {
+class GnssData : public MessageStoreWithInstance {
     public:
         uint16_t daysSince1970;
         double secondsSinceMidnight; 
@@ -172,14 +152,14 @@ class GnssData : public MessageStore {
         double ageOfCorrection;
 };
 
-class CogSogData: public MessageStore {
+class CogSogData: public MessageStoreWithInstance {
     public:
         tN2kHeadingReference reference;
         double cog;
         double sog;
 };
 
-class HeadingData : public MessageStore {
+class HeadingData : public MessageStoreWithInstance {
     public:
         double heading;
         double deviation;
@@ -211,7 +191,7 @@ class XteData : public MessageStoreWithInstance  {
         double xte;
 };
 
-class VariationData : public MessageStore {
+class VariationData : public MessageStoreWithInstance {
     public:
         uint16_t daysSince1970;
         double variation;
@@ -224,7 +204,7 @@ class WindData : public MessageStoreWithInstance {
         tN2kWindReference windReference;
 };
 
-class LogData : public MessageStore {
+class LogData : public MessageStoreWithInstance {
     public:
         uint16_t daysSince1970;
         double secondsSinceMidnight;
@@ -232,7 +212,7 @@ class LogData : public MessageStore {
         uint32_t tripLog;
 };
 
-class PossitionData : public MessageStore {
+class PossitionData : public MessageStoreWithInstance {
     public:
         double latitude;
         double longitude;
@@ -343,7 +323,7 @@ class EngineDataOutput: public JsonOutput,  public CsvOutput, public DisplayPage
     public:
         EngineDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
-        void outputCsv(AsyncResponseStream *outputStream);
+        void outputCsv(AsyncResponseStream *outputStream); 
         bool drawPage(Adafruit_SSD1306 * display);
 
     private:

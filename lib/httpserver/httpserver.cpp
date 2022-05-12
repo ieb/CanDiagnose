@@ -176,12 +176,13 @@ void WebServer::begin(const char * configurationFile) {
         unsigned long start = millis();
         Serial.print("http GET /api/data/");
         Serial.print(id);
+        Serial.print(".csv");
         
-        if ( id >= 0 && id < MAX_DATASETS && this->dataSets[id] != NULL) {
+        if ( id >= 0 && id < MAX_DATASETS && this->csvHandlers[id] != NULL) {
             AsyncResponseStream *response = request->beginResponseStream("text/csv");
             response->addHeader("Access-Control-Allow-Origin", "*");
             response->setCode(200);
-            ((CsvOutput *)(this->dataSets[id]))->outputCsv(response);
+            this->csvHandlers[id]->outputCsv(response);
             request->send(response);
         } else {
             AsyncResponseStream *response = request->beginResponseStream("text/csv");
@@ -199,12 +200,13 @@ void WebServer::begin(const char * configurationFile) {
         unsigned long start = millis();
         Serial.print("http GET /api/data/");
         Serial.print(id);
+        Serial.print(".json");
         
-        if ( id >= 0 && id < MAX_DATASETS && this->dataSets[id] != NULL) {
+        if ( id >= 0 && id < MAX_DATASETS && this->jsonHandlers[id] != NULL) {
             AsyncResponseStream *response = request->beginResponseStream("application/json");
             response->addHeader("Access-Control-Allow-Origin", "*");
             response->setCode(200);
-            ((JsonOutput *)(this->dataSets[id]))->outputJson(response);
+            this->jsonHandlers[id]->outputJson(response);
             request->send(response);
         } else {
             AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -224,13 +226,13 @@ void WebServer::begin(const char * configurationFile) {
         response->print("{");
         bool first = true;
         for (int i = 0; i < MAX_DATASETS; i++) {
-            if (this->dataSets[i] != NULL) {
+            if (this->jsonHandlers[i] != NULL) {
                 if (!first) {
                     response->print(",");
                 }
                 first = false;
                 response->print("\"");response->print(i);response->print("\":");
-                ((JsonOutput *)(this->dataSets[i]))->outputJson(response);
+                this->jsonHandlers[i]->outputJson(response);
             }
         }
         response->print("}");

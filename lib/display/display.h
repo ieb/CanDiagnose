@@ -15,7 +15,7 @@
 class DisplayPage {
     public:
         DisplayPage() {};
-        virtual bool drawPage(Adafruit_SSD1306 * display) { return true;};
+        bool drawPage(Adafruit_SSD1306 * display) { return true;};
         int getSubPage() {
             return subPage;
         };

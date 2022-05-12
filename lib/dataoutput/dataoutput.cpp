@@ -70,7 +70,7 @@ void DataCollector::Attitude(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_ATTITUDE_SOURCES; i++) {
-                if ( attitude[i].use(N2kMsg.Source, reuse) ) {
+                if ( attitude[i].use(N2kMsg.Source, i, reuse) ) {
                     attitude[i].yaw = Yaw;
                     attitude[i].pitch = Pitch;
                     attitude[i].roll = Roll;
@@ -194,7 +194,7 @@ void DataCollector::Heading(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i< MAX_HEADDING_SOURCES; i++) {
-                if ( heading[i].use(N2kMsg.Source, reuse)) {
+                if ( heading[i].use(N2kMsg.Source, i, reuse)) {
                     heading[i].heading = Heading;
                     heading[i].deviation = Deviation;
                     heading[i].variation = Variation;
@@ -221,7 +221,7 @@ void DataCollector::COGSOG(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for ( int i = 0; i < MAX_COGSOG_SOURCES; i++) {
-                if ( cogSog[i].use(N2kMsg.Source, reuse)) {
+                if ( cogSog[i].use(N2kMsg.Source, i, reuse)) {
                     cogSog[i].cog = COG;
                     cogSog[i].sog = SOG;
                     cogSog[i].reference = HeadingReference;
@@ -264,7 +264,7 @@ void DataCollector::GNSS(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for ( int i = 0; i < MAX_GNSS_SOURCES; i++) {
-                if ( gnss[i].use(N2kMsg.Source, reuse)) {
+                if ( gnss[i].use(N2kMsg.Source, i, reuse)) {
                     gnss[i].daysSince1970 = DaysSince1970;
                     gnss[i].secondsSinceMidnight = SecondsSinceMidnight;
                     gnss[i].latitude = Latitude;
@@ -302,7 +302,7 @@ void DataCollector::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_OUTSIDE_ENVIRONMENTAL_SOURCES; i++) {
-                if ( outsideEnvironmental[i].use(N2kMsg.Source, reuse) ) {
+                if ( outsideEnvironmental[i].use(N2kMsg.Source, i, reuse) ) {
                     outsideEnvironmental[i].waterTemperature = WaterTemperature;
                     outsideEnvironmental[i].outsideAmbientAirTemperature = OutsideAmbientAirTemperature;
                     outsideEnvironmental[i].atmosphericPressure = AtmosphericPressure;
@@ -460,7 +460,7 @@ void DataCollector::Speed(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_SPEED_SOURCES; i++) {
-                if ( speed[i].use(N2kMsg.Source, reuse)) {
+                if ( speed[i].use(N2kMsg.Source, i, reuse)) {
                     speed[i].stw = STW;
                     speed[i].sog = SOG;
                     speed[i].swrt = SWRT;
@@ -485,7 +485,7 @@ void DataCollector::WaterDepth(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_WATER_DEPTH_SOURCES; i++) {
-                if ( waterDepth[i].use(N2kMsg.Source,reuse)) {
+                if ( waterDepth[i].use(N2kMsg.Source, i, reuse)) {
                     if ( N2kIsNA(Offset) ) {
                         waterDepth[i].offset = 0;
                     } else {
@@ -572,7 +572,7 @@ void DataCollector::MagneticVariation(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for ( int i = 0; i < MAX_VARIATION_SOURCES; i++) {
-                if (this->variation[i].use(N2kMsg.Source, reuse)) {
+                if (this->variation[i].use(N2kMsg.Source, i, reuse)) {
                     this->variation[i].daysSince1970 = daysSince1970;
                     this->variation[i].variation = variation;
                     return;
@@ -632,7 +632,7 @@ void DataCollector::Log(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-                if ( this->log[i].use(N2kMsg.Source, reuse)) {
+                if ( this->log[i].use(N2kMsg.Source, i, reuse)) {
                     this->log[i].daysSince1970 = daysSince1970;
                     this->log[i].secondsSinceMidnight = secondsSinceMidnight;
                     this->log[i].log = log;
@@ -658,7 +658,7 @@ void DataCollector::LatLon(const tN2kMsg &N2kMsg) {
         bool reuse = false;
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_POSSITION_SOURCES; i++) {
-                if ( possition[i].use(N2kMsg.Source, reuse)) {
+                if ( possition[i].use(N2kMsg.Source, i, reuse)) {
                     possition[i].latitude = latitude;
                     possition[i].longitude = longitude;
                     return;
