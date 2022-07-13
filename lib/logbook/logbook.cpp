@@ -8,7 +8,7 @@
 
 
 
-LogBook::LogBook(DataCollector &dataCollector, BME280Sensor &bme280, ADCSensor &adc): dataCollector{dataCollector}, bme280{bme280}, adc{adc} {
+LogBook::LogBook(DataCollector &dataCollector): dataCollector{dataCollector} {
 };
 
 
@@ -142,8 +142,6 @@ void LogBook::log() {
             if ( i == MAX_WIND_SOURCES ) {
                 f.print(",");
             }
-            // mbar mbar
-            f.printf(",%6.1f",bme280.getPressure());
             // rpm, ct, rpm, K
             for ( i = 0; i < MAX_ENGINE_SOURCES; i++) {
                 if (dataCollector.engine[i].source != 255 &&  dataCollector.engine[i].lastModified+30000 > now ) { 
@@ -154,8 +152,6 @@ void LogBook::log() {
             if ( i == MAX_ENGINE_SOURCES ) {
                 f.print(",,");
             }
-            // Voltages
-            f.printf(",%5.2f,%5.2f,%5.1f",adc.getServiceVoltage(),adc.getEngineVoltage(),adc.getServiceCurrent());
             f.print("\n");
             f.close();
         } else {

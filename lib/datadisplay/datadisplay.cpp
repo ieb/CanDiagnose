@@ -33,6 +33,7 @@ void DataDisplay::HandleMsg(const tN2kMsg &N2kMsg) {
         case 129045L: UserDatumSettings(N2kMsg); break;
         case 129540L: GNSSSatsInView(N2kMsg); break;
         case 130310L: OutsideEnvironmental(N2kMsg); break;
+        case 130311L: EnvironmentalParams(N2kMsg); break;
         case 130312L: Temperature(N2kMsg); break;
         case 130313L: Humidity(N2kMsg); break;
         case 130314L: Pressure(N2kMsg); break;
@@ -322,6 +323,30 @@ void DataDisplay::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
       PrintLabelValWithConversionCheckUnDef(OutputStream, "Water temp: ",WaterTemperature,&KelvinToC);
       PrintLabelValWithConversionCheckUnDef(OutputStream, ", outside ambient temp: ",OutsideAmbientAirTemperature,&KelvinToC);
       PrintLabelValWithConversionCheckUnDef(OutputStream, ", pressure: ",AtmosphericPressure,0,true);
+    } else {
+      OutputStream->print("Failed to parse PGN: ");  OutputStream->println(N2kMsg.PGN);
+    }
+}
+
+
+
+//*****************************************************************************
+void DataDisplay::EnvironmentalParams(const tN2kMsg &N2kMsg) {
+    unsigned char SID;
+    double Temperature;
+    double Humidity;
+    double AtmosphericPressure;
+    tN2kTempSource TempSource;
+    tN2kHumiditySource HumiditySource;
+    
+
+    if ( ParseN2kEnvironmentalParameters(N2kMsg, SID, TempSource,Temperature,
+                    HumiditySource, Humidity, AtmosphericPressure)) {
+      PrintLabelValWithConversionCheckUnDef(OutputStream, "Temperature: ",Temperature,&KelvinToC);
+      PrintLabelValWithConversionCheckUnDef(OutputStream, ", humidity: ",Humidity,0);
+      PrintLabelValWithConversionCheckUnDef(OutputStream, ", pressure: ",AtmosphericPressure,0);
+      OutputStream->print("Temperature source: "); PrintN2kEnumType(TempSource,OutputStream,false);
+      OutputStream->print("Humidity source: "); PrintN2kEnumType(HumiditySource,OutputStream,false);
     } else {
       OutputStream->print("Failed to parse PGN: ");  OutputStream->println(N2kMsg.PGN);
     }

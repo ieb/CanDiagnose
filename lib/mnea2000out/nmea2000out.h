@@ -4,8 +4,6 @@
 #include <NMEA2000.h>
 #include <N2kTypes.h>
 
-#include "adc.h"
-#include "bme280sensor.h"
 #include "temperature.h"
 #include "config.h"
 
@@ -13,15 +11,11 @@
 class Nmea2000Output {
     public:
         Nmea2000Output( tNMEA2000 *NMEA2000, 
-            ADCSensor &adc, 
-            BME280Sensor &bme280Sensor, 
             Temperature &temperature);
         void output();
         void begin(const char * configurationFile="/config.txt");
     private: 
         tNMEA2000 *NMEA2000;
-        ADCSensor adc;
-        BME280Sensor bme280Sensor;
         Temperature temperature;
         uint8_t pressureSID = 0;
         uint8_t temperatureSid = 0;

@@ -221,6 +221,20 @@ void EnvironmentDataOutput::outputCsv(AsyncResponseStream *outputStream) {
             endRecord();
         }
     }
+    for (int i=0; i<MAX_ENVIRONMENTAL_PARAMS_SOURCES; i++) {
+        EnvironmentalParamsData *environmentalParams =  &dataCollector.environmentalParams[i];
+        if ( environmentalParams->active() ) {
+            startRecord("enviromental");
+            appendField(i);
+            appendField(environmentalParams->lastModified);
+            appendField(environmentalParams->temperature);
+            appendField(environmentalParams->humidity);
+            appendField(environmentalParams->atmosphericPressure);
+            appendField(environmentalParams->temperatureSource);
+            appendField(environmentalParams->humiditySource);
+            endRecord();
+        }
+    }
     for (int i=0; i<MAX_HUMIDITY_SOURCES; i++) {
         HumidityData *humidity =  &dataCollector.humidity[i];
         if ( humidity->active() ) {

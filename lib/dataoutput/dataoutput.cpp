@@ -26,6 +26,7 @@ void DataCollector::HandleMsg(const tN2kMsg &N2kMsg) {
  //       case 129045L: UserDatumSettings(N2kMsg); break;
  //       case 129540L: GNSSSatsInView(N2kMsg); break;
         case 130310L: OutsideEnvironmental(N2kMsg); break;
+        case 130311L: EnvironmentalParameters(N2kMsg); break;
         case 130312L: Temperature(N2kMsg); break;
         case 130313L: Humidity(N2kMsg); break;
         case 130314L: Pressure(N2kMsg); break;
@@ -290,6 +291,39 @@ void DataCollector::GNSS(const tN2kMsg &N2kMsg) {
     } else {
         parseFailed(N2kMsg);
     }
+}
+
+void DataCollector::EnvironmentalParameters(const tN2kMsg &N2kMsg) {
+    unsigned char SID;
+    double Temperature;
+    double Humidity;
+    double AtmosphericPressure;
+    tN2kTempSource TempSource;
+    tN2kHumiditySource HumiditySource;
+    
+
+    if ( ParseN2kEnvironmentalParameters(N2kMsg, SID, TempSource,Temperature,
+                    HumiditySource, Humidity, AtmosphericPressure) ) {
+        bool reuse = false;
+        for (int u = 0; u < 2; u++) {
+            for (int i = 0; i < MAX_ENVIRONMENTAL_PARAMS_SOURCES; i++) {
+                if ( environmentalParams[i].use(N2kMsg.Source, i, reuse) ) {
+                    environmentalParams[i].temperatureSource = TempSource;
+                    environmentalParams[i].humiditySource = HumiditySource;
+                    environmentalParams[i].temperature = Temperature;
+                    environmentalParams[i].humidity = Humidity;
+                    environmentalParams[i].atmosphericPressure = AtmosphericPressure;
+                    return;
+                }
+            }
+            reuse = true;
+        }
+        saveFailed(N2kMsg);
+    } else {
+        parseFailed(N2kMsg);
+    }
+    
+
 }
 
 void DataCollector::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
@@ -996,6 +1030,21 @@ void EnvironmentDataOutput::outputJson(AsyncResponseStream *outputStream) {
         append("waterTemperature",outsideEnvironmental->waterTemperature);
         append("outsideAmbientAirTemperature",outsideEnvironmental->outsideAmbientAirTemperature);
         append("atmosphericPressure",outsideEnvironmental->atmosphericPressure);
+        endObject();
+    }
+    endArray();
+    startArray("environment");
+    for (int i=0; i<MAX_ENVIRONMENTAL_PARAMS_SOURCES; i++) {
+        EnvironmentalParamsData *environmentParams =  &dataCollector.environmentalParams[i];
+        startObject();
+        append("id",i);
+        append("source",environmentParams->source);
+        append("lastModified",environmentParams->lastModified);
+        append("temperature",environmentParams->temperature);
+        append("humidity",environmentParams->humidity);
+        append("atmosphericPressure",environmentParams->atmosphericPressure);
+        append("temperatureSource",environmentParams->temperatureSource);
+        append("humiditySource",environmentParams->humiditySource);
         endObject();
     }
     endArray();

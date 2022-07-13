@@ -11,6 +11,7 @@
 #define MAX_COGSOG_SOURCES 2
 #define MAX_GNSS_SOURCES 2
 #define MAX_OUTSIDE_ENVIRONMENTAL_SOURCES 2
+#define MAX_ENVIRONMENTAL_PARAMS_SOURCES 2
 #define MAX_TEMPERATURE_SOURCES 5
 #define MAX_HUMIDITY_SOURCES 1
 #define MAX_PRESSURE_SOURCES 1
@@ -133,6 +134,16 @@ class OutsideEnvironmentData : public MessageStoreWithInstance {
         double atmosphericPressure;
 };
 
+
+class EnvironmentalParamsData  : public MessageStoreWithInstance {
+    public:
+        tN2kTempSource temperatureSource;
+        tN2kHumiditySource humiditySource;
+        double temperature;
+        double humidity;
+        double atmosphericPressure;
+
+};
 class GnssData : public MessageStoreWithInstance {
     public:
         uint16_t daysSince1970;
@@ -249,6 +260,7 @@ class DataCollector {
         OutsideEnvironmentData outsideEnvironmental[MAX_OUTSIDE_ENVIRONMENTAL_SOURCES]; // 4
         HumidityData humidity[MAX_HUMIDITY_SOURCES]; // 4
         PressureData pressure[MAX_PRESSURE_SOURCES]; // 4
+        EnvironmentalParamsData environmentalParams[MAX_ENVIRONMENTAL_PARAMS_SOURCES]; // 4
 
         TemperatureData temperature[MAX_TEMPERATURE_SOURCES];   // 5
         TemperatureData temperatureExt[MAX_TEMPERATURE_SOURCES]; // 5
@@ -274,6 +286,7 @@ class DataCollector {
         void EngineDynamicParameters(const tN2kMsg &N2kMsg);
         void FluidLevel(const tN2kMsg &N2kMsg);
         void OutsideEnvironmental(const tN2kMsg &N2kMsg);
+        void EnvironmentalParameters(const tN2kMsg &N2kMsg);
         void Temperature(const tN2kMsg &N2kMsg);
         void TemperatureExt(const tN2kMsg &N2kMsg);
         void COGSOG(const tN2kMsg &N2kMsg);

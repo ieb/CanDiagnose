@@ -8,8 +8,6 @@
  * 
  * nmea2000.temp.n.instance = temperatureinstance, 255 to disable.
  * nmea2000.temp.n.source = tN2kTempSource see below
- * nmea2000.pressure.instance = instance to use for bme280 pressure sensor
- * nmea2000.humidity.instance = instance to use for bme280 humidity sensor
  * nmea2000.battery.service.instance = instance to use for service battery DC Status
  * nmea2000.battery.engine.instance = instance to use for engine battery DC Status
  * nmea2000.battery.service.tempsensor = temperature sensor index for service battery
@@ -39,12 +37,8 @@
  */
 
 Nmea2000Output::Nmea2000Output( tNMEA2000 *NMEA2000, 
-            ADCSensor &adc, 
-            BME280Sensor &bme280Sensor, 
             Temperature &temperature): 
             NMEA2000{NMEA2000},
-            adc{adc}, 
-            bme280Sensor{bme280Sensor}, 
             temperature{temperature} {};
 
 void Nmea2000Output::begin(const char * configurationFile) {
@@ -123,19 +117,11 @@ void Nmea2000Output::output() {
             }
         }
         temperatureSid++;
-    } else if ( now > lastPressure + pressurePeriod ) {
-        lastPressure = now;
-        if ( pressureInstance != 255 ) {
-            SetN2kPressure(N2kMsg, pressureSID, pressureInstance,N2kps_Atmospheric, bme280Sensor.getPressure());
-            NMEA2000->SendMsg(N2kMsg);
-        }
-        if ( humidityInstance != 255 ) {
-            SetN2kHumidity(N2kMsg, pressureSID, humidityInstance, N2khs_InsideHumidity, bme280Sensor.getHumidity());
-            NMEA2000->SendMsg(N2kMsg);
-        }
-        pressureSID++;
     } else if ( now > lastDCStatus + dcstatusPeriod) {
+
         lastDCStatus = now;
+        // needs to come over RS485
+        /*
         double batteryTemperature = N2kDoubleNA;
         if ( serviceBatteryTemperatureSensor != 255 && temperature.temperatureSensor[serviceBatteryTemperatureSensor].connected ) {
             batteryTemperature = CToKelvin(temperature.temperatureSensor[serviceBatteryTemperatureSensor].temperature);
@@ -148,6 +134,7 @@ void Nmea2000Output::output() {
         }
         SetN2kDCBatStatus(N2kMsg, engineBatteryInstance, adc.getEngineVoltage(), N2kDoubleNA,batteryTemperature);
         NMEA2000->SendMsg(N2kMsg);
+        */
     }
     
 }

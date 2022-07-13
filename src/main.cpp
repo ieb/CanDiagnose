@@ -12,11 +12,26 @@
 #include <Wire.h>
 
 
-#define ESP32_CAN_TX_PIN GPIO_NUM_19
-#define ESP32_CAN_RX_PIN GPIO_NUM_18
+// Pins
+#define ESP32_CAN_TX_PIN GPIO_NUM_23
+#define ESP32_CAN_RX_PIN GPIO_NUM_22
 #define ONEWIRE_GPIO_PIN GPIO_NUM_21
-#define SDA_PIN GPIO_NUM_23
-#define SCL_PIN GPIO_NUM_22
+#define SDA_PIN GPIO_NUM_18
+#define SCL_PIN GPIO_NUM_5
+#define DISPLAY_BUTTON GPIO_NUM_19
+
+// RS584 on Serial2 TX
+#define RS485_TX GPIO_NUM_17
+#define RS485_RX GPIO_NUM_16
+#define RS485_EN GPIO_NUM_4
+
+// SPI Display impl TBD
+#define SPI_DISPLAY_MOSI GPIO_NUM_32
+#define SPI_DISPLAY_SCK GPIO_NUM_33
+#define SPI_DISPLAY_CS GPIO_NUM_25
+#define SPI_DISPLAY_DC GPIO_NUM_26
+#define SPI_DISPLAY_RST GPIO_NUM_12
+#define SPI_DISPLAY_BL GPIO_NUM_13
 
 // Calibrations to take account of resistor tollerances, this is specific to the board being flashed.
 // should probably be in a config file eventually.
@@ -57,12 +72,10 @@ LeewayDataOutput leewayDataOutput(dataCollector);
 
 
 Temperature temperature(ONEWIRE_GPIO_PIN);
-BME280Sensor bme280Sensor;
-ADCSensor adcSensor;
 
-LogBook logbook(dataCollector, bme280Sensor, adcSensor);
+LogBook logbook(dataCollector);
 
-Nmea2000Output nmea2000Output(&NMEA2000, adcSensor, bme280Sensor, temperature);
+Nmea2000Output nmea2000Output(&NMEA2000, temperature);
 
 WebServer webServer(OutputStream);
 OledDisplay display;
@@ -83,13 +96,11 @@ void showHelp() {
   OutputStream->println("  - Send 'u' to print latest list of devices");
   OutputStream->println("  - Send 'o' to toggle output, can be high volume");
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
-  OutputStream->println("  - Send '0' to '9' to preconfigured data packets");
-  OutputStream->println("  - Send 'v' to print voltages");
-  OutputStream->println("  - Send 'i' to Be prompted for IP settings");
   OutputStream->println("  - Send 'b' to change brightness");
   
 
 }
+
 
 void setup() {
   Serial.begin(115200); 
@@ -112,10 +123,11 @@ void setup() {
 
   display.begin();
 
+
+
+
   pinMode(GPIO_NUM_32, INPUT_PULLUP);
   temperature.begin();
-  bme280Sensor.begin();
-  adcSensor.begin();
   nmea2000Output.begin();
 
  
@@ -126,8 +138,6 @@ void setup() {
   webServer.addJsonOutputHandler(4,&environmentDataOutput);
   webServer.addJsonOutputHandler(5,&temperatureDataOutput);
   webServer.addJsonOutputHandler(6,&temperature);  
-  webServer.addJsonOutputHandler(7,&bme280Sensor);  
-  webServer.addJsonOutputHandler(8,&adcSensor);  
   webServer.addJsonOutputHandler(9,&xteDataOutput);  
   webServer.addJsonOutputHandler(10,&magneticVariationDataOutput);  
   webServer.addJsonOutputHandler(11,&logDataOutput);  
@@ -141,8 +151,6 @@ void setup() {
   webServer.addCsvOutputHandler(4,&environmentDataOutput);
   webServer.addCsvOutputHandler(5,&temperatureDataOutput);
   webServer.addCsvOutputHandler(6,&temperature);  
-  webServer.addCsvOutputHandler(7,&bme280Sensor);  
-  webServer.addCsvOutputHandler(8,&adcSensor);  
   webServer.addCsvOutputHandler(9,&xteDataOutput);  
   webServer.addCsvOutputHandler(10,&magneticVariationDataOutput);  
   webServer.addCsvOutputHandler(11,&logDataOutput);  
@@ -150,8 +158,6 @@ void setup() {
   webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
 
-  display.addDisplayPage(&adcSensor);
-  display.addDisplayPage(&bme280Sensor);
   display.addDisplayPage(&windSpeedDataOutput);
   display.addDisplayPage(&latLonDataOutput);
   display.addDisplayPage(&logDataOutput);
@@ -212,9 +218,23 @@ void CheckCommand() {
     switch ( chr ) {
       case 'h': showHelp(); break;
       case 'u': listDevices.list(true); break;
-      case 'o': Serial.println("Output Toggle"); dataDisplay.showData = !dataDisplay.showData;  break;
-      case 'd': Serial.println("Data Toggle");enableForward = !enableForward; NMEA2000.EnableForward(enableForward); break;
-      case 'v': adcSensor.printVoltages(); break;
+      case 'o': 
+        dataDisplay.showData = !dataDisplay.showData;
+        if (  dataDisplay.showData ) {
+          Serial.println("Data Output Enabled");   
+        } else {
+          Serial.println("Data Output Disabled");   
+        }
+        break;
+      case 'd': 
+        enableForward = !enableForward;
+        if (  dataDisplay.showData ) {
+          Serial.println("NMEA2000 Packet Output Enabled");   
+        } else {
+          Serial.println("NMEA2000 Packet Output Disabled");   
+        }
+        NMEA2000.EnableForward(enableForward); 
+        break;
       case 'b': display.dim(); break;
     }
   }
@@ -280,8 +300,6 @@ long checkPress() {
 void loop() { 
   NMEA2000.ParseMessages();
   listDevices.list();
-  adcSensor.read();
-  bme280Sensor.read();
   temperature.read();
   nmea2000Output.output();
   logbook.log();

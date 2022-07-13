@@ -25,6 +25,7 @@ class DataDisplay {
         void DCBatteryStatus(const tN2kMsg &N2kMsg);
         void FluidLevel(const tN2kMsg &N2kMsg);
         void OutsideEnvironmental(const tN2kMsg &N2kMsg);
+        void EnvironmentalParams(const tN2kMsg &N2kMsg);
         void Temperature(const tN2kMsg &N2kMsg);
         void TemperatureExt(const tN2kMsg &N2kMsg);
         void DCStatus(const tN2kMsg &N2kMsg);
