@@ -513,6 +513,7 @@ void CsvOutput::appendField(uint32_t value) {
 
 
 bool WebServer::drawPage(Adafruit_SSD1306 * display) {
+
     display->clearDisplay();
     display->setTextSize(1);              // Normal 1:1 pixel scale
     display->setTextColor(SSD1306_WHITE); // Draw white text

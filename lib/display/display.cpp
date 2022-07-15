@@ -29,14 +29,14 @@ void OledDisplay::update() {
             this->drawPage(&display);
             displayState = WAIT_SLEEP_END;
             sleepEndAt = now+4000;
-            Serial.println("Sleep Process complete  in 4s");
+            Serial.println("Display Sleep Process complete  in 4s");
             break;
         case WAIT_SLEEP_END:
 
             if ( now > sleepEndAt ) {
                 display.clearDisplay();
                 display.display();
-                Serial.println("Sleep Process is omplete");
+                Serial.println("Display Sleep Process is complete");
                 displayState = SLEEPING;
             }
             break;
@@ -45,7 +45,7 @@ void OledDisplay::update() {
         case START_WAKE:
             page = 0;
             staticPage = 0;
-            Serial.println("Wake up");
+            Serial.println("Display Wake up");
             displayState = AWAKE;
             break;
         case AWAKE:
@@ -72,7 +72,6 @@ void OledDisplay::update() {
 
 void OledDisplay::nextPage() {
     staticPagePress = millis();
-    Serial.print("Static Page");Serial.println(staticPage);
     if ( staticPages[staticPage]->drawPage(&display) ) {
         staticPage++;
         if ( staticPage == lastStaticPage || staticPages[staticPage] == NULL ) {
@@ -90,13 +89,13 @@ void OledDisplay::endDim() {
 }
 void OledDisplay::sleep() {
     if ( displayState == AWAKE ) {
-        Serial.println("Setting state: Sleeping");
+        Serial.println("Display Setting state: Sleeping");
         displayState = START_SLEEP;
     }
 }
 void OledDisplay::wake() {
     if ( displayState == SLEEPING ) {
-        Serial.println("Setting State: Wake");
+        Serial.println("Display Setting State: Wake");
         displayState = START_WAKE;
     }
 }
@@ -121,6 +120,7 @@ bool OledDisplay::drawPage(Adafruit_SSD1306 * display) {
 #if OLED_HEIGHT == 32
     switch(subPage) {
         case 0:
+
             display->drawBitmap((display->width() - spash12832_width) / 2, (display->height() - spash12832_height) / 2,
                         spash12832_data, spash12832_width, spash12832_height, 1);
             display->display();

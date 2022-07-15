@@ -15,10 +15,11 @@
 class DisplayPage {
     public:
         DisplayPage() {};
-        bool drawPage(Adafruit_SSD1306 * display) { return true;};
+        virtual bool drawPage(Adafruit_SSD1306 * display) = 0; 
         int getSubPage() {
             return subPage;
         };
+
         bool incycle = true;
     protected:
         int subPage = 0;
@@ -86,7 +87,7 @@ class OledDisplay : public DisplayPage {
                 lastStaticPage++;
             }
         };
-        bool drawPage(Adafruit_SSD1306 * display);
+        bool drawPage(Adafruit_SSD1306 * display) override;
         void dim();
         void nextPage();
         void startDim();

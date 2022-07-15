@@ -37,7 +37,8 @@ It still provides a good platform for a Wifi data server, and Can reader.
 * [x] Investigate using a shunt amplifier as used by VRA Alternator controll
 * [x] Implement remote battery sensor using Modbus  (see BatterySensor project)
 * [x] Reimplement PCB to have no BME280 and no ADS1115 replacing with a RS485 interface to ModBus devices.  (see CanPressure for Can based pressure, humidity, temperature sensor)
-* [ ] Implement Modbus master
+* [x] Implement Modbus master
+
 
 # Usage
 
@@ -64,4 +65,43 @@ because I alwaysforget.
 
 See buildui.sh for SPIFFS image commands.
 
+# Connectors
+
+
+    ---------------------------------------------
+    |           a b c d e f g h                 |
+    |  A                                        |
+    |  B                                        |
+    |  C                                        |
+    |  D                                     H  |
+    |  E                                     I  |
+    |  F                                     J  |
+    |  G           i j k l m                 K  |
+    ---------------------------------------------
+
+    a  SPI BL
+    b  SPI RST
+    c  SPI DC
+    d  SPI CS
+    e  SPI SCK
+    f  SPI MOSI
+    g  SPI GND
+    h  SPI 3V
+    i  i2c GND      Display black/blue
+    j  i2c SCL      Display green
+    k  i2c SDA      Display white
+    l  i2c BTN      Display yellow
+    m  i2c 3V       Display red
+
+    A  1wire 1w
+    B  1wire GND
+    C  1wire 3V
+    D  RS-485 5.8V
+    E  RS-485 GND
+    F  RS-485 A
+    G  RS-485 B
+    H  CAN 12V
+    I  CAN 0V
+    J  CAN CANH
+    K  CAN CANL
 

@@ -334,7 +334,7 @@ class DataCollector {
 
 class EngineDataOutput: public JsonOutput,  public CsvOutput, public DisplayPage {
     public:
-        EngineDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
+        EngineDataOutput(DataCollector &dataCollector):  dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         void outputCsv(AsyncResponseStream *outputStream); 
         bool drawPage(Adafruit_SSD1306 * display);

@@ -1371,7 +1371,6 @@ bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
     } else {
         int deg = (int) latitude;
         double min = (double) 60.0*(latitude-deg);
-        Serial.printf("Lat %d %f\n",deg,min);
         if ( deg >= 0 && min >= 0) {
             display->printf(" %02d%c%05.2fN\n", deg, 248, min); 
         } else {
@@ -1379,7 +1378,6 @@ bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
         }
         deg = (int) longitude;
         min = (double) 60.0*(longitude-deg);
-        Serial.printf("Long %d %f\n",deg,min);
         display->setCursor(0,36);             
         if ( deg >= 0 && min >= 0) {
             display->printf("%03d%c%05.2fE\n", deg,248,min); 

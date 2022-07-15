@@ -1038,4 +1038,8 @@ Wire Wire Line
 Wire Wire Line
 	8900 5450 8900 5950
 Connection ~ 8650 5450
+Text Notes 8050 5300 0    60   ~ 0
+RO is high impedence when RE/DE \nare high, so a level shifter is required.
+Text Notes 8700 4550 0    60   ~ 0
+Pin RXD is driven so this level shifter is strictly \nnot required and could be replaced by a R divider.\n\n3v into TXD is high enough for 5V logic.\n
 $EndSCHEMATC

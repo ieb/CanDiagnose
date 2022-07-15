@@ -264,7 +264,6 @@ void CheckCommand() {
 }
 
 void onPress() {
-
   display.nextPage();
 }
 void onLongRelease() {
@@ -285,7 +284,7 @@ long checkPress() {
   if ( now > lastCalled+10) {
     lastCalled = now;
 
-    int dr = digitalRead(GPIO_NUM_32);
+    int dr = digitalRead(DISPLAY_BUTTON);
     if (  dr == HIGH ) {
       bits = bits<<1 & 0xfe;
     } else {
@@ -303,12 +302,10 @@ long checkPress() {
       } else {
         onPress();
       }
-      Serial.println("released (stable for 150ms)");
     } else if ( !pressed && ((bits&0b00000111) == 0b00000111) ) {
       // touched for the last 300ms
       pressed = true;
       startPress = now;
-      Serial.println("pressed (stable for 150ms)");
     } 
     if ( pressed && (now > (startPress+3000))) {
       onLongPress();

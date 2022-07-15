@@ -38,7 +38,7 @@ class ModbusMaster {
         uint8_t buffer[MAX_COUNT*2+8];
         uint8_t frameLength;
         uint8_t numRegisters;
-        bool diagnosticsEnabled = true;
+        bool diagnosticsEnabled = false;
         uint16_t sent = 0;
         uint16_t recieved = 0;
         uint16_t errors = 0;
@@ -76,7 +76,7 @@ class BatteryMonitor {
         ModbusMaster &modbusMaster;
         uint8_t unit = 0;
         unsigned long lastRead = 0;
-        bool diagnosticsEnabled = true;
+        bool diagnosticsEnabled = false;
 
 };
 
@@ -110,6 +110,6 @@ class Modbus : public JsonOutput, public CsvOutput, public DisplayPage, public H
         unsigned long dcstatusPeriod;
         unsigned long lastDCStatus;
         unsigned long lastRead;
-        bool diagnosticsEnabled = true;
+        bool diagnosticsEnabled = false;
 
 };
