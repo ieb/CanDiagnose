@@ -313,7 +313,7 @@ Wire Wire Line
 	10650 3500 10650 3950
 Connection ~ 10650 3800
 Wire Wire Line
-	10650 3100 10650 2950
+	10650 2950 10650 3100
 Wire Wire Line
 	10650 2950 10950 2950
 Wire Wire Line
@@ -459,52 +459,8 @@ Wire Wire Line
 	2850 7200 2850 7250
 Text GLabel 10400 3650 0    60   Input ~ 0
 CAN-TX
-$Comp
-L R R14
-U 1 1 618128F6
-P 10800 4400
-F 0 "R14" V 10880 4400 40  0000 C CNN
-F 1 "3K3" V 10807 4401 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805" V 10730 4400 30  0001 C CNN
-F 3 "" H 10800 4400 30  0000 C CNN
-	1    10800 4400
-	-1   0    0    1   
-$EndComp
-$Comp
-L R R15
-U 1 1 618129BF
-P 10800 5000
-F 0 "R15" V 10880 5000 40  0000 C CNN
-F 1 "2K2" V 10807 5001 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805" V 10730 5000 30  0001 C CNN
-F 3 "" H 10800 5000 30  0000 C CNN
-	1    10800 5000
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	10900 4100 10800 4100
-Wire Wire Line
-	10800 4100 10800 4150
-Wire Wire Line
-	10800 4650 10800 4750
-$Comp
-L GND #PWR010
-U 1 1 61812E4A
-P 10800 5350
-F 0 "#PWR010" H 10800 5350 30  0001 C CNN
-F 1 "GND" H 10800 5280 30  0001 C CNN
-F 2 "" H 10800 5350 60  0001 C CNN
-F 3 "" H 10800 5350 60  0001 C CNN
-	1    10800 5350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	10800 5350 10800 5250
-Text GLabel 10550 4700 0    60   Output ~ 0
+Text GLabel 8850 4100 0    60   Output ~ 0
 CAN-RX
-Wire Wire Line
-	10800 4700 10550 4700
-Connection ~ 10800 4700
 $Comp
 L CONN_1 P3
 U 1 1 618234EB
@@ -697,7 +653,7 @@ $EndComp
 Wire Wire Line
 	9700 6750 9700 6950
 Text GLabel 9650 5700 0    60   Input ~ 0
-3v3
+5V
 Wire Wire Line
 	9650 5700 9700 5700
 Wire Wire Line
@@ -712,15 +668,13 @@ Text GLabel 8900 6550 0    60   Input ~ 0
 RS485-TX
 Wire Wire Line
 	8900 6550 9300 6550
-Text GLabel 8900 6250 0    60   Output ~ 0
+Text GLabel 8550 6250 0    60   Output ~ 0
 RS485-RX
 Text GLabel 8900 6400 0    60   Input ~ 0
 RS485-EN
 Wire Wire Line
 	8900 6400 9100 6400
 Connection ~ 9100 6400
-Wire Wire Line
-	8900 6250 9300 6250
 Text GLabel 7250 6600 2    60   Output ~ 0
 RS485-EN
 Text GLabel 7250 6200 2    60   Output ~ 0
@@ -745,7 +699,7 @@ F 3 "" H 10150 5750 60  0000 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	9700 5400 10150 5400
+	9200 5400 10150 5400
 Wire Wire Line
 	10150 5400 10150 5550
 Connection ~ 9700 5700
@@ -972,4 +926,116 @@ Text GLabel 3400 6200 0    60   Output ~ 0
 DC
 Text GLabel 3400 6800 0    60   Output ~ 0
 RST
+$Comp
+L BSS138 Q?
+U 1 1 62D10656
+P 9500 4000
+F 0 "Q?" H 9500 3851 40  0000 R CNN
+F 1 "BSS138" H 9500 4150 40  0000 R CNN
+F 2 "SOT-23" H 9370 4102 29  0000 C CNN
+F 3 "" H 9500 4000 60  0000 C CNN
+	1    9500 4000
+	0    1    1    0   
+$EndComp
+$Comp
+L R R?
+U 1 1 62D10E07
+P 9900 3550
+F 0 "R?" V 9980 3550 40  0000 C CNN
+F 1 "10K" V 9907 3551 40  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 9830 3550 30  0001 C CNN
+F 3 "" H 9900 3550 30  0000 C CNN
+	1    9900 3550
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R?
+U 1 1 62D10FA8
+P 9050 3650
+F 0 "R?" V 9130 3650 40  0000 C CNN
+F 1 "10K" V 9057 3651 40  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 8980 3650 30  0001 C CNN
+F 3 "" H 9050 3650 30  0000 C CNN
+	1    9050 3650
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	8850 4100 9300 4100
+Wire Wire Line
+	9050 3900 9050 4100
+Connection ~ 9050 4100
+Wire Wire Line
+	9450 3300 9450 3800
+Wire Wire Line
+	8650 3300 9450 3300
+Wire Wire Line
+	9050 3300 9050 3400
+Wire Wire Line
+	9700 4100 10900 4100
+Wire Wire Line
+	9900 3800 9900 4100
+Connection ~ 9900 4100
+Wire Wire Line
+	9900 3300 9900 3000
+Wire Wire Line
+	9900 3000 10650 3000
+Connection ~ 10650 3000
+$Comp
+L BSS138 Q?
+U 1 1 62D120FB
+P 8950 6150
+F 0 "Q?" H 8950 6001 40  0000 R CNN
+F 1 "BSS138" H 8950 6300 40  0000 R CNN
+F 2 "SOT-23" H 8820 6252 29  0000 C CNN
+F 3 "" H 8950 6150 60  0000 C CNN
+	1    8950 6150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	9150 6250 9300 6250
+Wire Wire Line
+	8550 6250 8750 6250
+Text GLabel 8650 3300 0    60   Input ~ 0
+3v3
+Connection ~ 9050 3300
+$Comp
+L R R?
+U 1 1 62D12BA0
+P 8650 5800
+F 0 "R?" V 8730 5800 40  0000 C CNN
+F 1 "10K" V 8657 5801 40  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 8580 5800 30  0001 C CNN
+F 3 "" H 8650 5800 30  0000 C CNN
+	1    8650 5800
+	-1   0    0    1   
+$EndComp
+Text GLabel 8450 5450 0    60   Input ~ 0
+3v3
+$Comp
+L R R?
+U 1 1 62D12EBB
+P 9200 5800
+F 0 "R?" V 9280 5800 40  0000 C CNN
+F 1 "10K" V 9207 5801 40  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 9130 5800 30  0001 C CNN
+F 3 "" H 9200 5800 30  0000 C CNN
+	1    9200 5800
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	9200 5400 9200 5550
+Connection ~ 9700 5400
+Wire Wire Line
+	9200 6050 9200 6250
+Connection ~ 9200 6250
+Wire Wire Line
+	8650 6050 8650 6250
+Connection ~ 8650 6250
+Wire Wire Line
+	8650 5550 8650 5450
+Wire Wire Line
+	8450 5450 8900 5450
+Wire Wire Line
+	8900 5450 8900 5950
+Connection ~ 8650 5450
 $EndSCHEMATC

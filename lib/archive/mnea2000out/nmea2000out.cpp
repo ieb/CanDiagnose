@@ -36,10 +36,7 @@
                           };
  */
 
-Nmea2000Output::Nmea2000Output( tNMEA2000 *NMEA2000, 
-            Temperature &temperature): 
-            NMEA2000{NMEA2000},
-            temperature{temperature} {};
+
 
 void Nmea2000Output::begin(const char * configurationFile) {
     String v = "";
@@ -57,50 +54,10 @@ void Nmea2000Output::begin(const char * configurationFile) {
             temperatureSource[i] = N2kts_MainCabinTemperature;
         }
     }
-    if ( ConfigurationFile::get(configurationFile, "nmea2000.pressure.instance", v)) {
-        pressureInstance = v.toInt();
-    } else {
-        pressureInstance = 0;
-    }
-    if ( ConfigurationFile::get(configurationFile, "nmea2000.humidity.instance", v)) {
-        humidityInstance = v.toInt();
-    } else {
-        humidityInstance = 0;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.battery.service.instance", v)) {
-        serviceBatteryInstance = v.toInt();
-    } else {
-        serviceBatteryInstance = 0;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.battery.service.tempsensor", v)) {
-        serviceBatteryTemperatureSensor = v.toInt();
-    } else {
-        serviceBatteryTemperatureSensor = 255;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.battery.engine.instance", v)) {
-        engineBatteryInstance = v.toInt();
-    } else {
-        engineBatteryInstance = 1;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.battery.engine.tempsensor", v)) {
-        engineBatteryTemperatureSensor = v.toInt();
-    } else {
-        engineBatteryTemperatureSensor = 255;
-    }
     if (ConfigurationFile::get(configurationFile, "nmea2000.temp.period", v)) {
         temperaturePeriod = v.toInt();
     } else {
         temperaturePeriod = 10000;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.pressure.period", v)) {
-        pressurePeriod = v.toInt();
-    } else {
-        pressurePeriod = 10000;
-    }
-    if (ConfigurationFile::get(configurationFile, "nmea2000.dcstatus.period", v)) {
-        dcstatusPeriod = v.toInt();
-    } else {
-        dcstatusPeriod = 10000;
     }
 }
 
@@ -117,24 +74,5 @@ void Nmea2000Output::output() {
             }
         }
         temperatureSid++;
-    } else if ( now > lastDCStatus + dcstatusPeriod) {
-
-        lastDCStatus = now;
-        // needs to come over RS485
-        /*
-        double batteryTemperature = N2kDoubleNA;
-        if ( serviceBatteryTemperatureSensor != 255 && temperature.temperatureSensor[serviceBatteryTemperatureSensor].connected ) {
-            batteryTemperature = CToKelvin(temperature.temperatureSensor[serviceBatteryTemperatureSensor].temperature);
-        }
-        SetN2kDCBatStatus(N2kMsg, serviceBatteryInstance, adc.getServiceVoltage(), adc.getServiceCurrent(),batteryTemperature);
-        NMEA2000->SendMsg(N2kMsg);
-        batteryTemperature = N2kDoubleNA;
-        if ( engineBatteryTemperatureSensor != 255 && temperature.temperatureSensor[engineBatteryTemperatureSensor].connected ) {
-            batteryTemperature = CToKelvin(temperature.temperatureSensor[engineBatteryTemperatureSensor].temperature);
-        }
-        SetN2kDCBatStatus(N2kMsg, engineBatteryInstance, adc.getEngineVoltage(), N2kDoubleNA,batteryTemperature);
-        NMEA2000->SendMsg(N2kMsg);
-        */
-    }
-    
+    } 
 }

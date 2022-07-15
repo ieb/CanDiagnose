@@ -26,16 +26,18 @@ On that basis, I am giving up on using the ESP32 ADC for this purpose.
 It still provides a good platform for a Wifi data server, and Can reader.
 
 * [x] Redesign PCB to use 16bit ADC over i2c  (ADS1115)
-* [x] Implement ADC sensor code.
+* [x] Implement ADC sensor code.  
 * [x] Implement admin interface.
 * [x] Support configuration and calibration via web browser.
 * [x] Support Configuraiton of single and differential ADC.
 * [x] Add OLED display 
-* [ ] Add touch sensor to control oled display
-* [ ] Bench Calibrate expecialy shunt
-* [ ] Install test and calibrate.
-* [ ] Investigate using a shunt amplifier as used by VRA Alternator controller.
-
+* [x] Add touch sensor to control oled display
+* [x] Bench Calibrate expecialy shunt
+* [x] Install test and calibrate. - Failed, the distance beween the board and the batteries is too great to get reliable shunt measurements.
+* [x] Investigate using a shunt amplifier as used by VRA Alternator controll
+* [x] Implement remote battery sensor using Modbus  (see BatterySensor project)
+* [x] Reimplement PCB to have no BME280 and no ADS1115 replacing with a RS485 interface to ModBus devices.  (see CanPressure for Can based pressure, humidity, temperature sensor)
+* [ ] Implement Modbus master
 
 # Usage
 

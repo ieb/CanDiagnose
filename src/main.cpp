@@ -13,8 +13,8 @@
 
 
 // Pins
-#define ESP32_CAN_TX_PIN GPIO_NUM_23
-#define ESP32_CAN_RX_PIN GPIO_NUM_22
+#define ESP32_CAN_TX_PIN GPIO_NUM_22
+#define ESP32_CAN_RX_PIN GPIO_NUM_23
 #define ONEWIRE_GPIO_PIN GPIO_NUM_21
 #define SDA_PIN GPIO_NUM_18
 #define SCL_PIN GPIO_NUM_5
@@ -46,11 +46,9 @@
 #include "dataoutput.h"
 #include "httpserver.h"
 #include "temperature.h"
-#include "bme280sensor.h"
-#include "adc.h"
 #include "display.h"
 #include "logbook.h"
-#include "nmea2000out.h"
+#include "modbus.h"
 
 
 
@@ -71,11 +69,16 @@ LatLonDataOutput latLonDataOutput(dataCollector);
 LeewayDataOutput leewayDataOutput(dataCollector);
 
 
-Temperature temperature(ONEWIRE_GPIO_PIN);
+Temperature temperature(&NMEA2000, ONEWIRE_GPIO_PIN);
+
+
+ModbusMaster modbusMaster(&Serial2, RS485_EN);
+Modbus modbus(&NMEA2000, modbusMaster);
+
+
 
 LogBook logbook(dataCollector);
 
-Nmea2000Output nmea2000Output(&NMEA2000, temperature);
 
 WebServer webServer(OutputStream);
 OledDisplay display;
@@ -93,17 +96,19 @@ void showHelp() {
   OutputStream->println("Device analyzer started.");
   OutputStream->println("  - Analyzer will automatically print new list on list changes.");
   OutputStream->println("  - Send 'h' to show this message");
+  OutputStream->println("  - Send 's' to show status");
   OutputStream->println("  - Send 'u' to print latest list of devices");
   OutputStream->println("  - Send 'o' to toggle output, can be high volume");
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
+  OutputStream->println("  - Send 'm' to toggle modbus diagnostics");
   OutputStream->println("  - Send 'b' to change brightness");
-  
-
 }
 
 
 void setup() {
   Serial.begin(115200); 
+  Serial2.begin(9600, SERIAL_8N1, RS485_RX, RS485_TX); // RS485 Modbus
+  modbusMaster.begin();
 
   if (!Wire.begin(SDA_PIN, SCL_PIN) ) {
     Serial.println("I2C failed to start");
@@ -128,8 +133,7 @@ void setup() {
 
   pinMode(GPIO_NUM_32, INPUT_PULLUP);
   temperature.begin();
-  nmea2000Output.begin();
-
+  modbus.begin();
  
   webServer.addJsonOutputHandler(0,&listDevices);
   webServer.addJsonOutputHandler(1,&engineDataOutput);
@@ -138,6 +142,7 @@ void setup() {
   webServer.addJsonOutputHandler(4,&environmentDataOutput);
   webServer.addJsonOutputHandler(5,&temperatureDataOutput);
   webServer.addJsonOutputHandler(6,&temperature);  
+  webServer.addJsonOutputHandler(8,&modbus);
   webServer.addJsonOutputHandler(9,&xteDataOutput);  
   webServer.addJsonOutputHandler(10,&magneticVariationDataOutput);  
   webServer.addJsonOutputHandler(11,&logDataOutput);  
@@ -151,6 +156,7 @@ void setup() {
   webServer.addCsvOutputHandler(4,&environmentDataOutput);
   webServer.addCsvOutputHandler(5,&temperatureDataOutput);
   webServer.addCsvOutputHandler(6,&temperature);  
+  webServer.addCsvOutputHandler(6,&modbus);  
   webServer.addCsvOutputHandler(9,&xteDataOutput);  
   webServer.addCsvOutputHandler(10,&magneticVariationDataOutput);  
   webServer.addCsvOutputHandler(11,&logDataOutput);  
@@ -161,6 +167,7 @@ void setup() {
   display.addDisplayPage(&windSpeedDataOutput);
   display.addDisplayPage(&latLonDataOutput);
   display.addDisplayPage(&logDataOutput);
+  display.addDisplayPage(&modbus);  
   display.addDisplayPage(&engineDataOutput);
   display.addDisplayPage(&webServer);
 
@@ -200,7 +207,9 @@ void setup() {
 
 //*****************************************************************************
 
-
+void showStatus() {
+  modbus.readStats();
+}
 
 //*****************************************************************************
 //NMEA 2000 message handler - should  be in a class so it can be attached.
@@ -213,11 +222,15 @@ void setup() {
 //*****************************************************************************
 void CheckCommand() {
   static bool enableForward = false;
+  static bool modbusDiagnose = false;
   if (OutputStream->available()) {
     char chr = OutputStream->read();
     switch ( chr ) {
       case 'h': showHelp(); break;
       case 'u': listDevices.list(true); break;
+      case 's':
+        showStatus();
+        break;
       case 'o': 
         dataDisplay.showData = !dataDisplay.showData;
         if (  dataDisplay.showData ) {
@@ -228,13 +241,23 @@ void CheckCommand() {
         break;
       case 'd': 
         enableForward = !enableForward;
-        if (  dataDisplay.showData ) {
+        if (  enableForward ) {
           Serial.println("NMEA2000 Packet Output Enabled");   
         } else {
           Serial.println("NMEA2000 Packet Output Disabled");   
         }
         NMEA2000.EnableForward(enableForward); 
         break;
+      case 'm':
+        modbusDiagnose = !modbusDiagnose;
+        if (  modbusDiagnose ) {
+          Serial.println("Modbus Diagnostics enabled");   
+        } else {
+          Serial.println("Modbus Diagnostics disabled");   
+        }
+        modbus.setDiagnostics(modbusDiagnose);
+        break;
+
       case 'b': display.dim(); break;
     }
   }
@@ -301,7 +324,10 @@ void loop() {
   NMEA2000.ParseMessages();
   listDevices.list();
   temperature.read();
-  nmea2000Output.output();
+  temperature.output();
+  modbus.read();
+  modbus.output();
+
   logbook.log();
 //  logbook.demoMode();
   CheckCommand();
