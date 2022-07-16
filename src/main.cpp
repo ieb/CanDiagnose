@@ -12,9 +12,9 @@
 #include <Wire.h>
 
 
-// Pins
-#define ESP32_CAN_TX_PIN GPIO_NUM_22
-#define ESP32_CAN_RX_PIN GPIO_NUM_23
+// Pins   
+#define ESP32_CAN_RX_PIN GPIO_NUM_22
+#define ESP32_CAN_TX_PIN GPIO_NUM_23
 #define ONEWIRE_GPIO_PIN GPIO_NUM_21
 #define SDA_PIN GPIO_NUM_18
 #define SCL_PIN GPIO_NUM_5
@@ -39,7 +39,15 @@
 
 
 #include <NMEA2000_esp32.h>
-#include <NMEA2000_CAN.h>
+
+// The method recomended doesnt work well so explicitly create the NMEA2000 objects to be sure
+// the pins are correct. I've had loads of problems with this depening 
+// on how the libraries are created.
+
+tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
+
+
+// #include <NMEA2000_CAN.h>
 
 #include "listdevices.h"
 #include "datadisplay.h"
@@ -131,7 +139,7 @@ void setup() {
 
 
 
-  pinMode(GPIO_NUM_32, INPUT_PULLUP);
+  pinMode(DISPLAY_BUTTON, INPUT_PULLUP);
   temperature.begin();
   modbus.begin();
  
@@ -185,6 +193,7 @@ void setup() {
                                 120, // Device class=Display. See codes on  http://www.nmea.org/Assets/20120726%20nmea%202000%20class%20&%20function%20codes%20v%202.00.pdf
                                 2046 // Just choosen free from code list on http://www.nmea.org/Assets/20121020%20nmea%202000%20registration%20list.pdf
                                );
+
 
 //  NMEA2000.SetN2kCANReceiveFrameBufSize(50);
   // Do not forward bus messages at all
