@@ -173,6 +173,8 @@ void setup() {
   webServer.begin();
 
   display.addDisplayPage(&windSpeedDataOutput);
+  display.addDisplayPage(&environmentDataOutput);
+  display.addDisplayPage(&navigationDataOutput);
   display.addDisplayPage(&latLonDataOutput);
   display.addDisplayPage(&logDataOutput);
   display.addDisplayPage(&modbus);  

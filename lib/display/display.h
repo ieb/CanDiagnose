@@ -29,7 +29,8 @@ class DisplayPage {
 
 class History128over24 {
     public:
-        History128over24(float offset, float scale, unsigned long periodMs=675000) : 
+        History128over24(const char *title, float offset, float scale, unsigned long periodMs=675000) : 
+            title{title},
             offset{offset}, 
             scale{scale}, 
             historyPeriod{periodMs} { };
@@ -44,6 +45,7 @@ class History128over24 {
     private:
         uint16_t nextValueRaw();
         uint8_t index(unsigned long t) { return (t/historyPeriod)%128; }
+        const char *title;
         float offset;
         float scale;
         float graphRangeMin = 5; // 5mBar by default.

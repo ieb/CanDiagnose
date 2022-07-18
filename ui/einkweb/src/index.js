@@ -25,10 +25,11 @@
     layout.append(EInkTextBox.number("1.engine.[instance==0].altenatorVoltage","alternator","V"));
     layout.append(EInkTextBox.number("1.battery.[instance==2].voltage","engine controls","V"));
     layout.newPage();
-    layout.setPageTitle("Pressure");
-    layout.append(EInkTextBox.number("7.bmp280.pressure","bmp280","mbar", 1));
-    layout.append(EInkTextBox.number("7.bmp280.temp","bmp280","C",1));
-    layout.append(EInkTextBox.number("7.bmp280.humidity","bmp280","%RH",1));
+    layout.setPageTitle("Environment");
+    layout.append(EInkTextBox.number("4.pressure.0.actual","n2k","mbar", 1, 0.01, 0));
+    layout.append(EInkTextBox.number("4.pressure.0.actual","n2k","mbar", 1, 0.01, 0));
+    layout.append(EInkTextBox.number("5.temperatureExt.0.actual","n2k","C", 1, 1, -273.15));
+    layout.append(EInkTextBox.number("4.humidity.0.actual","n2k","%RH",1));
 
 
     layout.newPage();
@@ -40,11 +41,19 @@
 
 
     layout.newPage();
-    layout.setPageTitle("Voltage");
-    layout.append(EInkTextBox.number("8.voltages.0.v","service","V", 2));
-    layout.append(EInkTextBox.number("8.voltages.1.v","engine","V", 2));
-    layout.append(EInkTextBox.number("8.voltages.2.v","service A","A", 2, 1000));
-    layout.append(EInkTextBox.number("8.voltages.3.v","engine A","A", 2, 1000));
+    layout.setPageTitle("Voltages");
+    layout.append(EInkTextBox.number("8.battery.0.voltage","service","V", 2));
+    layout.append(EInkTextBox.number("8.voltages.0.current","service","A", 1));
+    layout.append(EInkTextBox.number("8.voltages.1.voltage","engine","V", 2));
+    layout.append(EInkTextBox.number("8.voltages.1.current","engine","A", 1));
+
+    layout.newPage();
+    layout.setPageTitle("Performance");
+    layout.append(EInkTextBox.number("performance.polarSpeed", 'polar stw',"Kn"));
+    layout.append(EInkTextBox.number("performance.vmg", 'polar vmg', "Kn"));
+    layout.append(EInkTextBox.number("performance.polarVmg","best polar vmg","Kn"));
+    layout.append(EInkTextBox.number("performance.targetStw","target stw","Kn"));
+
 
 
 

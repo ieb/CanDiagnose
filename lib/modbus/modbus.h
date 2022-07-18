@@ -83,7 +83,7 @@ class BatteryMonitor {
 class Modbus : public JsonOutput, public CsvOutput, public DisplayPage, public History128over24  {
     public:
         Modbus(tNMEA2000 *NMEA2000, ModbusMaster &modbusMaster, unsigned long readPeriod=10000):  
-            History128over24{0.0,1000.0,675000}, 
+            History128over24{"service V",0.0,1000.0,675000}, 
             NMEA2000{NMEA2000},
             modbusMaster{modbusMaster},
             readPeriod{readPeriod},

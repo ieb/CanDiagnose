@@ -418,6 +418,7 @@ void DataCollector::Pressure(const tN2kMsg &N2kMsg) {
                 if (pressure[i].use(N2kMsg.Source, Instance, reuse)) {
                     pressure[i].sourceSensor = PressureSource;
                     pressure[i].actual = ActualPressure;
+                    pressure[i].storeHistory(ActualPressure);
                     return;
                 }
             }
@@ -832,6 +833,18 @@ GnssData * DataCollector::getGnss() {
         if (gnss[i].source != 255 && gnss[i].lastModified > lm ) {
             lm = gnss[i].lastModified;
             selected = &gnss[i];
+        }
+    }
+    return selected;
+};
+
+CogSogData * DataCollector::getCogSog() {
+    unsigned long lm = 0;
+    CogSogData *selected = NULL;
+    for (int i = 0; i < MAX_COGSOG_SOURCES; i++) {
+        if (cogSog[i].source != 255 && cogSog[i].lastModified > lm ) {
+            lm = cogSog[i].lastModified;
+            selected = &cogSog[i];
         }
     }
     return selected;
@@ -1292,6 +1305,36 @@ bool EngineDataOutput::drawPage(Adafruit_SSD1306 * display) {
 
 }
 
+bool NavigationDataOutput::drawPage(Adafruit_SSD1306 * display) {
+    CogSogData *cogSog =  dataCollector.getCogSog();
+
+
+
+    display->clearDisplay();
+    display->setTextSize(2);              // Normal 1:1 pixel scale
+    display->setTextColor(SSD1306_WHITE); // Draw white text
+    display->setCursor(0,0);              // Start at top-left corner
+#if OLED_HEIGHT == 32
+#else
+    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
+    if ( cogSog == NULL ) {
+        display->setCursor(0,12);              
+        display->printf("COG: -\n"); 
+        display->setCursor(0,36);             
+        display->printf("SOG: -\n"); 
+    } else {
+        display->setCursor(0,12);              
+        display->printf("COG:%3.0f\n", RadToDeg(cogSog->cog)); 
+        display->setCursor(0,36);             
+        display->printf("SOG:%5.1f\n", msToKnots(cogSog->sog)); 
+    }
+    display->display();
+    return true;
+#endif
+
+}
+
+
 bool WindSpeedDataOutput::drawPage(Adafruit_SSD1306 * display) {
     WindData *wind = dataCollector.getWindInstance(0);
 
@@ -1323,6 +1366,78 @@ bool WindSpeedDataOutput::drawPage(Adafruit_SSD1306 * display) {
 #endif
 
 }
+
+bool EnvironmentDataOutput::drawPage(Adafruit_SSD1306 * display) {
+    display->clearDisplay();
+    display->setTextSize(2);              // Normal 1:1 pixel scale
+    display->setTextColor(SSD1306_WHITE); // Draw white text
+    display->setCursor(0,0);              // Start at top-left corner
+    PressureData *pressure = &dataCollector.pressure[0];
+    TemperatureData *temperatureExt = &dataCollector.temperatureExt[0];
+    HumidityData *humidity = &dataCollector.humidity[0];
+
+#if OLED_HEIGHT == 32
+    switch(subPage) {
+        case 0:
+            if ( pressure->source != 255 && pressure->lastModified > 0 ) {
+                display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
+                display->printf("%6.1f mB\n", PascalTomBar(pressure->actual));
+                display->printf("%4.1f C\n", KelvinToC(temperatureExt->actual)); 
+                display->printf("%5.1f %%RH\n", humidity->actual ); 
+                display->display();
+                subPage = 1;
+                return false;
+            } else {
+                display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
+                display->printf("----.- mB\n");
+                display->printf("--.- C\n"); 
+                display->printf("---.- %%RH\n" ); 
+                display->display();
+                subPage = 0;
+                return true;
+            }
+        case 1:
+            if ( pressure->drawHistory(display,false,970.0,1030.0) ) {
+                display->display();
+                subPage = 0;
+                return true;
+            } else {
+                display->display();
+                return false;
+            }
+        default:
+            subPage = 0;
+            return false;
+    }
+#else
+    switch(subPage) {
+        case 0:
+
+            display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
+            display->setCursor(0,4);  
+            display->printf("%6.1f mB\n", PascalTomBar(pressure->actual));
+            display->printf("%4.1f C\n", KelvinToC(temperatureExt->actual)); 
+            display->printf("%5.1f %%RH\n", humidity->actual ); 
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            if ( pressure->drawHistory(display,false,970.0,1030.0) ) {
+                display->display();
+                subPage = 0;
+                return true;
+            } else {
+                display->display();
+                return false;
+            }
+        default:
+            subPage = 0;
+            return false;
+
+    }
+#endif
+}
+
 
 bool LogDataOutput::drawPage(Adafruit_SSD1306 * display) {
     LogData *log = dataCollector.getLog();

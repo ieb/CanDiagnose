@@ -18,7 +18,7 @@
 #define MAX_BATTERY_SOURCES 4
 #define MAX_SPEED_SOURCES 3
 #define MAX_WATER_DEPTH_SOURCES 2
-#define MAX_RUDDER_SOURCES 1
+#define MAX_RUDDER_SOURCES 3
 #define MAX_ATTITUDE_SOURCES 2
 #define MAX_FLUID_LEVEL_SOURCES 4
 #define MAX_XTE_SOURCES 2
@@ -105,8 +105,9 @@ class DcBatteryData : public MessageStoreWithInstance {
 
 
 
-class PressureData: public MessageStoreWithInstance {
+class PressureData: public MessageStoreWithInstance, public History128over24 {
     public:
+        PressureData() : History128over24{"mBar",0.0,1000.0,675000} {};
         tN2kPressureSource sourceSensor;
         double actual;
 };
@@ -277,6 +278,7 @@ class DataCollector {
         FluidLevelData * getFluidLevelInstance(byte instance);
         PossitionData * getPossition();
         GnssData * getGnss();
+        CogSogData * getCogSog();
         bool getLatLong(double &latitude, double &longitude, int16_t &age);
 
 
@@ -352,21 +354,26 @@ class BoatDataOutput: public JsonOutput,  public CsvOutput {
     private:
         DataCollector &dataCollector;
 };
-class NavigationDataOutput: public JsonOutput,  public CsvOutput { 
+class NavigationDataOutput: public JsonOutput,  public CsvOutput,  public DisplayPage { 
     public:
         NavigationDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         void outputCsv(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
 };
 
-class EnvironmentDataOutput: public JsonOutput,  public CsvOutput  {
+class EnvironmentDataOutput: public JsonOutput,  public CsvOutput, public DisplayPage  {
     public:
-        EnvironmentDataOutput(DataCollector &dataCollector): dataCollector{dataCollector} {};
+        EnvironmentDataOutput(DataCollector &dataCollector): 
+                dataCollector{dataCollector} {};
         void outputJson(AsyncResponseStream *outputStream);
         void outputCsv(AsyncResponseStream *outputStream);
+        bool drawPage(Adafruit_SSD1306 * display);
+
     private:
         Stream *outputStream;
         DataCollector &dataCollector;
