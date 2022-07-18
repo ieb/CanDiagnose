@@ -29,6 +29,11 @@ class DisplayPage {
 
 class History128over24 {
     public:
+        /**
+         * offset and scale are the offset and scale applied before the value 
+         * is stored as a uint16. This manipulation is undone on rendering the history
+         * or outputting. Remember to make sure the value can be stored in an uint16.
+         */
         History128over24(const char *title, float offset, float scale, unsigned long periodMs=675000) : 
             title{title},
             offset{offset}, 

@@ -104,10 +104,11 @@ class DcBatteryData : public MessageStoreWithInstance {
 };
 
 
+// max is 1030 * 10 == 10300 which fits into a unit16 for history. 
 
 class PressureData: public MessageStoreWithInstance, public History128over24 {
     public:
-        PressureData() : History128over24{"mBar",0.0,1000.0,675000} {};
+        PressureData() : History128over24{"mBar",0.0,10.0,675000} {};
         tN2kPressureSource sourceSensor;
         double actual;
 };
@@ -273,6 +274,7 @@ class DataCollector {
         PossitionData possition[MAX_POSSITION_SOURCES];
         LeewayData leeway[MAX_LEEWAY_SOURCES];
         LogData *getLog();
+
         WindData * getWindInstance(byte instance, tN2kWindReference reference=N2kWind_Apparent);
         EngineData * getEngineInstance(byte instance);
         FluidLevelData * getFluidLevelInstance(byte instance);
@@ -280,6 +282,7 @@ class DataCollector {
         GnssData * getGnss();
         CogSogData * getCogSog();
         bool getLatLong(double &latitude, double &longitude, int16_t &age);
+        bool getPressure( double &pressure, int16_t &age);
 
 
 

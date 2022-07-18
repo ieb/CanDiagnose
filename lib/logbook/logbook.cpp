@@ -3,7 +3,7 @@
 #define M_TO_NM(x) ((x)/1852.0)
 #define SPEED_MS_TO_KN(x) ((x)*1.94384)
 #define K_TO_C(x) (((x)-273.15))
-
+#define PASCAL_TO_MBAR(x) (0.01*x)
 
 
 
@@ -69,7 +69,7 @@ void LogBook::log() {
                 }
                 Serial.print("Creating ");Serial.println(filename);
                 f = SPIFFS.open(filename,"a");
-                f.println("time,logTime,lat,long,log,fixage,trip,cog,sog,stw,hdg,awa,aws,mbar,rpm,coolant,serviceVolts,engineVolts,serviceCurrent");
+                f.println("time,logTime,lat,long,log,fixage,trip,cog,sog,stw,hdg,awa,aws,mbar,mbarage,rpm,coolant,serviceVolts,engineVolts,serviceCurrent");
             } else {
                 //Serial.print("Opening ");Serial.println(filename);
                 f = SPIFFS.open(filename,"a");
@@ -100,9 +100,11 @@ void LogBook::log() {
             int i;
             for ( i = 0; i < MAX_COGSOG_SOURCES; i++) {
                 if (dataCollector.cogSog[i].source != 255 && dataCollector.cogSog[i].lastModified+30000 > now ) {
-                    f.printf(",%d,%4.1f",(int)headingAngleToDeg(dataCollector.cogSog[i].cog),
-                         SPEED_MS_TO_KN(dataCollector.cogSog[i].sog));
-                    break;
+                    if ( dataCollector.cogSog[i].cog > -1000000) {
+                        f.printf(",%d,%4.1f",(int)headingAngleToDeg(dataCollector.cogSog[i].cog),
+                             SPEED_MS_TO_KN(dataCollector.cogSog[i].sog));
+                        break;
+                    }
                 } 
             }
             if ( i == MAX_COGSOG_SOURCES ) {
@@ -141,6 +143,13 @@ void LogBook::log() {
             }
             if ( i == MAX_WIND_SOURCES ) {
                 f.print(",");
+            }
+            double pressure;
+
+            if ( dataCollector.getPressure(pressure, age) ) {
+                f.printf(",%6.1f,%d",PASCAL_TO_MBAR(pressure),age);
+            } else {
+                f.print(",,");                
             }
             // rpm, ct, rpm, K
             for ( i = 0; i < MAX_ENGINE_SOURCES; i++) {

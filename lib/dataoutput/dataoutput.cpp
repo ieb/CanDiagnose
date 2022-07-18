@@ -416,9 +416,11 @@ void DataCollector::Pressure(const tN2kMsg &N2kMsg) {
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_PRESSURE_SOURCES; i++) {
                 if (pressure[i].use(N2kMsg.Source, Instance, reuse)) {
+                    ActualPressure = 102412.0;
                     pressure[i].sourceSensor = PressureSource;
                     pressure[i].actual = ActualPressure;
-                    pressure[i].storeHistory(ActualPressure);
+                    // store as mbar in history.
+                    pressure[i].storeHistory(ActualPressure*0.01);
                     return;
                 }
             }
@@ -707,6 +709,17 @@ void DataCollector::LatLon(const tN2kMsg &N2kMsg) {
     }
 }
 
+bool DataCollector::getPressure( double &_pressure, int16_t &age) {
+    unsigned long now = millis();
+    if (pressure[0].source == 255) {
+        return false;
+    } else {
+        _pressure = pressure[0].actual;
+        age = (now - pressure[0].lastModified)/1000;
+        return true;
+    }
+}
+
 
 bool DataCollector::getLatLong(double &latitude, double &longitude, int16_t &age) {
     PossitionData *possition = getPossition();
@@ -738,6 +751,8 @@ bool DataCollector::getLatLong(double &latitude, double &longitude, int16_t &age
     }
     return false;
 }
+
+
 
 
 
@@ -1317,7 +1332,7 @@ bool NavigationDataOutput::drawPage(Adafruit_SSD1306 * display) {
 #if OLED_HEIGHT == 32
 #else
     display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    if ( cogSog == NULL ) {
+    if ( cogSog == NULL ||  cogSog->cog < -100000 ) {
         display->setCursor(0,12);              
         display->printf("COG: -\n"); 
         display->setCursor(0,36);             
@@ -1397,7 +1412,7 @@ bool EnvironmentDataOutput::drawPage(Adafruit_SSD1306 * display) {
                 return true;
             }
         case 1:
-            if ( pressure->drawHistory(display,false,970.0,1030.0) ) {
+            if ( pressure->drawHistory(display) ) {
                 display->display();
                 subPage = 0;
                 return true;

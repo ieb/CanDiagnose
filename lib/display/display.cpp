@@ -233,7 +233,7 @@ bool History128over24::drawHistory(Adafruit_SSD1306 * display, bool fixedRange, 
     display->setTextSize(1);
     display->setTextColor(SSD1306_INVERSE);
     display->setCursor(0,0);
-//    Serial.printf("%d %d %f %f %f %f\n", hmin, hmax, fhmin, fhmax, offset, scale);
+//    Serial.printf("%d %d %f %f %f %f\n", hmin, hmax, offset+(hmin/scale), offset+(hmax/scale), offset, scale);
     display->printf("max:%6.1f", offset+(hmax/scale));
     display->setCursor(0,64-7);
     display->printf("min:%6.1f %s", offset+(hmin/scale), title);
