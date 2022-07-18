@@ -50,11 +50,13 @@ void LogBook::log() {
     unsigned long now = millis();
     if ( now > lastLogUpdate + logPeriod) {
         LogData * log = dataCollector.getLog();
+        GnssData * gnss = dataCollector.getGnss();
+
     
-        if ( log != NULL && log->lastModified > lastLogUpdate ) {
-            // new log data is avaiable, this indicates that the NMEA2000 instruments are on 
-            uint16_t daySerial = log->daysSince1970; 
-            double seconds = log->secondsSinceMidnight;
+        if ( gnss != NULL && gnss->lastModified > lastLogUpdate ) {
+            // new gnss data is avaiable, this indicates that the NMEA2000 instruments are on 
+            uint16_t daySerial = gnss->daysSince1970; 
+            double seconds = gnss->secondsSinceMidnight;
             tmElements_t tm;
             // docu
             double tofLog = seconds+daySerial*SECS_PER_DAY; 
@@ -74,7 +76,6 @@ void LogBook::log() {
                 //Serial.print("Opening ");Serial.println(filename);
                 f = SPIFFS.open(filename,"a");
             }
-
 
             f.printf("%04d-%02d-%02dT%02d:%02d:%02dZ",tm.Year+1970, tm.Month, tm.Day,tm.Hour,tm.Minute,tm.Second);
             f.printf(",%lu",(unsigned long)tofLog);

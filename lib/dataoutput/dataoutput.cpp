@@ -721,6 +721,7 @@ bool DataCollector::getPressure( double &_pressure, int16_t &age) {
 }
 
 
+
 bool DataCollector::getLatLong(double &latitude, double &longitude, int16_t &age) {
     PossitionData *possition = getPossition();
     GnssData *gnss = getGnss();
@@ -1024,8 +1025,8 @@ void NavigationDataOutput::outputJson(AsyncResponseStream *outputStream) {
         append("lastModified",gnss->lastModified);
         append("daysSince1970",gnss->daysSince1970);
         append("secondsSinceMidnight",gnss->secondsSinceMidnight);
-        append("latitude",gnss->latitude);
-        append("longitude",gnss->longitude);
+        append("latitude",gnss->latitude,8);
+        append("longitude",gnss->longitude,8);
         append("altitude",gnss->altitude);
         append("type",gnss->type);
         append("method",gnss->method);

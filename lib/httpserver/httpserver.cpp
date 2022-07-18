@@ -379,10 +379,6 @@ void JsonOutput::append(int value) {
     appendCommaIfRequired();
     outputStream->print(value);
 }
-void JsonOutput::append(double value) {
-    appendCommaIfRequired();
-    outputStream->print(value);
-}
 void JsonOutput::append(unsigned long value) {
     appendCommaIfRequired();
     outputStream->print(value);
@@ -496,9 +492,9 @@ void CsvOutput::appendField(int value) {
     outputStream->print(",");
     outputStream->print(value);
 }
-void CsvOutput::appendField(double value) {
+void CsvOutput::appendField(double value, int precision) {
     outputStream->print(",");
-    outputStream->print(value);
+    outputStream->print(value, precision);
 }
 void CsvOutput::appendField(unsigned long value) {
     outputStream->print(",");

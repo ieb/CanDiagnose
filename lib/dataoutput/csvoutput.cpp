@@ -178,8 +178,8 @@ gnss,0,83675791,18973,77160,60.44,22.24,10.5,0,1,12,0.8,0.5,15,1,0,2
             appendField(gnss->lastModified);
             appendField(gnss->daysSince1970);
             appendField(gnss->secondsSinceMidnight);
-            appendField(gnss->latitude);
-            appendField(gnss->longitude);
+            appendField(gnss->latitude,8);
+            appendField(gnss->longitude,8);
             appendField(gnss->altitude);
             appendField(gnss->type);
             appendField(gnss->method);
@@ -407,8 +407,8 @@ position,0,83663914,54.33,4.342
             startRecord("possition");
             appendField(i);
             appendField(possition->lastModified);
-            appendField(possition->latitude);
-            appendField(possition->longitude);
+            appendField(possition->latitude,8);
+            appendField(possition->longitude,8);
             endRecord();
         }
     }

@@ -56,7 +56,7 @@ class CsvOutput {
         void endRecord();
         void appendField(const char *value);
         void appendField(int value);
-        void appendField(double value);
+        void appendField(double value, int precision = 2);
         void appendField(unsigned long value);
         void appendField(uint32_t value);
     protected:
