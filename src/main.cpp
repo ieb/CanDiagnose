@@ -330,7 +330,8 @@ long checkPress() {
 //*****************************************************************************
 void loop() { 
   NMEA2000.ParseMessages();
-  listDevices.list();
+// Only on demand as it causes startup to take time to complete
+//  listDevices.list();
   temperature.read();
   temperature.output();
   modbus.read();

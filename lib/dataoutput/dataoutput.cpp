@@ -1,5 +1,6 @@
 
 #include "dataoutput.h"
+#include <TimeLib.h>
 
 
 void DataCollector::HandleMsg(const tN2kMsg &N2kMsg) {
@@ -416,7 +417,6 @@ void DataCollector::Pressure(const tN2kMsg &N2kMsg) {
         for (int u = 0; u < 2; u++) {
             for (int i = 0; i < MAX_PRESSURE_SOURCES; i++) {
                 if (pressure[i].use(N2kMsg.Source, Instance, reuse)) {
-                    ActualPressure = 102412.0;
                     pressure[i].sourceSensor = PressureSource;
                     pressure[i].actual = ActualPressure;
                     // store as mbar in history.
@@ -1496,37 +1496,68 @@ bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
     display->cp437(true);         // Use full 256 char 'Code Page 437' font
     double latitude,longitude;
     int16_t age;
-    if (!dataCollector.getLatLong(latitude, longitude, age)) {
-        display->printf(" --%c--.--N\n", 248); 
-        display->printf("---%c--.--E\n", 248); 
-    } else {
-        int deg = (int) latitude;
-        double min = (double) 60.0*(latitude-deg);
-        if ( deg >= 0 && min >= 0) {
-            display->printf(" %02d%c%05.2fN\n", deg, 248, min); 
-        } else {
-            display->printf(" %02d%c%05.2fS\n", -deg, 248, -min); 
-        }
-        deg = (int) longitude;
-        min = (double) 60.0*(longitude-deg);
-        display->setCursor(0,36);             
-        if ( deg >= 0 && min >= 0) {
-            display->printf("%03d%c%05.2fE\n", deg,248,min); 
-        } else {
-            display->printf("%03d%c%05.2fW\n", -deg,248,-min); 
-        }
-        display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
-        if ( age < 600 ) {
-            display->printf("%ds\n", age); 
-        } else if (age < 7200 ) {
-            display->printf("%dm\n", age/60); 
-        } else {
-            display->printf("%dn\n", age/3600); 
-        }
+    GnssData * gnss;
+    
+    switch(subPage) {
+        case 0:
+            if (!dataCollector.getLatLong(latitude, longitude, age)) {
+                display->printf(" --%c--.--N\n", 248); 
+                display->printf("---%c--.--E\n", 248); 
+            } else {
+                int deg = (int) latitude;
+                double min = (double) 60.0*(latitude-deg);
+                if ( deg >= 0 && min >= 0) {
+                    display->printf(" %02d%c%05.2fN\n", deg, 248, min); 
+                } else {
+                    display->printf(" %02d%c%05.2fS\n", -deg, 248, -min); 
+                }
+                deg = (int) longitude;
+                min = (double) 60.0*(longitude-deg);
+                display->setCursor(0,36);             
+                if ( deg >= 0 && min >= 0) {
+                    display->printf("%03d%c%05.2fE\n", deg,248,min); 
+                } else {
+                    display->printf("%03d%c%05.2fW\n", -deg,248,-min); 
+                }
+                display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
+                if ( age < 600 ) {
+                    display->printf("%ds\n", age); 
+                } else if (age < 7200 ) {
+                    display->printf("%dm\n", age/60); 
+                } else {
+                    display->printf("%dn\n", age/3600); 
+                }
+            }
+            display->cp437(false);         
+            display->display();
+            subPage = 1;
+            return false;
+        case 1:
+            gnss = dataCollector.getGnss();
+            if ( gnss != NULL ) {
+                age = (millis() - gnss->lastModified)/1000;
+                uint16_t daySerial = gnss->daysSince1970; 
+                double seconds = gnss->secondsSinceMidnight;
+                tmElements_t tm;
+                // docu
+                double tofLog = seconds+daySerial*SECS_PER_DAY; 
+                breakTime((time_t)tofLog, tm);
+                display->printf("%04d-%02d-%02d\n", tm.Year+1970, tm.Month, tm.Day);
+                display->printf("%02d:%02d:%02dZ\n", tm.Hour,tm.Minute,tm.Second);
+                display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
+                display->printf("%dZ\n", age);
+
+            } else {
+                display->printf("no gps\n");
+            }
+            display->display();
+            subPage = 0;
+            return true;
+        default:
+            subPage = 0;
+            return true;
     }
-    display->cp437(false);         
-    display->display();
-    return true;
+
 #endif
 
 }

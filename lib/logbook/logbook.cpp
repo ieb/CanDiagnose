@@ -55,6 +55,7 @@ void LogBook::log() {
     
         if ( gnss != NULL && gnss->lastModified > lastLogUpdate ) {
             // new gnss data is avaiable, this indicates that the NMEA2000 instruments are on 
+            
             uint16_t daySerial = gnss->daysSince1970; 
             double seconds = gnss->secondsSinceMidnight;
             tmElements_t tm;
