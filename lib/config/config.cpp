@@ -3,6 +3,7 @@
 
 bool ConfigurationFile::get(const char * filename, const String &key, String &value) {
     if (!SPIFFS.begin()) {
+        Serial.println("Start SPIFFS failed in config");
         return false;
     }
     if(! SPIFFS.exists(filename) ) {

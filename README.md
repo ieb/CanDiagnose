@@ -79,29 +79,51 @@ See buildui.sh for SPIFFS image commands.
     |  G           i j k l m                 K  |
     ---------------------------------------------
 
-    a  SPI BL
-    b  SPI RST
-    c  SPI DC
-    d  SPI CS
-    e  SPI SCK
-    f  SPI MOSI
-    g  SPI GND
-    h  SPI 3V
+    a  SPI BL   GPIO13
+    b  SPI RST  GPIO12
+    c  SPI DC   GPIO26
+    d  SPI CS   GPIO25
+    e  SPI SCK  GPIO33
+    f  SPI MOSI GPIO32
+    g  SPI GND  
+    h  SPI 3V    
     i  i2c GND      Display black/blue
-    j  i2c SCL      Display green
-    k  i2c SDA      Display white
-    l  i2c BTN      Display yellow
+    j  i2c SCL  D5    Display green
+    k  i2c SDA  D18    Display white
+    l  i2c BTN  D19    Display yellow
     m  i2c 3V       Display red
 
-    A  1wire 1w
+    A  1wire 1w  D21
     B  1wire GND
     C  1wire 3V
     D  RS-485 5.8V
     E  RS-485 GND
-    F  RS-485 A
+    F  RS-485 A 
     G  RS-485 B
     H  CAN 12V
     I  CAN 0V
     J  CAN CANH
     K  CAN CANL
+
+
+    Other Pins Not mentioned above
+    RS485-TX TX2/GPIO17
+    RS485-RX RX2/GPIO16
+    RS485-EN D4
+    CAN-RX  D22
+    CAN-TX  D23
+
+
+# eInk Waveshare display
+
+This uses SPI output only with a bunch of additional pins.
+
+    eInk DIN <-  f  SPI MOSI GPIO32
+    eInk CLK <-  e  SPI SCK  GPIO33
+    eInk CS  <-  d  SPI CS   GPIO25
+    eInk DC  <-  c  SPI DC   GPIO26
+    eInk RST <-  b  SPI RST  GPIO12
+    eInk BUSY -> a  SPI BL   GPIO13
+
+ 
 

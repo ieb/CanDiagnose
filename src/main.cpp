@@ -30,8 +30,8 @@
 #define SPI_DISPLAY_SCK GPIO_NUM_33
 #define SPI_DISPLAY_CS GPIO_NUM_25
 #define SPI_DISPLAY_DC GPIO_NUM_26
-#define SPI_DISPLAY_RST GPIO_NUM_12
-#define SPI_DISPLAY_BL GPIO_NUM_13
+#define SPI_DISPLAY_RST GPIO_NUM_27
+#define SPI_DISPLAY_BL GPIO_NUM_35
 
 // Calibrations to take account of resistor tollerances, this is specific to the board being flashed.
 // should probably be in a config file eventually.
@@ -54,7 +54,11 @@ tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
 #include "dataoutput.h"
 #include "httpserver.h"
 #include "temperature.h"
-#include "display.h"
+
+
+//#include "display.h"
+#include "einkdisplay.h"
+
 #include "logbook.h"
 #include "modbus.h"
 
@@ -89,7 +93,9 @@ LogBook logbook(dataCollector);
 
 
 WebServer webServer(OutputStream);
-OledDisplay display;
+//OledDisplay display;
+EinkDisplay display(dataCollector);
+
 
 
 
@@ -172,6 +178,7 @@ void setup() {
   webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
 
+/*
   display.addDisplayPage(&windSpeedDataOutput);
   display.addDisplayPage(&environmentDataOutput);
   display.addDisplayPage(&navigationDataOutput);
@@ -180,6 +187,7 @@ void setup() {
   display.addDisplayPage(&modbus);  
   display.addDisplayPage(&engineDataOutput);
   display.addDisplayPage(&webServer);
+*/
 
   // Set Product information
   NMEA2000.SetProductInformation("00000003", // Manufacturer's Model SerialIO code
@@ -269,11 +277,13 @@ void CheckCommand() {
         modbus.setDiagnostics(modbusDiagnose);
         break;
 
-      case 'b': display.dim(); break;
+      case 'b': display.nextPage(); 
+      break;
     }
   }
 }
 
+/*
 void onPress() {
   display.nextPage();
 }
@@ -324,7 +334,55 @@ long checkPress() {
   }
   return startPress; 
 }
+*/
 
+/*
+bool checkTouch() {
+  static bool beingTouched = false;
+  static unsigned long lastChange = 0;
+  int touchValue = touchRead(Touch2);
+
+  unsigned long now = millis();
+  int8_t retValue = 0;
+  if ( now-lastChange < 100) {
+    // ignore
+  } else if ( beingTouched ) {
+    if (touchValue > TOUCH_THRESHOLD ) {
+      beingTouched = false;
+      lastChange = now;
+    }
+  } else {
+    if (touchValue < TOUCH_THRESHOLD ) {
+      beingTouched = true;
+      lastChange = now;
+      return true;
+    }
+  }
+  return false;
+}
+*/
+
+bool checkPress() {
+  static bool beingPressed = false;
+  static unsigned long lastBtnChange = 0;
+  int dr = digitalRead(DISPLAY_BUTTON);
+  unsigned long now = millis();
+  if ( now-lastBtnChange < 100) {
+    // ignore
+  } else if ( beingPressed ) {
+    if ( dr == LOW ) {
+      beingPressed = false;
+      lastBtnChange = now;      
+    }
+  } else {
+    if ( dr == HIGH ) {
+      beingPressed = false;
+      lastBtnChange = now;      
+      return true;
+    }
+  }
+  return false;
+}
 
 
 //*****************************************************************************
@@ -340,10 +398,10 @@ void loop() {
   logbook.log();
 //  logbook.demoMode();
   CheckCommand();
-  if ( checkPress() + 60000 > millis() ) {
-    display.wake();
-  } else {
-    display.sleep();
+  /*
+  if ( checkPress()) {
+    display.nextPage();
   }
+  */
   display.update();
 }

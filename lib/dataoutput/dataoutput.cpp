@@ -867,6 +867,79 @@ CogSogData * DataCollector::getCogSog() {
 };
 
 
+
+PressureData * DataCollector::getAtmosphericPressure() {
+    if ( pressure[0].source != 255 && pressure[0].lastModified > 0 ) {
+        return &pressure[0];
+    } else {
+        return NULL;
+    }
+}
+SpeedData * DataCollector::getSpeed() {
+    unsigned long lm = 0;
+    SpeedData *selected = NULL;
+    for (int i = 0; i < MAX_SPEED_SOURCES; i++) {
+        if (speed[i].source != 255 && speed[i].lastModified > lm ) {
+            lm = speed[i].lastModified;
+            selected = &speed[i];
+        }
+    }
+    return selected;
+};
+
+HeadingData * DataCollector::getHeading() {
+    unsigned long lm = 0;
+    HeadingData *selected = NULL;
+    for (int i = 0; i < MAX_HEADDING_SOURCES; i++) {
+        if (heading[i].source != 255 && heading[i].lastModified > lm ) {
+            lm = heading[i].lastModified;
+            selected = &heading[i];
+        }
+    }
+    return selected;
+};
+
+WindData * DataCollector::getAparentWind() {
+    unsigned long lm = 0;
+    WindData *selected = NULL;
+    for (int i = -0; i < MAX_WIND_SOURCES; i++) {
+        if ( wind[i].source != 255 && wind[i].windReference == N2kWind_Apparent && wind[i].lastModified > lm ) {
+            lm = wind[i].lastModified;
+            selected = &wind[i];
+            return &wind[i];
+        }
+    }
+    return selected;
+};
+
+FluidLevelData * DataCollector::getFuelLevel() {
+    unsigned long lm = 0;
+    FluidLevelData *selected = NULL;
+    for (int i = -0; i < MAX_FLUID_LEVEL_SOURCES; i++) {
+        if ( fluidLevel[i].source != 255 && fluidLevel[i].fluidType == N2kft_Fuel &&  fluidLevel[i].lastModified > lm) {
+            lm = fluidLevel[i].lastModified;
+            selected = &fluidLevel[i];
+        }
+    }
+    return selected;
+};
+
+DcBatteryData * DataCollector::getBatteryInstance(byte instance) {
+    unsigned long lm = 0;
+    DcBatteryData *selected = NULL;
+    for (int i = -0; i < MAX_BATTERY_SOURCES; i++) {
+        if ( dcBattery[i].source != 255 && dcBattery[i].instance == instance &&  dcBattery[i].lastModified > lm) {
+            lm = dcBattery[i].lastModified;
+            selected = &dcBattery[i];
+        }
+    }
+    return selected;
+};
+
+
+
+
+
 void EngineDataOutput::outputJson(AsyncResponseStream *outputStream) {
     startJson(outputStream);
     append("t",millis());
@@ -927,7 +1000,7 @@ void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
     append("t",millis());
     append("nmea2000",true);
     startArray("heading");
-    for (int i=0; i<MAX_SPEED_SOURCES; i++) {
+    for (int i=0; i<MAX_HEADDING_SOURCES; i++) {
         HeadingData *heading =  &dataCollector.heading[i];
         startObject();
         append("id",i);

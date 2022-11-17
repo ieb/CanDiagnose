@@ -276,13 +276,20 @@ class DataCollector {
         LogData *getLog();
 
         WindData * getWindInstance(byte instance, tN2kWindReference reference=N2kWind_Apparent);
-        EngineData * getEngineInstance(byte instance);
+        EngineData * getEngineInstance(byte instance=0);
         FluidLevelData * getFluidLevelInstance(byte instance);
         PossitionData * getPossition();
         GnssData * getGnss();
         CogSogData * getCogSog();
         bool getLatLong(double &latitude, double &longitude, int16_t &age);
         bool getPressure( double &pressure, int16_t &age);
+
+        PressureData * getAtmosphericPressure();
+        SpeedData * getSpeed();
+        HeadingData * getHeading();
+        WindData * getAparentWind();
+        DcBatteryData * getBatteryInstance(byte instance);
+        FluidLevelData * getFuelLevel();
 
 
 
