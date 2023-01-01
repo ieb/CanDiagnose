@@ -22,11 +22,18 @@ void EinkDisplay::begin(int32_t baud ) {
  * Performs an update of the display 
  */
 void EinkDisplay::update(void) {
+	updateValues(false);
 	unsigned long now = millis();
 	if ( (now-pageChangeAt) > 30000 ) {
 		pageNo = 0;
 	}
 	if ( pageVisible != pageNo ) {
+      Serial.print("calls=");
+      Serial.print(pageNoCalls);
+      Serial.print(" changes=");
+      Serial.print(pageNoChanges);
+      Serial.print(" pageNo=");
+      Serial.println(pageNo);
         switch(pageNo) {
             case 0:
                 showLogo();
@@ -42,30 +49,19 @@ void EinkDisplay::update(void) {
     }
 };
 
+// called by ISR, must be fast.
 void EinkDisplay::nextPage(void) {
-	pageNo++;
-	pageChangeAt = millis();
-	if ( pageNo > 2) {
-		pageNo = 1;
+	pageNoCalls++;
+	if ( pageNo == pageVisible ) {
+		pageNoChanges++;
+		pageNo++;
+		pageChangeAt = millis();
+		if ( pageNo > 2) {
+			pageNo = 1;
+		}
 	}
 };
-/*
-void EinkDisplay::dim(void) {
 
-};
-void EinkDisplay::endDim(void) {
-
-};
-void EinkDisplay::startDim(void) {
-
-};
-void EinkDisplay::wake(void) {
-
-};
-void EinkDisplay::sleep(void) {
-
-};
-*/
 
 // Private methods
 
@@ -279,142 +275,179 @@ void EinkDisplay::printString(int x, int y,
     display.print(text);
 };
 
-void EinkDisplay::updateValues(void) {
+double EinkDisplay::average(double v, double r) {
+	if (v == 1E9 ) {
+		return r;
+	} else {
+		return (0.9*v)+(0.1*r);
+	}
+};
+double EinkDisplay::angularAverage(double v, double r) {
+	if ( v == 1E9 ) {
+		return r;
+	} else {
+		double vrad = DegToRad(v);
+		double rrad = DegToRad(r);
+		double s = (0.9*sin(vrad))+(0.1*sin(rrad));
+		double c = (0.9*cos(vrad))+(0.1*cos(rrad));
+		return RadToDeg(atan2(s,c));
+	}
+};
 
-    LogData * logData = dataCollector.getLog();
-    if ( logData != NULL) {
-        logReading = logData->log/1852.0;
-    } else {
-#ifdef DUMMYDATA
-        logReading = 1234.21; 
-#else
-        logReading = 1E9;
-#endif
-    }
-    PressureData *pressure = dataCollector.getAtmosphericPressure();
-    if ( pressure != NULL ) {
-        pressureReading = PascalTomBar(pressure->actual);
-    } else {
-#ifdef DUMMYDATA
-        pressureReading = 1024.56; //1E9;
-#else
-        pressureReading = 1E9;
-#endif
-    }
-    CogSogData * cogSogData = dataCollector.getCogSog();
-    if ( cogSogData != NULL) {
-        cogReading = RadToDeg(cogSogData->cog);
-        sogReading = msToKnots(cogSogData->sog); 
-    } else {
-#ifdef DUMMYDATA
-        cogReading = 213.42; //1E9;
-        sogReading = 12.87; //1E9;
-#else
-        cogReading = 1E9;
-        sogReading = 1E9;
-#endif
-    }
-    SpeedData * speedData = dataCollector.getSpeed();
-    if ( speedData != NULL ) {
-        stwReading = msToKnots(speedData->stw);
-    } else {
-#ifdef DUMMYDATA
-        stwReading = 11.23; //1E9;
-#else
-        stwReading = 1E9;
-#endif
-    }
-    HeadingData * headingData = dataCollector.getHeading();
-    if ( headingData != NULL ) {
-        hdmReading = RadToDeg(headingData->heading); 
-    } else {
-#ifdef DUMMYDATA
-        hdmReading = 211.67; //1E9;
-#else
-        hdmReading = 1E9;
-#endif
-    }
-    WindData * windData = dataCollector.getAparentWind();
-    if ( windData != NULL ) {
-        awsReading = msToKnots(windData->windSpeed);
-        awaReading = RadToDeg(windData->windAngle);
-        if (speedData != NULL) {
-            double apparentX = cos(windData->windAngle) * windData->windSpeed;
-            double apparentY = sin(windData->windAngle) * windData->windSpeed;
-            double twa = atan2(apparentY, - speedData->stw + apparentX);
-            double tws = sqrt(pow(apparentY, 2) + pow(-speedData->stw + apparentX, 2));
-            twsReading = msToKnots(tws);
-            twaReading = RadToDeg(twa);
-        } else {
-#ifdef DUMMYDATA
-            twsReading = 22.543; //1E9;
-            twaReading = -45.23; //1E9;
-#else
-            twsReading = 1E9;
-            twaReading = 1E9;
-#endif
-        }
-    } else {
-#ifdef DUMMYDATA
-        awsReading = 21.23; //1E9;
-        awaReading = 32.214; //1E9;
-        twsReading = 18.92; //1E9;
-        twaReading = -45.23; //1E9;
-#else
-        awsReading = 1E9;
-        awaReading = 1E9;
-        twsReading = 1E9;
-        twaReading = 1E9;
-#endif
-    }
+void EinkDisplay::updateValues(bool force) {
+	unsigned long now = millis();
+	if ( force || (now-lastUpdate) > 1000 ) {
+		lastUpdate = now;
 
-    DcBatteryData * serviceBattery = dataCollector.getBatteryInstance(0);
-    if (serviceBattery != NULL ) {
-        serviceVoltReading = serviceBattery->voltage;
-    } else {
+
+	    LogData * logData = dataCollector.getLog();
+	    if ( logData != NULL) {
+	        logReading = logData->log/1852.0;
+	    } else {
 #ifdef DUMMYDATA
-        serviceVoltReading = 12.32; //1E9;
+	        logReading = 1234.21; 
 #else
-        serviceVoltReading = 1E9;
+	        logReading = 1E9;
 #endif
-    }
-    DcBatteryData * engineBattery = dataCollector.getBatteryInstance(1);
-    if (engineBattery != NULL ) {
-        engineVoltReading = engineBattery->voltage;
-    } else {
+	    }
+	    PressureData *pressure = dataCollector.getAtmosphericPressure();
+	    if ( pressure != NULL ) {
+	        pressureReading = average(pressureReading,PascalTomBar(pressure->actual));
+	    } else {
 #ifdef DUMMYDATA
-        engineVoltReading = 12.65; //1E9;
+	        pressureReading = average(pressureReading,1024.56); //1E9;
 #else
-        engineVoltReading = 1E9;
+	        pressureReading = 1E9;
 #endif
-    }
-    EngineData * engineData = dataCollector.getEngineInstance();
-    if (engineData != NULL ) {
-        engineHoursReading = engineData->Hours;
-        rpmReading = engineData->speed;
-        coolantTemperatureReading = KelvinToC(engineData->CoolantTemp);
-        alternatorVoltReading = engineData->AltenatorVoltage;
-    } else {
+	    }
+	    CogSogData * cogSogData = dataCollector.getCogSog();
+	    if ( cogSogData != NULL) {
+	        cogReading = angularAverage(cogReading,RadToDeg(cogSogData->cog));
+	        sogReading = average(sogReading,msToKnots(cogSogData->sog)); 
+	    } else {
 #ifdef DUMMYDATA
-        engineHoursReading = 123.2; //1E9;
-        rpmReading = 2543.7; //1E9;
-        coolantTemperatureReading = 56.43; //1E9;
-        alternatorVoltReading = 13.82; //1E9;
+	        cogReading = angularAverage(cogReading,213.42); //1E9;
+	        sogReading = average(sogReading,12.87); //1E9;
 #else
-        engineHoursReading = 1E9;
-        rpmReading = 1E9;
-        coolantTemperatureReading = 1E9;
-        alternatorVoltReading = 1E9;
+	        cogReading = 1E9;
+	        sogReading = 1E9;
 #endif
-    }
-    FluidLevelData * fuelLevel = dataCollector.getFuelLevel();
-    if (fuelLevel != NULL ) {
-        fuelLitersReading = fuelLevel->level * fuelLevel->capacity;
-    } else {
+	    }
+	    SpeedData * speedData = dataCollector.getSpeed();
+	    if ( speedData != NULL ) {
+	        stwReading = average(stwReading,msToKnots(speedData->stw));
+	    } else {
 #ifdef DUMMYDATA
-        fuelLitersReading = 42.32; //1E9;
+	        stwReading = average(stwReading,11.23); //1E9;
 #else
-        fuelLitersReading = 1E9;
+	        stwReading = 1E9;
 #endif
-    }
+	    }
+	    HeadingData * headingData = dataCollector.getHeading();
+	    if ( headingData != NULL ) {
+	        hdmReading = angularAverage(hdmReading,RadToDeg(headingData->heading)); 
+	    } else {
+#ifdef DUMMYDATA
+	        hdmReading = angularAverage(hdmReading,211.67); //1E9;
+#else
+	        hdmReading = 1E9;
+#endif
+	    }
+	    WindData * windData = dataCollector.getAparentWind();
+	    if ( windData != NULL ) {
+	        awsReading = average(awsReading,msToKnots(windData->windSpeed));
+	        awaReading = angularAverage(awaReading,RadToDeg(windData->windAngle));
+	        if (stwReading != 1E9) {
+	            double apparentX = cos(windData->windAngle) * windData->windSpeed;
+	            double apparentY = sin(windData->windAngle) * windData->windSpeed;
+	            double twa = atan2(apparentY, - stwReading + apparentX);
+	            double tws = sqrt(pow(apparentY, 2) + pow(-stwReading + apparentX, 2));
+	            twsReading = msToKnots(tws);
+	            twaReading = RadToDeg(twa);
+	        } else {
+#ifdef DUMMYDATA
+	            twsReading = average(twsReading,22.543); //1E9;
+	            twaReading = angularAverage(twaReading,-45.23); //1E9;
+#else
+	            twsReading = 1E9;
+	            twaReading = 1E9;
+#endif
+	        }
+	    } else {
+#ifdef DUMMYDATA
+	        awsReading = average(awsReading, 21.23); //1E9;
+	        awaReading = angularAverage(awaReading, 32.214); //1E9;
+	        twsReading = average(twsReading, 18.92); //1E9;
+	        twaReading = angularAverage(twaReading, -45.23); //1E9;
+#else
+	        awsReading = 1E9;
+	        awaReading = 1E9;
+	        twsReading = 1E9;
+	        twaReading = 1E9;
+#endif
+	    }
+
+	    ModbusShunt * serviceBatteryShunt = modbus.getServiceBattery();
+	    if (serviceBatteryShunt != NULL && serviceBatteryShunt->isEnabled() ) {
+		        serviceVoltReading = average(serviceVoltReading, serviceBatteryShunt->voltage);
+	    } else {
+		    DcBatteryData * serviceBattery = dataCollector.getBatteryInstance(0);
+		    if (serviceBattery != NULL ) {
+		        serviceVoltReading = average(serviceVoltReading, serviceBattery->voltage);
+		    } else {
+#ifdef DUMMYDATA
+		        serviceVoltReading = average(serviceVoltReading, 12.32); //1E9;
+#else
+		        serviceVoltReading = 1E9;
+#endif
+		    }
+
+	    }
+
+	    ModbusShunt * engineBatteryShunt = modbus.getEngineBattery();
+	    if (engineBatteryShunt != NULL && engineBatteryShunt->isEnabled() ) {
+		        engineVoltReading = average(engineVoltReading, engineBatteryShunt->voltage);
+	   	} else {
+
+		    DcBatteryData * engineBattery = dataCollector.getBatteryInstance(1);
+		    if (engineBattery != NULL ) {
+		        engineVoltReading = average(engineVoltReading, engineBattery->voltage);
+		    } else {
+#ifdef DUMMYDATA
+		        engineVoltReading = average(engineVoltReading, 12.65); //1E9;
+#else
+		        engineVoltReading = 1E9;
+#endif
+		    }
+		}
+	    EngineData * engineData = dataCollector.getEngineInstance();
+	    if (engineData != NULL ) {
+	        engineHoursReading = engineData->Hours;
+	        rpmReading = average(rpmReading, engineData->speed);
+	        coolantTemperatureReading = average(coolantTemperatureReading, KelvinToC(engineData->CoolantTemp));
+	        alternatorVoltReading = average(alternatorVoltReading, engineData->AltenatorVoltage);
+	    } else {
+#ifdef DUMMYDATA
+	        engineHoursReading = 123.2; //1E9;
+	        rpmReading = 2543.7; //1E9;
+	        coolantTemperatureReading = 56.43; //1E9;
+	        alternatorVoltReading = 13.82; //1E9;
+#else
+	        engineHoursReading = 1E9;
+	        rpmReading = 1E9;
+	        coolantTemperatureReading = 1E9;
+	        alternatorVoltReading = 1E9;
+#endif
+	    }
+	    FluidLevelData * fuelLevel = dataCollector.getFuelLevel();
+	    if (fuelLevel != NULL ) {
+	        fuelLitersReading = average(fuelLitersReading, fuelLevel->level * fuelLevel->capacity);
+	    } else {
+#ifdef DUMMYDATA
+	        fuelLitersReading = 42.32; //1E9;
+#else
+	        fuelLitersReading = 1E9;
+#endif
+	    }
+	}
 }

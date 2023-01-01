@@ -22,7 +22,7 @@ void Modbus::begin(const char * configurationFile) {
     if (ConfigurationFile::get(configurationFile, "modbus.units.servicebattery", v)) {
         serviceBattery.setUnit(v.toInt());
     } else {
-        serviceBattery.setUnit(2);
+        serviceBattery.setUnit(4);
     }
     if (ConfigurationFile::get(configurationFile, "modbus.units.enginebattery", v)) {
         engineBattery.setUnit(v.toInt());
@@ -58,7 +58,7 @@ void Modbus::output() {
         if ( serviceBattery.isEnabled()) {
             SetN2kDCBatStatus(N2kMsg, engineBatteryInstance, engineBattery.voltage, engineBattery.current,CToKelvin(engineBattery.temperature));
             NMEA2000->SendMsg(N2kMsg);
-        } 
+        }
     }       
 }
 void Modbus::read() {

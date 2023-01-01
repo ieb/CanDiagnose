@@ -58,9 +58,9 @@ class ModbusMaster {
 };
 
 
-class BatteryMonitor {
+class ModbusShunt {
     public:
-        BatteryMonitor(const char *name, ModbusMaster &modbusMaster) : name{name}, modbusMaster{modbusMaster} {};
+        ModbusShunt(const char *name, ModbusMaster &modbusMaster) : name{name}, modbusMaster{modbusMaster} {};
         void read();
         void readStats();
         void setUnit(uint8_t unit);
@@ -70,6 +70,7 @@ class BatteryMonitor {
         double voltage;     
         double current;     
         double temperature; 
+        double temperatureOpt; 
         unsigned long lastModified;    
     private:
         const char * name;
@@ -93,18 +94,27 @@ class Modbus : public JsonOutput, public CsvOutput, public DisplayPage, public H
         void read();
         void readStats();
         void output();
-        void addBattery(BatteryMonitor &bm);
+        //void addShunt(ModbusShunt &bm);
         void outputJson(AsyncResponseStream *outputStream);
         void outputCsv(AsyncResponseStream *outputStream);
         bool drawPage(Adafruit_SSD1306 * display);
         void setDiagnostics(bool enabled);
 
+        ModbusShunt * getEngineBattery() {
+            return &engineBattery;
+        };
+
+        ModbusShunt * getServiceBattery() {
+            return &serviceBattery;
+        };
+
+
     private:
         tNMEA2000 *NMEA2000;
         ModbusMaster &modbusMaster;
         unsigned long readPeriod;
-        BatteryMonitor serviceBattery;
-        BatteryMonitor engineBattery;
+        ModbusShunt serviceBattery;
+        ModbusShunt engineBattery;
         uint8_t serviceBatteryInstance;
         uint8_t engineBatteryInstance;
         unsigned long dcstatusPeriod;

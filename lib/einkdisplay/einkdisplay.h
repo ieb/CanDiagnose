@@ -15,13 +15,15 @@
 #include "bitmaps.h"
 #include <TimeLib.h>
 #include "dataoutput.h"
+#include "modbus.h"
 
-#define DUMMYDATA 1
+//#define DUMMYDATA 1
 
 class EinkDisplay {
     public:
         EinkDisplay(
             DataCollector &dataCollector,
+            Modbus &modbus,
         	int8_t din_pin=SPI_DISPLAY_MOSI,
         	int8_t sck_pin=SPI_DISPLAY_SCK,
         	int8_t cs_pin=SPI_DISPLAY_CS, 
@@ -34,32 +36,40 @@ class EinkDisplay {
         					/*BUSY=D2*/ busy_pin)},
         		hspi(HSPI),
         		spi_settings(4000000, MSBFIRST, SPI_MODE0),
-                dataCollector{dataCollector} {
+                dataCollector{dataCollector},
+                modbus{modbus} {
         	hspi.begin(sck_pin, SPI_DISPLAY_MIS0, din_pin, cs_pin);
                 
         };
         void begin(int32_t baud=115200 );
-        void update(void);
-        void nextPage(void);
-        /*void dim(void);
-        void endDim(void);
-        void startDim(void);
-        void wake(void);
-        void sleep(void);*/
+        void update();
+        void nextPage(void); // must be fast as will be called by ISR.
+        uint8_t getPageNo(void) {
+            return pageNo;
+        };
 
-
+        uint16_t getPageNoCalls() {
+            return pageNoCalls;
+        };
+        uint16_t getPageNoChanges() {
+            return pageNoChanges;
+        };
 
 
     private:
         GxEPD2_BW<GxEPD2_370_TC1, GxEPD2_370_TC1::HEIGHT> display;
         SPIClass hspi;
         SPISettings spi_settings;
-        DataCollector dataCollector;
-
-        unsigned long pageChangeAt = 0;
-        uint8_t pageNo = 0;
+        DataCollector &dataCollector;
+        Modbus &modbus;
+        volatile unsigned long pageChangeAt = 0;
+        volatile uint16_t pageNoCalls = 0;
+        volatile uint16_t pageNoChanges = 0;
+        volatile uint8_t pageNo = 0;
+        unsigned long lastUpdate = 0;
         uint8_t pageVisible = 255;
-        
+
+
         uint16_t marginY = 20;
         uint16_t marginX = 10;
         uint16_t lineHeight = 30;
@@ -106,7 +116,10 @@ class EinkDisplay {
         void printString(int x, int y, 
                 const char * text, 
                 bool rightAlign = false);
-        void updateValues(void);
+        void updateValues(bool force=true);
+        double average(double v, double r); 
+        double angularAverage(double v, double r);
+
 
 };
 

@@ -918,13 +918,13 @@ Wire Wire Line
 	1900 6650 2350 6650
 Wire Wire Line
 	2350 6650 2350 6700
-Text GLabel 1900 7250 2    60   Input ~ 0
-BL
-Text GLabel 3400 7000 0    60   Output ~ 0
-BL
+Text GLabel 1900 7250 2    60   Output ~ 0
+BSY
+Text GLabel 3400 5400 0    60   Input ~ 0
+BSY
 Text GLabel 3400 6200 0    60   Output ~ 0
 DC
-Text GLabel 3400 6800 0    60   Output ~ 0
+Text GLabel 3400 6400 0    60   Output ~ 0
 RST
 $Comp
 L BSS138 Q?

@@ -62,7 +62,9 @@ tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
 #include "logbook.h"
 #include "modbus.h"
 
-
+// Only define this if the main loop os so slow that 
+// button presses dont work properly.
+// #define USE_INTERRUPT 1
 
 Stream *OutputStream = &Serial;
 DataDisplay dataDisplay(OutputStream);
@@ -94,10 +96,19 @@ LogBook logbook(dataCollector);
 
 WebServer webServer(OutputStream);
 //OledDisplay display;
-EinkDisplay display(dataCollector);
+EinkDisplay display(dataCollector, modbus);
 
 
+#ifdef USE_INTERRUPT
 
+/*
+ * Increment display page on button press 
+ */
+void IRAM_ATTR buttonPressInterrupt() {
+  display.nextPage();
+}
+
+#endif
 
 
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
@@ -117,6 +128,7 @@ void showHelp() {
   OutputStream->println("  - Send 'm' to toggle modbus diagnostics");
   OutputStream->println("  - Send 'b' to change brightness");
 }
+
 
 
 void setup() {
@@ -140,12 +152,18 @@ void setup() {
     Serial.println("Done ");
   }
 
-  display.begin();
+  display.begin(0);
+
+
 
 
 
 
   pinMode(DISPLAY_BUTTON, INPUT_PULLUP);
+#ifdef USE_INTERRUPT
+  attachInterrupt(DISPLAY_BUTTON, buttonPressInterrupt, RISING);
+#endif
+
   temperature.begin();
   modbus.begin();
  
@@ -277,7 +295,8 @@ void CheckCommand() {
         modbus.setDiagnostics(modbusDiagnose);
         break;
 
-      case 'b': display.nextPage(); 
+      case 'b': 
+        display.nextPage(); 
       break;
     }
   }
@@ -362,6 +381,9 @@ bool checkTouch() {
 }
 */
 
+
+#ifndef USE_INTERRUPT
+
 bool checkPress() {
   static bool beingPressed = false;
   static unsigned long lastBtnChange = 0;
@@ -376,20 +398,20 @@ bool checkPress() {
     }
   } else {
     if ( dr == HIGH ) {
-      beingPressed = false;
+      beingPressed = true;
       lastBtnChange = now;      
       return true;
     }
   }
   return false;
 }
-
+#endif
 
 //*****************************************************************************
 void loop() { 
   NMEA2000.ParseMessages();
 // Only on demand as it causes startup to take time to complete
-//  listDevices.list();
+// listDevices.list();
   temperature.read();
   temperature.output();
   modbus.read();
@@ -398,10 +420,11 @@ void loop() {
   logbook.log();
 //  logbook.demoMode();
   CheckCommand();
-  /*
-  if ( checkPress()) {
+#ifndef USE_INTERRUPT
+  if ( checkPress() ) {
+    Serial.println("Button Being pressed");
     display.nextPage();
   }
-  */
+#endif
   display.update();
 }

@@ -163,7 +163,7 @@ int16_t ModbusMaster::getInt16Response(uint8_t offset) {
 }
 
 void ModbusMaster::consumeTraffic() {
-    recieveEnable();
+    //recieveEnable();
     if ( diagnosticsEnabled ) {
         if ( io->available() ) {
             Serial.print("Traffic:");
@@ -179,7 +179,7 @@ void ModbusMaster::consumeTraffic() {
         }
     }
 
-    transmitEnable();
+    //transmitEnable();
 }
 
 void ModbusMaster::recieveEnable() {
@@ -206,8 +206,10 @@ void ModbusMaster::send() {
     uint16_t crcv = crc16(&buffer[0],frameLength);
     buffer[frameLength++] = 0xff&(crcv>>8);
     buffer[frameLength++] = 0xff&(crcv);
+    transmitEnable();
     io->write(buffer, frameLength);
     io->flush();
+    recieveEnable();
     sent++;
     if ( diagnosticsEnabled ) {
         Serial.print("send>");
@@ -222,7 +224,8 @@ int8_t ModbusMaster::readResponse(uint8_t unit, uint8_t function, int16_t len) {
     int8_t ret = MODBUS_OK;
     if ( io->readBytes(&buffer[0],2) != 2) {
         // timeout
-        Serial.println("Coms Timeout reading 0-1");
+        Serial.print("Coms Timeout reading 0-1 for unit:");
+        Serial.println(unit);
         ret =  MODBUS_TIMEOUT;
     } else {
     // 
@@ -289,7 +292,7 @@ int8_t ModbusMaster::readResponse(uint8_t unit, uint8_t function, int16_t len) {
             }
         }
     }
-    transmitEnable();
+    //transmitEnable();
     if ( diagnosticsEnabled ) {
         Serial.print("recv<");
         dumpFrame(frameLength);
