@@ -5,8 +5,9 @@
 #include <Arduino.h>
 #include <NMEA2000.h>
 #include <N2kMessages.h>
+#include "N2KCollector.h"
 #include "httpserver.h"
-#include "display.h"
+
 
 
 #define MODBUS_OK 0
@@ -81,10 +82,10 @@ class ModbusShunt {
 
 };
 
-class Modbus : public JsonOutput, public CsvOutput, public DisplayPage, public History128over24  {
+class Modbus : public JsonOutput, public CsvOutput, public History128over24  {
     public:
         Modbus(tNMEA2000 *NMEA2000, ModbusMaster &modbusMaster, unsigned long readPeriod=10000):  
-            History128over24{"service V",0.0,1000.0,675000}, 
+            History128over24{0.0,1000.0,675000}, 
             NMEA2000{NMEA2000},
             modbusMaster{modbusMaster},
             readPeriod{readPeriod},
@@ -97,7 +98,6 @@ class Modbus : public JsonOutput, public CsvOutput, public DisplayPage, public H
         //void addShunt(ModbusShunt &bm);
         void outputJson(AsyncResponseStream *outputStream);
         void outputCsv(AsyncResponseStream *outputStream);
-        bool drawPage(Adafruit_SSD1306 * display);
         void setDiagnostics(bool enabled);
 
         ModbusShunt * getEngineBattery() {

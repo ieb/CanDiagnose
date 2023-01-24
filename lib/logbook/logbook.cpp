@@ -8,7 +8,7 @@
 
 
 
-LogBook::LogBook(DataCollector &dataCollector): dataCollector{dataCollector} {
+LogBook::LogBook(N2KCollector &n2kCollector): n2kCollector{n2kCollector} {
 };
 
 
@@ -29,18 +29,18 @@ void LogBook::demoMode() {
     unsigned long now = millis();
     if ( now > lastDemoUpdate + 5000) {
         lastDemoUpdate = now;
-         dataCollector.log[0].lastModified = now;
-         dataCollector.log[0].source = 1;
+         n2kCollector.log[0].lastModified = now;
+         n2kCollector.log[0].source = 1;
          unsigned long atime = now;
-         dataCollector.log[0].daysSince1970 = 18973+(atime/(24*3600000));
-         dataCollector.log[0].secondsSinceMidnight = (atime%(24*3600000))/1000;
-         dataCollector.possition[0].source = 2;
-         dataCollector.possition[0].lastModified = now;
-         dataCollector.possition[0].longitude = 0.11987607061305089-((1.0*now)/(3600000));
-         dataCollector.possition[0].latitude = 52.18623058185942-((1.0*now)/(3600000));
-         dataCollector.log[0].lastModified = now;
-         dataCollector.log[0].log = 1852  + (1852.0*now)/(6000);
-         dataCollector.log[0].tripLog = (1852.0*now)/(6000);
+         n2kCollector.log[0].daysSince1970 = 18973+(atime/(24*3600000));
+         n2kCollector.log[0].secondsSinceMidnight = (atime%(24*3600000))/1000;
+         n2kCollector.possition[0].source = 2;
+         n2kCollector.possition[0].lastModified = now;
+         n2kCollector.possition[0].longitude = 0.11987607061305089-((1.0*now)/(3600000));
+         n2kCollector.possition[0].latitude = 52.18623058185942-((1.0*now)/(3600000));
+         n2kCollector.log[0].lastModified = now;
+         n2kCollector.log[0].log = 1852  + (1852.0*now)/(6000);
+         n2kCollector.log[0].tripLog = (1852.0*now)/(6000);
     }
 
 }
@@ -49,8 +49,8 @@ void LogBook::demoMode() {
 void LogBook::log() {
     unsigned long now = millis();
     if ( now > lastLogUpdate + logPeriod) {
-        LogData * log = dataCollector.getLog();
-        GnssData * gnss = dataCollector.getGnss();
+        LogData * log = n2kCollector.getLog();
+        GnssData * gnss = n2kCollector.getGnss();
 
     
         if ( gnss != NULL && gnss->lastModified > lastLogUpdate ) {
@@ -85,7 +85,7 @@ void LogBook::log() {
 
             double latitude, longitude;
             int16_t age;
-            if ( dataCollector.getLatLong(latitude, longitude, age)) {
+            if ( n2kCollector.getLatLong(latitude, longitude, age)) {
                 f.printf(",%10.6f,%10.6f,%d",latitude, longitude,age);
             } else {
                 f.printf(",,,");
@@ -101,10 +101,10 @@ void LogBook::log() {
             // cog,sog  radians, m/s
             int i;
             for ( i = 0; i < MAX_COGSOG_SOURCES; i++) {
-                if (dataCollector.cogSog[i].source != 255 && dataCollector.cogSog[i].lastModified+30000 > now ) {
-                    if ( dataCollector.cogSog[i].cog > -1000000) {
-                        f.printf(",%d,%4.1f",(int)headingAngleToDeg(dataCollector.cogSog[i].cog),
-                             SPEED_MS_TO_KN(dataCollector.cogSog[i].sog));
+                if (n2kCollector.cogSog[i].source != 255 && n2kCollector.cogSog[i].lastModified+30000 > now ) {
+                    if ( n2kCollector.cogSog[i].cog > -1000000) {
+                        f.printf(",%d,%4.1f",(int)headingAngleToDeg(n2kCollector.cogSog[i].cog),
+                             SPEED_MS_TO_KN(n2kCollector.cogSog[i].sog));
                         break;
                     }
                 } 
@@ -114,8 +114,8 @@ void LogBook::log() {
             }
             // stw m/s
             for ( i=0; i < MAX_SPEED_SOURCES; i++) {
-                if (dataCollector.speed[i].source != 255 && dataCollector.speed[i].lastModified+30000 > now ) {
-                    f.printf(",%4.1f",SPEED_MS_TO_KN(dataCollector.speed[i].stw));
+                if (n2kCollector.speed[i].source != 255 && n2kCollector.speed[i].lastModified+30000 > now ) {
+                    f.printf(",%4.1f",SPEED_MS_TO_KN(n2kCollector.speed[i].stw));
                     break;
                 } 
             }
@@ -124,8 +124,8 @@ void LogBook::log() {
             }
             //hdg radians
             for ( i=0; i < MAX_HEADDING_SOURCES; i++) {
-                if (dataCollector.heading[i].source != 255 && dataCollector.heading[i].lastModified+30000 > now ) {
-                    f.printf(",%d",(int)headingAngleToDeg(dataCollector.heading[i].heading));
+                if (n2kCollector.heading[i].source != 255 && n2kCollector.heading[i].lastModified+30000 > now ) {
+                    f.printf(",%d",(int)headingAngleToDeg(n2kCollector.heading[i].heading));
                     break;
                 } 
             }
@@ -136,10 +136,10 @@ void LogBook::log() {
 
             //aws, awa m/s, radians
             for ( i=0; i < MAX_WIND_SOURCES; i++) {
-                if (dataCollector.wind[i].source != 255 &&
-                         dataCollector.wind[i].windReference == N2kWind_Apparent && 
-                         dataCollector.wind[i].lastModified+30000 > now ) {
-                    f.printf(",%4.1f,%d",SPEED_MS_TO_KN(dataCollector.wind[i].windSpeed),(int)relativeAngleToDeg(dataCollector.wind[i].windAngle));
+                if (n2kCollector.wind[i].source != 255 &&
+                         n2kCollector.wind[i].windReference == N2kWind_Apparent && 
+                         n2kCollector.wind[i].lastModified+30000 > now ) {
+                    f.printf(",%4.1f,%d",SPEED_MS_TO_KN(n2kCollector.wind[i].windSpeed),(int)relativeAngleToDeg(n2kCollector.wind[i].windAngle));
                     break;
                 } 
             }
@@ -148,15 +148,15 @@ void LogBook::log() {
             }
             double pressure;
 
-            if ( dataCollector.getPressure(pressure, age) ) {
+            if ( n2kCollector.getPressure(pressure, age) ) {
                 f.printf(",%6.1f,%d",PASCAL_TO_MBAR(pressure),age);
             } else {
                 f.print(",,");                
             }
             // rpm, ct, rpm, K
             for ( i = 0; i < MAX_ENGINE_SOURCES; i++) {
-                if (dataCollector.engine[i].source != 255 &&  dataCollector.engine[i].lastModified+30000 > now ) { 
-                    f.printf(",%d,%d",(int)dataCollector.engine[i].speed,(int)K_TO_C(dataCollector.engine[i].CoolantTemp));
+                if (n2kCollector.engine[i].source != 255 &&  n2kCollector.engine[i].lastModified+30000 > now ) { 
+                    f.printf(",%d,%d",(int)n2kCollector.engine[i].speed,(int)K_TO_C(n2kCollector.engine[i].CoolantTemp));
                     break;
                 } 
             }

@@ -7,7 +7,7 @@ void EngineDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     startBlock(outputStream);
     for (int i=0; i<MAX_ENGINE_SOURCES; i++) {
         //# engine,id,t,lastModified,speed,coolantTemp,altenatorVoltage,status1,status2,hours
-        EngineData *engine =  &dataCollector.engine[i];
+        EngineData *engine =  &n2kCollector.engine[i];
         if ( engine->active() ) {
             startRecord("engine");
             appendField(i);
@@ -23,7 +23,7 @@ void EngineDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     }
     for (int i=0; i<MAX_BATTERY_SOURCES; i++) {
         //# battery,id,t,lastModified,voltage,current,temperature
-        DcBatteryData *battery =  &dataCollector.dcBattery[i];
+        DcBatteryData *battery =  &n2kCollector.dcBattery[i];
         if ( battery->active() ) {
             startRecord("battery");
             appendField(battery->instance);
@@ -36,7 +36,7 @@ void EngineDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     }
     for (int i=0; i<MAX_FLUID_LEVEL_SOURCES; i++) {
         // # fluid,id,t,lastModified,level,capacity,type
-        FluidLevelData *fluidLevel =  &dataCollector.fluidLevel[i];
+        FluidLevelData *fluidLevel =  &n2kCollector.fluidLevel[i];
         if ( fluidLevel->active() ) {
             startRecord("fluid");
             appendField(fluidLevel->instance);
@@ -71,7 +71,7 @@ wind,0,83662733,-0.14,0.04,1
 */
    startBlock(outputStream);
      for (int i=0; i<MAX_SPEED_SOURCES; i++) {
-        HeadingData *heading =  &dataCollector.heading[i];
+        HeadingData *heading =  &n2kCollector.heading[i];
         if ( heading->active() ) {
             startRecord("heading");
             appendField(i);
@@ -84,7 +84,7 @@ wind,0,83662733,-0.14,0.04,1
         }
     }
     for (int i=0; i<MAX_SPEED_SOURCES; i++) {
-        SpeedData *speed =  &dataCollector.speed[i];
+        SpeedData *speed =  &n2kCollector.speed[i];
         if ( speed->active() ) {
             startRecord("speed");
             appendField(i);
@@ -96,7 +96,7 @@ wind,0,83662733,-0.14,0.04,1
         }
     }
     for (int i=0; i<MAX_WATER_DEPTH_SOURCES; i++) {
-        WaterDepthData *waterDepth =  &dataCollector.waterDepth[i];
+        WaterDepthData *waterDepth =  &n2kCollector.waterDepth[i];
         if ( waterDepth->active() ) {
             startRecord("waterDepth");
             appendField(i);
@@ -107,7 +107,7 @@ wind,0,83662733,-0.14,0.04,1
         }
     }
     for (int i=0; i<MAX_RUDDER_SOURCES; i++) {
-        RudderData *rudder =  &dataCollector.rudder[i];
+        RudderData *rudder =  &n2kCollector.rudder[i];
         if ( rudder->active() ) {
             startRecord("rudder");
             appendField(rudder->instance);
@@ -119,7 +119,7 @@ wind,0,83662733,-0.14,0.04,1
         }
     }
     for (int i=0; i<MAX_ATTITUDE_SOURCES; i++) {
-        AttitudeData *attitude =  &dataCollector.attitude[i];
+        AttitudeData *attitude =  &n2kCollector.attitude[i];
         if ( attitude->active() ) {
             startRecord("attitude");
             appendField(i);
@@ -132,7 +132,7 @@ wind,0,83662733,-0.14,0.04,1
     }
 
     for (int i=0; i<MAX_WIND_SOURCES; i++) {
-        WindData *wind =  &dataCollector.wind[i];
+        WindData *wind =  &n2kCollector.wind[i];
         if ( wind->active() ) {
             startRecord("wind");
             appendField(i);
@@ -159,7 +159,7 @@ gnss,0,83675791,18973,77160,60.44,22.24,10.5,0,1,12,0.8,0.5,15,1,0,2
 */
    startBlock(outputStream);
     for (int i=0; i<MAX_COGSOG_SOURCES; i++) {
-        CogSogData *cogSog =  &dataCollector.cogSog[i];
+        CogSogData *cogSog =  &n2kCollector.cogSog[i];
         if ( cogSog->active() ) {
             startRecord("cogSog");
             appendField(i);
@@ -171,7 +171,7 @@ gnss,0,83675791,18973,77160,60.44,22.24,10.5,0,1,12,0.8,0.5,15,1,0,2
         }
     }
     for (int i=0; i<MAX_GNSS_SOURCES; i++) {
-        GnssData *gnss =  &dataCollector.gnss[i];
+        GnssData *gnss =  &n2kCollector.gnss[i];
         if ( gnss->active() ) {
             startRecord("gnss");
             appendField(i);
@@ -210,7 +210,7 @@ void EnvironmentDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     */
     startBlock(outputStream);
     for (int i=0; i<MAX_OUTSIDE_ENVIRONMENTAL_SOURCES; i++) {
-        OutsideEnvironmentData *outsideEnvironmental =  &dataCollector.outsideEnvironmental[i];
+        OutsideEnvironmentData *outsideEnvironmental =  &n2kCollector.outsideEnvironmental[i];
         if ( outsideEnvironmental->active() ) {
             startRecord("outsideEnvironment");
             appendField(i);
@@ -222,7 +222,7 @@ void EnvironmentDataOutput::outputCsv(AsyncResponseStream *outputStream) {
         }
     }
     for (int i=0; i<MAX_ENVIRONMENTAL_PARAMS_SOURCES; i++) {
-        EnvironmentalParamsData *environmentalParams =  &dataCollector.environmentalParams[i];
+        EnvironmentalParamsData *environmentalParams =  &n2kCollector.environmentalParams[i];
         if ( environmentalParams->active() ) {
             startRecord("enviromental");
             appendField(i);
@@ -236,7 +236,7 @@ void EnvironmentDataOutput::outputCsv(AsyncResponseStream *outputStream) {
         }
     }
     for (int i=0; i<MAX_HUMIDITY_SOURCES; i++) {
-        HumidityData *humidity =  &dataCollector.humidity[i];
+        HumidityData *humidity =  &n2kCollector.humidity[i];
         if ( humidity->active() ) {
             startRecord("humidity");
             appendField(humidity->instance);
@@ -247,7 +247,7 @@ void EnvironmentDataOutput::outputCsv(AsyncResponseStream *outputStream) {
         }
     }
     for (int i=0; i<MAX_PRESSURE_SOURCES; i++) {
-        PressureData *pressure =  &dataCollector.pressure[i];
+        PressureData *pressure =  &n2kCollector.pressure[i];
         if ( pressure->active() ) {
             startRecord("pressure");
             appendField(pressure->instance);
@@ -274,7 +274,7 @@ temperatureExt,0,83663614,273.15,
 */
     startBlock(outputStream);
     for (int i=0; i<MAX_TEMPERATURE_SOURCES; i++) {
-        TemperatureData *temperature =  &dataCollector.temperature[i];
+        TemperatureData *temperature =  &n2kCollector.temperature[i];
         if ( temperature->active() ) {
             startRecord("temperature");
             appendField(temperature->instance);
@@ -285,7 +285,7 @@ temperatureExt,0,83663614,273.15,
         }
     }
     for (int i=0; i<MAX_TEMPERATURE_SOURCES; i++) {
-        TemperatureData *temperatureExt =  &dataCollector.temperatureExt[i];
+        TemperatureData *temperatureExt =  &n2kCollector.temperatureExt[i];
         if ( temperatureExt->active() ) {
             startRecord("temperatureExt");
             appendField(temperatureExt->instance);
@@ -313,7 +313,7 @@ void XteDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     */
     startBlock(outputStream);
     for ( int i = 0; i < MAX_XTE_SOURCES; i++) {
-        XteData *xte =  &dataCollector.xte[i];
+        XteData *xte =  &n2kCollector.xte[i];
         if ( xte->active() ) {
             startRecord("xte");
             appendField(xte->instance);
@@ -336,7 +336,7 @@ void MagneticVariationDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     */
     startBlock(outputStream);
     for ( int i = 0; i < MAX_VARIATION_SOURCES; i++) {
-        VariationData *variation = &dataCollector.variation[i];
+        VariationData *variation = &n2kCollector.variation[i];
         if ( variation->active() ) {
             startRecord("variation");
             appendField(i);
@@ -352,7 +352,7 @@ void MagneticVariationDataOutput::outputCsv(AsyncResponseStream *outputStream) {
 void WindSpeedDataOutput::outputCsv(AsyncResponseStream *outputStream) {
     startBlock(outputStream);
     for ( int i = 0; i < MAX_WIND_SOURCES; i++) {
-        WindData *wind = &dataCollector.wind[i];
+        WindData *wind = &n2kCollector.wind[i];
         if ( wind->active() ) {
             startRecord("wind");
             appendField(wind->instance);
@@ -378,7 +378,7 @@ log,0,83663614,18973,77353.00,19520,18520
 
     startBlock(outputStream);
     for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        LogData *log = &dataCollector.log[i];
+        LogData *log = &n2kCollector.log[i];
         if ( log->active() ) {
             startRecord("log");
             appendField(i);
@@ -402,7 +402,7 @@ position,0,83663914,54.33,4.342
 */
     startBlock(outputStream);
     for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        PossitionData *possition = &dataCollector.possition[i];
+        PossitionData *possition = &n2kCollector.possition[i];
         if ( possition->active() ) {
             startRecord("possition");
             appendField(i);
@@ -424,7 +424,7 @@ leeway,0,83663815,1.982312
 */
     startBlock(outputStream);
     for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        LeewayData *leeway = &dataCollector.leeway[i];
+        LeewayData *leeway = &n2kCollector.leeway[i];
         if ( leeway->active() ) {
             startRecord("leeway");
             appendField(leeway->instance);

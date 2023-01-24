@@ -162,7 +162,7 @@ void EinkDisplay::formatLatLon(char * latValue,
         longitude = -1.2321;
         age = 10;
 #else
-    if (dataCollector.getLatLong(latitude, longitude, age)) {
+    if (n2kCollector.getLatLong(latitude, longitude, age)) {
 #endif
         int deg = (int) latitude;
         double min = (double) 60.0*(latitude-deg);
@@ -193,7 +193,7 @@ void EinkDisplay::formatSystemTime(char *systemTimeValue) {
         uint16_t daySerial = 19313;  // 17/11/2022 16:53:02.321
         double seconds = 60782.321;
 #else
-    GnssData * gnssData = dataCollector.getGnss();
+    GnssData * gnssData = n2kCollector.getGnss();
     if ( gnssData != NULL ) {
         uint16_t daySerial = gnssData->daysSince1970; 
         double seconds = gnssData->secondsSinceMidnight;
@@ -300,7 +300,7 @@ void EinkDisplay::updateValues(bool force) {
 		lastUpdate = now;
 
 
-	    LogData * logData = dataCollector.getLog();
+	    LogData * logData = n2kCollector.getLog();
 	    if ( logData != NULL) {
 	        logReading = logData->log/1852.0;
 	    } else {
@@ -310,7 +310,7 @@ void EinkDisplay::updateValues(bool force) {
 	        logReading = 1E9;
 #endif
 	    }
-	    PressureData *pressure = dataCollector.getAtmosphericPressure();
+	    PressureData *pressure = n2kCollector.getAtmosphericPressure();
 	    if ( pressure != NULL ) {
 	        pressureReading = average(pressureReading,PascalTomBar(pressure->actual));
 	    } else {
@@ -320,7 +320,7 @@ void EinkDisplay::updateValues(bool force) {
 	        pressureReading = 1E9;
 #endif
 	    }
-	    CogSogData * cogSogData = dataCollector.getCogSog();
+	    CogSogData * cogSogData = n2kCollector.getCogSog();
 	    if ( cogSogData != NULL) {
 	        cogReading = angularAverage(cogReading,RadToDeg(cogSogData->cog));
 	        sogReading = average(sogReading,msToKnots(cogSogData->sog)); 
@@ -333,7 +333,7 @@ void EinkDisplay::updateValues(bool force) {
 	        sogReading = 1E9;
 #endif
 	    }
-	    SpeedData * speedData = dataCollector.getSpeed();
+	    SpeedData * speedData = n2kCollector.getSpeed();
 	    if ( speedData != NULL ) {
 	        stwReading = average(stwReading,msToKnots(speedData->stw));
 	    } else {
@@ -343,7 +343,7 @@ void EinkDisplay::updateValues(bool force) {
 	        stwReading = 1E9;
 #endif
 	    }
-	    HeadingData * headingData = dataCollector.getHeading();
+	    HeadingData * headingData = n2kCollector.getHeading();
 	    if ( headingData != NULL ) {
 	        hdmReading = angularAverage(hdmReading,RadToDeg(headingData->heading)); 
 	    } else {
@@ -353,7 +353,7 @@ void EinkDisplay::updateValues(bool force) {
 	        hdmReading = 1E9;
 #endif
 	    }
-	    WindData * windData = dataCollector.getAparentWind();
+	    WindData * windData = n2kCollector.getAparentWind();
 	    if ( windData != NULL ) {
 	        awsReading = average(awsReading,msToKnots(windData->windSpeed));
 	        awaReading = angularAverage(awaReading,RadToDeg(windData->windAngle));
@@ -391,7 +391,7 @@ void EinkDisplay::updateValues(bool force) {
 	    if (serviceBatteryShunt != NULL && serviceBatteryShunt->isEnabled() ) {
 		        serviceVoltReading = average(serviceVoltReading, serviceBatteryShunt->voltage);
 	    } else {
-		    DcBatteryData * serviceBattery = dataCollector.getBatteryInstance(0);
+		    DcBatteryData * serviceBattery = n2kCollector.getBatteryInstance(0);
 		    if (serviceBattery != NULL ) {
 		        serviceVoltReading = average(serviceVoltReading, serviceBattery->voltage);
 		    } else {
@@ -409,7 +409,7 @@ void EinkDisplay::updateValues(bool force) {
 		        engineVoltReading = average(engineVoltReading, engineBatteryShunt->voltage);
 	   	} else {
 
-		    DcBatteryData * engineBattery = dataCollector.getBatteryInstance(1);
+		    DcBatteryData * engineBattery = n2kCollector.getBatteryInstance(1);
 		    if (engineBattery != NULL ) {
 		        engineVoltReading = average(engineVoltReading, engineBattery->voltage);
 		    } else {
@@ -420,7 +420,7 @@ void EinkDisplay::updateValues(bool force) {
 #endif
 		    }
 		}
-	    EngineData * engineData = dataCollector.getEngineInstance();
+	    EngineData * engineData = n2kCollector.getEngineInstance();
 	    if (engineData != NULL ) {
 	        engineHoursReading = engineData->Hours;
 	        rpmReading = average(rpmReading, engineData->speed);
@@ -439,7 +439,7 @@ void EinkDisplay::updateValues(bool force) {
 	        alternatorVoltReading = 1E9;
 #endif
 	    }
-	    FluidLevelData * fuelLevel = dataCollector.getFuelLevel();
+	    FluidLevelData * fuelLevel = n2kCollector.getFuelLevel();
 	    if (fuelLevel != NULL ) {
 	        fuelLitersReading = average(fuelLitersReading, fuelLevel->level * fuelLevel->capacity);
 	    } else {

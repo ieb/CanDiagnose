@@ -508,50 +508,6 @@ void CsvOutput::appendField(uint32_t value) {
 
 
 
-bool WebServer::drawPage(Adafruit_SSD1306 * display) {
 
-    display->clearDisplay();
-    display->setTextSize(1);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-    switch(subPage) {
-        case 0:
-            display->setTextSize(1);   // 21 chars, 4 lines
-            display->print("SSID:");display->println(ssid);
-            if ( ssid.equals("boatsys")) {
-                display->print("Password:");display->println(password);
-            } 
-            display->display();
-            subPage = 1;
-            return false;
-        case 1:
-            display->setTextSize(1);   // 21 chars, 4 lines
-            display->print("IP:");display->println(WiFi.localIP());
-            display->print("Auth:");display->println(basicAuth);
-
-
-            display->display();
-            subPage = 0;
-            return true;
-        default:
-            subPage = 0;
-            return false;
-    }
-#else
-    // no subpage required
-    display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
-    display->print("SSID:");display->println(ssid);
-    if ( ssid.equals("boatsys")) {
-        display->print("Password:");display->println(password);
-    } 
-    display->print("IP:");display->println(WiFi.localIP());
-    display->print("Auth:");display->println(basicAuth);
-    display->print("Free Heap:");display->println(ESP.getFreeHeap());
-    display->printf("Fs:%d/%d\n",SPIFFS.usedBytes(), SPIFFS.totalBytes());
-
-    display->display();
-    return true;
-#endif
     
-}
+

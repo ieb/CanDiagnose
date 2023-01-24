@@ -1,14 +1,13 @@
-#ifndef DATADISPLAY_H
-#define DATADISPLAY_H
+#pragma once
 
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 
 
 
-class DataDisplay {
+class N2KPrinter {
     public:
-        DataDisplay(Stream *outputStream);
+        N2KPrinter(Stream *outputStream);
         void HandleMsg(const tN2kMsg &N2kMsg);
 
         bool showData= false;
@@ -61,7 +60,3 @@ template<typename T> void PrintLabelValWithConversionCheckUnDef(Stream *OutputSt
   if (AddLf) OutputStream->println();
 }
 
-
-
-
-#endif

@@ -1,9 +1,12 @@
 
-#include "dataoutput.h"
+
+#include "N2KCollector.h"
 #include <TimeLib.h>
 
 
-void DataCollector::HandleMsg(const tN2kMsg &N2kMsg) {
+
+
+void N2KCollector::HandleMsg(const tN2kMsg &N2kMsg) {
       switch(N2kMsg.PGN) {
 //        case 60928L: AddressClaim(N2kMsg); break;
 //        case 126992L: SystemTime(N2kMsg); break;
@@ -43,7 +46,7 @@ void DataCollector::HandleMsg(const tN2kMsg &N2kMsg) {
       }
 }
 
-void DataCollector::saveFailed(const tN2kMsg &N2kMsg, byte instance) {
+void N2KCollector::saveFailed(const tN2kMsg &N2kMsg, byte instance) {
     outputStream->print("Failed to save PGN: "); 
     outputStream->print(N2kMsg.PGN);
     if ( instance != 255 ) {
@@ -53,7 +56,7 @@ void DataCollector::saveFailed(const tN2kMsg &N2kMsg, byte instance) {
     outputStream->print(" from "); 
     outputStream->println(N2kMsg.Source);
 }
-void DataCollector::parseFailed(const tN2kMsg &N2kMsg) {
+void N2KCollector::parseFailed(const tN2kMsg &N2kMsg) {
     outputStream->print("Failed to parse PGN: "); 
     outputStream->print(N2kMsg.PGN);
     outputStream->print(" from "); 
@@ -62,7 +65,7 @@ void DataCollector::parseFailed(const tN2kMsg &N2kMsg) {
 
 
 
-void DataCollector::Attitude(const tN2kMsg &N2kMsg) {
+void N2KCollector::Attitude(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double Yaw;
     double Pitch;
@@ -88,7 +91,7 @@ void DataCollector::Attitude(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::FluidLevel(const tN2kMsg &N2kMsg) {
+void N2KCollector::FluidLevel(const tN2kMsg &N2kMsg) {
     unsigned char Instance;
     tN2kFluidType FluidType;
     double Level=0;
@@ -115,7 +118,7 @@ void DataCollector::FluidLevel(const tN2kMsg &N2kMsg) {
 
 
 
-void DataCollector::EngineRapid(const tN2kMsg &N2kMsg) {
+void N2KCollector::EngineRapid(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     double EngineSpeed;
     double EngineBoostPressure;
@@ -139,7 +142,7 @@ void DataCollector::EngineRapid(const tN2kMsg &N2kMsg) {
         parseFailed(N2kMsg);
     }
 }
-void DataCollector::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
+void N2KCollector::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     double EngineOilPress;
     double EngineOilTemp;
@@ -185,7 +188,7 @@ void DataCollector::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::Heading(const tN2kMsg &N2kMsg) {
+void N2KCollector::Heading(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     tN2kHeadingReference HeadingReference;
     double Heading;
@@ -213,7 +216,7 @@ void DataCollector::Heading(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::COGSOG(const tN2kMsg &N2kMsg) {
+void N2KCollector::COGSOG(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     tN2kHeadingReference HeadingReference;
     double COG;
@@ -239,7 +242,7 @@ void DataCollector::COGSOG(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::GNSS(const tN2kMsg &N2kMsg) {
+void N2KCollector::GNSS(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     uint16_t DaysSince1970;
     double SecondsSinceMidnight; 
@@ -294,7 +297,7 @@ void DataCollector::GNSS(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::EnvironmentalParameters(const tN2kMsg &N2kMsg) {
+void N2KCollector::EnvironmentalParameters(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double Temperature;
     double Humidity;
@@ -327,7 +330,7 @@ void DataCollector::EnvironmentalParameters(const tN2kMsg &N2kMsg) {
 
 }
 
-void DataCollector::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
+void N2KCollector::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double WaterTemperature;
     double OutsideAmbientAirTemperature;
@@ -353,7 +356,7 @@ void DataCollector::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::Temperature(const tN2kMsg &N2kMsg) {
+void N2KCollector::Temperature(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char TempInstance;
     tN2kTempSource TempSource;
@@ -380,7 +383,7 @@ void DataCollector::Temperature(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::Humidity(const tN2kMsg &N2kMsg) {
+void N2KCollector::Humidity(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char Instance;
     tN2kHumiditySource HumiditySource;
@@ -406,7 +409,7 @@ void DataCollector::Humidity(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::Pressure(const tN2kMsg &N2kMsg) {
+void N2KCollector::Pressure(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char Instance;
     tN2kPressureSource PressureSource;
@@ -433,7 +436,7 @@ void DataCollector::Pressure(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::TemperatureExt(const tN2kMsg &N2kMsg) {
+void N2KCollector::TemperatureExt(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char TempInstance;
     tN2kTempSource TempSource;
@@ -459,7 +462,7 @@ void DataCollector::TemperatureExt(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::DCBatteryStatus(const tN2kMsg &N2kMsg) {
+void N2KCollector::DCBatteryStatus(const tN2kMsg &N2kMsg) {
     byte BatteryInstance;
     double BatteryVoltage;
     double BatteryCurrent;
@@ -487,7 +490,7 @@ void DataCollector::DCBatteryStatus(const tN2kMsg &N2kMsg) {
 
 
 //*****************************************************************************
-void DataCollector::Speed(const tN2kMsg &N2kMsg) {
+void N2KCollector::Speed(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double STW;
     double SOG;
@@ -513,7 +516,7 @@ void DataCollector::Speed(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataCollector::WaterDepth(const tN2kMsg &N2kMsg) {
+void N2KCollector::WaterDepth(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double DepthBelowTransducer;
     double Offset;
@@ -540,7 +543,7 @@ void DataCollector::WaterDepth(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::Rudder(const tN2kMsg &N2kMsg) {
+void N2KCollector::Rudder(const tN2kMsg &N2kMsg) {
     unsigned char Instance;
     tN2kRudderDirectionOrder RudderDirectionOrder;
     double RudderPosition;
@@ -565,7 +568,7 @@ void DataCollector::Rudder(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::Xte(const tN2kMsg &N2kMsg) {
+void N2KCollector::Xte(const tN2kMsg &N2kMsg) {
     // 129283L
     unsigned char Instance;
     tN2kXTEMode xteMode;
@@ -590,7 +593,7 @@ void DataCollector::Xte(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::MagneticVariation(const tN2kMsg &N2kMsg) {
+void N2KCollector::MagneticVariation(const tN2kMsg &N2kMsg) {
     // 127258L
     unsigned char Instance;
     tN2kMagneticVariation source;
@@ -624,7 +627,7 @@ void DataCollector::MagneticVariation(const tN2kMsg &N2kMsg) {
 }
 
 
-void DataCollector::WindSpeed(const tN2kMsg &N2kMsg) {
+void N2KCollector::WindSpeed(const tN2kMsg &N2kMsg) {
     // 130306L
     unsigned char Instance;
     double windSpeed;
@@ -656,7 +659,7 @@ void DataCollector::WindSpeed(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::Log(const tN2kMsg &N2kMsg) {
+void N2KCollector::Log(const tN2kMsg &N2kMsg) {
     // 128275L
     uint16_t daysSince1970;
     double secondsSinceMidnight;
@@ -685,7 +688,7 @@ void DataCollector::Log(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataCollector::LatLon(const tN2kMsg &N2kMsg) {
+void N2KCollector::LatLon(const tN2kMsg &N2kMsg) {
     // 129025L
     double latitude;
     double longitude;
@@ -709,7 +712,7 @@ void DataCollector::LatLon(const tN2kMsg &N2kMsg) {
     }
 }
 
-bool DataCollector::getPressure( double &_pressure, int16_t &age) {
+bool N2KCollector::getPressure( double &_pressure, int16_t &age) {
     unsigned long now = millis();
     if (pressure[0].source == 255) {
         return false;
@@ -722,7 +725,7 @@ bool DataCollector::getPressure( double &_pressure, int16_t &age) {
 
 
 
-bool DataCollector::getLatLong(double &latitude, double &longitude, int16_t &age) {
+bool N2KCollector::getLatLong(double &latitude, double &longitude, int16_t &age) {
     PossitionData *possition = getPossition();
     GnssData *gnss = getGnss();
     unsigned long now = millis();
@@ -757,7 +760,7 @@ bool DataCollector::getLatLong(double &latitude, double &longitude, int16_t &age
 
 
 
-void DataCollector::Leeway(const tN2kMsg &N2kMsg) {
+void N2KCollector::Leeway(const tN2kMsg &N2kMsg) {
     // 128000L
     unsigned char Instance;
     double leeway;
@@ -781,7 +784,7 @@ void DataCollector::Leeway(const tN2kMsg &N2kMsg) {
 }
 
 
-LogData * DataCollector::getLog() {
+LogData * N2KCollector::getLog() {
     unsigned long lm = 0;
     LogData *selected = NULL;
     for (int i = 0; i < MAX_LOG_SOURCES; i++) {
@@ -793,7 +796,7 @@ LogData * DataCollector::getLog() {
     return selected;
 };
 
-WindData * DataCollector::getWindInstance(byte instance, tN2kWindReference reference) {
+WindData * N2KCollector::getWindInstance(byte instance, tN2kWindReference reference) {
     unsigned long lm = 0;
     WindData *selected = NULL;
     for (int i = -0; i < MAX_WIND_SOURCES; i++) {
@@ -807,7 +810,7 @@ WindData * DataCollector::getWindInstance(byte instance, tN2kWindReference refer
 };
 
 
-EngineData * DataCollector::getEngineInstance(byte instance) {
+EngineData * N2KCollector::getEngineInstance(byte instance) {
     unsigned long lm = 0;
     EngineData *selected = NULL;
     for (int i = 0; i < MAX_ENGINE_SOURCES; i++) {
@@ -818,7 +821,7 @@ EngineData * DataCollector::getEngineInstance(byte instance) {
     }
     return selected;
 };
-FluidLevelData * DataCollector::getFluidLevelInstance(byte instance) {
+FluidLevelData * N2KCollector::getFluidLevelInstance(byte instance) {
     unsigned long lm = 0;
     FluidLevelData *selected = NULL;
     for (int i = -0; i < MAX_FLUID_LEVEL_SOURCES; i++) {
@@ -830,7 +833,7 @@ FluidLevelData * DataCollector::getFluidLevelInstance(byte instance) {
     return selected;
 };
 
-PossitionData * DataCollector::getPossition() {
+PossitionData * N2KCollector::getPossition() {
     unsigned long lm = 0;
     PossitionData *selected = NULL;
     for (int i = 0; i < MAX_POSSITION_SOURCES; i++) {
@@ -842,7 +845,7 @@ PossitionData * DataCollector::getPossition() {
     return selected;
 };
 
-GnssData * DataCollector::getGnss() {
+GnssData * N2KCollector::getGnss() {
     unsigned long lm = 0;
     GnssData *selected = NULL;
     for (int i = 0; i < MAX_GNSS_SOURCES; i++) {
@@ -854,7 +857,7 @@ GnssData * DataCollector::getGnss() {
     return selected;
 };
 
-CogSogData * DataCollector::getCogSog() {
+CogSogData * N2KCollector::getCogSog() {
     unsigned long lm = 0;
     CogSogData *selected = NULL;
     for (int i = 0; i < MAX_COGSOG_SOURCES; i++) {
@@ -868,14 +871,14 @@ CogSogData * DataCollector::getCogSog() {
 
 
 
-PressureData * DataCollector::getAtmosphericPressure() {
+PressureData * N2KCollector::getAtmosphericPressure() {
     if ( pressure[0].source != 255 && pressure[0].lastModified > 0 ) {
         return &pressure[0];
     } else {
         return NULL;
     }
 }
-SpeedData * DataCollector::getSpeed() {
+SpeedData * N2KCollector::getSpeed() {
     unsigned long lm = 0;
     SpeedData *selected = NULL;
     for (int i = 0; i < MAX_SPEED_SOURCES; i++) {
@@ -887,7 +890,7 @@ SpeedData * DataCollector::getSpeed() {
     return selected;
 };
 
-HeadingData * DataCollector::getHeading() {
+HeadingData * N2KCollector::getHeading() {
     unsigned long lm = 0;
     HeadingData *selected = NULL;
     for (int i = 0; i < MAX_HEADDING_SOURCES; i++) {
@@ -899,7 +902,7 @@ HeadingData * DataCollector::getHeading() {
     return selected;
 };
 
-WindData * DataCollector::getAparentWind() {
+WindData * N2KCollector::getAparentWind() {
     unsigned long lm = 0;
     WindData *selected = NULL;
     for (int i = -0; i < MAX_WIND_SOURCES; i++) {
@@ -912,7 +915,7 @@ WindData * DataCollector::getAparentWind() {
     return selected;
 };
 
-FluidLevelData * DataCollector::getFuelLevel() {
+FluidLevelData * N2KCollector::getFuelLevel() {
     unsigned long lm = 0;
     FluidLevelData *selected = NULL;
     for (int i = -0; i < MAX_FLUID_LEVEL_SOURCES; i++) {
@@ -924,7 +927,7 @@ FluidLevelData * DataCollector::getFuelLevel() {
     return selected;
 };
 
-DcBatteryData * DataCollector::getBatteryInstance(byte instance) {
+DcBatteryData * N2KCollector::getBatteryInstance(byte instance) {
     unsigned long lm = 0;
     DcBatteryData *selected = NULL;
     for (int i = -0; i < MAX_BATTERY_SOURCES; i++) {
@@ -937,702 +940,5 @@ DcBatteryData * DataCollector::getBatteryInstance(byte instance) {
 };
 
 
-
-
-
-void EngineDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("engine");
-    for (int i=0; i<MAX_ENGINE_SOURCES; i++) {
-        EngineData *engine =  &dataCollector.engine[i];
-        startObject();
-        append("id",i);
-        append("source",engine->source);
-        append("instance",engine->instance);
-        append("lastModified",engine->lastModified);
-        append("hours",engine->Hours);
-        append("speed",engine->speed);
-        append("coolantTemp",engine->CoolantTemp);
-        append("altenatorVoltage",engine->AltenatorVoltage);
-        append("status1",engine->Status1);
-        append("status2",engine->Status2);
-        endObject();
-    }
-    endArray();
-    startArray("battery");
-    for (int i=0; i<MAX_BATTERY_SOURCES; i++) {
-        DcBatteryData *battery =  &dataCollector.dcBattery[i];
-        startObject();
-        append("id",i);
-        append("source",battery->source);
-        append("instance",battery->instance);
-        append("lastModified",battery->lastModified);
-        append("instance",battery->instance);
-        append("voltage",battery->voltage);
-        append("current",battery->current);
-        append("temperature",battery->temperature);
-        endObject();   
-    }
-    endArray();
-    startArray("fluidLevel");
-    for (int i=0; i<MAX_FLUID_LEVEL_SOURCES; i++) {
-        FluidLevelData *fluidLevel =  &dataCollector.fluidLevel[i];
-        startObject();
-        append("id",i);
-        append("source",fluidLevel->source);
-        append("instance",fluidLevel->instance);
-        append("lastModified",fluidLevel->lastModified);
-        append("level",fluidLevel->level);
-        append("capacity",fluidLevel->capacity);
-        append("fluidType",fluidLevel->fluidType);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-
-void BoatDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("heading");
-    for (int i=0; i<MAX_HEADDING_SOURCES; i++) {
-        HeadingData *heading =  &dataCollector.heading[i];
-        startObject();
-        append("id",i);
-        append("source",heading->source);
-        append("lastModified",heading->lastModified);
-        append("heading",heading->heading);
-        append("deviation",heading->deviation);
-        append("variation",heading->variation);
-        append("reference",heading->reference);
-        endObject();
-    }
-    endArray();
-    startArray("speed");
-    for (int i=0; i<MAX_SPEED_SOURCES; i++) {
-        SpeedData *speed =  &dataCollector.speed[i];
-        startObject();
-        append("id",i);
-        append("source",speed->source);
-        append("lastModified",speed->lastModified);
-        append("stw",speed->stw);
-        append("sog",speed->sog);
-        append("swrt",speed->swrt);
-        endObject();
-    }
-    endArray();
-    startArray("waterDepth");
-    for (int i=0; i<MAX_WATER_DEPTH_SOURCES; i++) {
-        WaterDepthData *waterDepth =  &dataCollector.waterDepth[i];
-        startObject();
-        append("id",i);
-        append("source",waterDepth->source);
-        append("lastModified",waterDepth->lastModified);
-        append("depthBelowTransducer",waterDepth->depthBelowTransducer);
-        append("offset",waterDepth->offset);
-        endObject();
-    }
-    endArray();
-    startArray("rudder");
-    for (int i=0; i<MAX_RUDDER_SOURCES; i++) {
-        RudderData *rudder =  &dataCollector.rudder[i];
-        startObject();
-        append("id",i);
-        append("source",rudder->source);
-        append("instance",rudder->instance);
-        append("lastModified",rudder->lastModified);
-        append("directionOrder",rudder->directionOrder);
-        append("position",rudder->position);
-        append("angleOrder",rudder->angleOrder);
-        endObject();
-    }
-    endArray();
-    startArray("attitude");
-    for (int i=0; i<MAX_ATTITUDE_SOURCES; i++) {
-        AttitudeData *attitude =  &dataCollector.attitude[i];
-        startObject();
-        append("id",i);
-        append("source",attitude->source);
-        append("lastModified",attitude->lastModified);
-        append("roll",attitude->roll);
-        append("pitch",attitude->pitch);
-        append("yaw",attitude->yaw);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-
-
-
-void NavigationDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("cogSog");
-    for (int i=0; i<MAX_COGSOG_SOURCES; i++) {
-        CogSogData *cogSog =  &dataCollector.cogSog[i];
-        startObject();
-        append("id",i);
-        append("source",cogSog->source);
-        append("lastModified",cogSog->lastModified);
-        append("cog",cogSog->cog);
-        append("sog",cogSog->sog);
-        append("reference",cogSog->reference);
-        endObject();
-    }
-    endArray();
-    startArray("gnss");
-    for (int i=0; i<MAX_GNSS_SOURCES; i++) {
-        GnssData *gnss =  &dataCollector.gnss[i];
-        startObject();
-        append("id",i);
-        append("source",gnss->source);
-        append("lastModified",gnss->lastModified);
-        append("daysSince1970",gnss->daysSince1970);
-        append("secondsSinceMidnight",gnss->secondsSinceMidnight);
-        append("latitude",gnss->latitude,8);
-        append("longitude",gnss->longitude,8);
-        append("altitude",gnss->altitude);
-        append("type",gnss->type);
-        append("method",gnss->method);
-        append("nSatellites",gnss->nSatellites);
-        append("HDOP",gnss->HDOP);
-        append("PDOP",gnss->PDOP);
-        append("geoidalSeparation",gnss->geoidalSeparation);
-        append("nReferenceStations",gnss->nReferenceStations);
-        append("referenceStationType",gnss->referenceStationType);
-        append("ageOfCorrection",gnss->ageOfCorrection);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-
-void EnvironmentDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("outsideEnvironment");
-    for (int i=0; i<MAX_OUTSIDE_ENVIRONMENTAL_SOURCES; i++) {
-        OutsideEnvironmentData *outsideEnvironmental =  &dataCollector.outsideEnvironmental[i];
-        startObject();
-        append("id",i);
-        append("source",outsideEnvironmental->source);
-        append("lastModified",outsideEnvironmental->lastModified);
-        append("waterTemperature",outsideEnvironmental->waterTemperature);
-        append("outsideAmbientAirTemperature",outsideEnvironmental->outsideAmbientAirTemperature);
-        append("atmosphericPressure",outsideEnvironmental->atmosphericPressure);
-        endObject();
-    }
-    endArray();
-    startArray("environment");
-    for (int i=0; i<MAX_ENVIRONMENTAL_PARAMS_SOURCES; i++) {
-        EnvironmentalParamsData *environmentParams =  &dataCollector.environmentalParams[i];
-        startObject();
-        append("id",i);
-        append("source",environmentParams->source);
-        append("lastModified",environmentParams->lastModified);
-        append("temperature",environmentParams->temperature);
-        append("humidity",environmentParams->humidity);
-        append("atmosphericPressure",environmentParams->atmosphericPressure);
-        append("temperatureSource",environmentParams->temperatureSource);
-        append("humiditySource",environmentParams->humiditySource);
-        endObject();
-    }
-    endArray();
-    startArray("humidity");
-    for (int i=0; i<MAX_HUMIDITY_SOURCES; i++) {
-        HumidityData *humidity =  &dataCollector.humidity[i];
-        startObject();
-        append("id",i);
-        append("source",humidity->source);
-        append("instance",humidity->instance);
-        append("lastModified",humidity->lastModified);
-        append("instance",humidity->instance);
-        append("source",humidity->source);
-        append("actual",humidity->actual);
-        append("set",humidity->set);
-        endObject();
-    }
-    endArray();
-    startArray("pressure");
-    for (int i=0; i<MAX_PRESSURE_SOURCES; i++) {
-        PressureData *pressure =  &dataCollector.pressure[i];
-        startObject();
-        append("id",i);
-        append("source",pressure->source);
-        append("instance",pressure->instance);
-        append("lastModified",pressure->lastModified);
-        append("instance",pressure->instance);
-        append("source",pressure->source);
-        append("actual",pressure->actual);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-
-void TemperatureDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("temperature");
-    for (int i=0; i<MAX_TEMPERATURE_SOURCES; i++) {
-        TemperatureData *temperature =  &dataCollector.temperature[i];
-        startObject();
-        append("id",i);
-        append("source",temperature->source);
-        append("instance",temperature->instance);
-        append("lastModified",temperature->lastModified);
-        append("instance",temperature->instance);
-        append("source",temperature->source);
-        append("actual",temperature->actual);
-        append("set",temperature->set);
-        endObject();
-    }
-    endArray();
-    startArray("temperatureExt");
-    for (int i=0; i<MAX_TEMPERATURE_SOURCES; i++) {
-        TemperatureData *temperatureExt =  &dataCollector.temperatureExt[i];
-        startObject();
-        append("id",i);
-        append("source",temperatureExt->source);
-        append("instance",temperatureExt->instance);
-        append("lastModified",temperatureExt->lastModified);
-        append("instance",temperatureExt->instance);
-        append("source",temperatureExt->source);
-        append("actual",temperatureExt->actual);
-        append("set",temperatureExt->set);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-void XteDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("xte");
-    for ( int i = 0; i < MAX_XTE_SOURCES; i++) {
-        XteData *xte =  &dataCollector.xte[i];
-        startObject();
-        append("id",i);
-        append("source",xte->source);
-        append("instance",xte->instance);
-        append("lastModified",xte->lastModified);
-        append("xte",xte->xte);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-void MagneticVariationDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("variation");
-    for ( int i = 0; i < MAX_VARIATION_SOURCES; i++) {
-        VariationData *variation = &dataCollector.variation[i];
-        startObject();
-        append("id",i);
-        append("source",variation->source);
-        append("lastModified",variation->lastModified);
-        append("daysSince1970",variation->daysSince1970);
-        append("variation",variation->variation);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-void WindSpeedDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("wind");
-    for ( int i = 0; i < MAX_WIND_SOURCES; i++) {
-        WindData *wind = &dataCollector.wind[i];
-        startObject();
-        append("id",i);
-        append("source",wind->source);
-        append("instance",wind->instance);
-        append("lastModified",wind->lastModified);
-        append("windSpeed",wind->windSpeed);
-        append("windAngle",wind->windAngle);
-        append("windReference",wind->windReference);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-void LogDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("log");
-    for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        LogData *log = &dataCollector.log[i];
-        startObject();
-        append("id",i);
-        append("source",log->source);
-        append("lastModified",log->lastModified);
-        append("daysSince1970",log->daysSince1970);
-        append("secondsSinceMidnight",log->secondsSinceMidnight);
-        append("log",log->log);
-        append("tripLog",log->tripLog);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-void LatLonDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("possition");
-    for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        PossitionData *possition = &dataCollector.possition[i];
-        startObject();
-        append("id",i);
-        append("source",possition->source);
-        append("lastModified",possition->lastModified);
-        append("latitude",possition->latitude);
-        append("longitude",possition->longitude);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-void LeewayDataOutput::outputJson(AsyncResponseStream *outputStream) {
-    startJson(outputStream);
-    append("t",millis());
-    append("nmea2000",true);
-    startArray("leeway");
-    for ( int i = 0; i < MAX_LOG_SOURCES; i++) {
-        LeewayData *leeway = &dataCollector.leeway[i];
-        startObject();
-        append("id",i);
-        append("source",leeway->source);
-        append("lastModified",leeway->lastModified);
-        append("instance",leeway->instance);
-        append("leeway",leeway->leeway);
-        endObject();
-    }
-    endArray();
-    endJson();
-}
-
-
-
-bool EngineDataOutput::drawPage(Adafruit_SSD1306 * display) {
-    
-    EngineData *engine = dataCollector.getEngineInstance(0);
-    FluidLevelData *fluidLevel = dataCollector.getFluidLevelInstance(0);
-
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-#else
-    switch(subPage) {
-        case 0:
-            display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-            display->setCursor(0,0);
-            if ( engine == NULL) {
-                display->printf(" ---- RPM\n"); // RPM
-                display->printf("  --- C\n"); // Coolant temperatire
-                display->printf("--.-- V a\n"); // Alternator Voltage
-                display->printf("---.- h\n"); // Engine Hours
-            }  else {
-                //  1234 RPM
-                //   123 C
-                // 14.23
-                display->printf(" %4.0f RPM\n",engine->speed); // RPM
-                display->printf("  %3.0f C\n", engine->CoolantTemp-273.0); // Coolant temperatire
-                display->printf("%5.2f V\n", engine->AltenatorVoltage); // Alternator Voltage
-                display->printf("%5.1f h\n", engine->Hours); // Engine Hours
-            }
-            display->display();
-            subPage = 1;
-            return false;
-        case 1:
-            display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-            display->setCursor(0,0);
-            if ( fluidLevel == NULL) {
-                display->printf("Fuel\n--- %%\n"); // Fuel %
-            } else {
-                display->printf("Fuel\n%3.0f %%\n",fluidLevel->level); // Fuel %
-            }
-            display->display();
-            subPage = 0;
-            return true;
-        default:
-            subPage = 0;
-            return false;
-    }
-#endif
-
-}
-
-bool NavigationDataOutput::drawPage(Adafruit_SSD1306 * display) {
-    CogSogData *cogSog =  dataCollector.getCogSog();
-
-
-
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-#else
-    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    if ( cogSog == NULL ||  cogSog->cog < -100000 ) {
-        display->setCursor(0,12);              
-        display->printf("COG: -\n"); 
-        display->setCursor(0,36);             
-        display->printf("SOG: -\n"); 
-    } else {
-        display->setCursor(0,12);              
-        display->printf("COG:%3.0f\n", RadToDeg(cogSog->cog)); 
-        display->setCursor(0,36);             
-        display->printf("SOG:%5.1f\n", msToKnots(cogSog->sog)); 
-    }
-    display->display();
-    return true;
-#endif
-
-}
-
-
-bool WindSpeedDataOutput::drawPage(Adafruit_SSD1306 * display) {
-    WindData *wind = dataCollector.getWindInstance(0);
-
-
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-#else
-    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    if ( wind == NULL ) {
-        display->setCursor(0,12);              
-        display->printf("AWS: -\n"); // AWS
-        display->setCursor(0,36);             
-        display->printf("AWA: -\n"); // AWA
-    } else {
-        display->setCursor(0,12);              
-        display->printf("AWS:%5.1f\n", msToKnots(wind->windSpeed)); // AWS
-        display->setCursor(0,36);             
-        if ( wind->windAngle < 0 ) {
-            display->printf("AWA:%3.0fP\n", RadToDeg(wind->windAngle)); // AWA
-        }  else {
-            display->printf("AWA:%3.0fS\n", RadToDeg(wind->windAngle)); // Wind
-        }
-    }
-    display->display();
-    return true;
-#endif
-
-}
-
-bool EnvironmentDataOutput::drawPage(Adafruit_SSD1306 * display) {
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-    PressureData *pressure = &dataCollector.pressure[0];
-    TemperatureData *temperatureExt = &dataCollector.temperatureExt[0];
-    HumidityData *humidity = &dataCollector.humidity[0];
-
-#if OLED_HEIGHT == 32
-    switch(subPage) {
-        case 0:
-            if ( pressure->source != 255 && pressure->lastModified > 0 ) {
-                display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
-                display->printf("%6.1f mB\n", PascalTomBar(pressure->actual));
-                display->printf("%4.1f C\n", KelvinToC(temperatureExt->actual)); 
-                display->printf("%5.1f %%RH\n", humidity->actual ); 
-                display->display();
-                subPage = 1;
-                return false;
-            } else {
-                display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
-                display->printf("----.- mB\n");
-                display->printf("--.- C\n"); 
-                display->printf("---.- %%RH\n" ); 
-                display->display();
-                subPage = 0;
-                return true;
-            }
-        case 1:
-            if ( pressure->drawHistory(display) ) {
-                display->display();
-                subPage = 0;
-                return true;
-            } else {
-                display->display();
-                return false;
-            }
-        default:
-            subPage = 0;
-            return false;
-    }
-#else
-    switch(subPage) {
-        case 0:
-
-            display->setTextSize(2);   // 18x24  128/24=7 chars 5,3 
-            display->setCursor(0,4);  
-            display->printf("%6.1f mB\n", PascalTomBar(pressure->actual));
-            display->printf("%4.1f C\n", KelvinToC(temperatureExt->actual)); 
-            display->printf("%5.1f %%RH\n", humidity->actual ); 
-            display->display();
-            subPage = 1;
-            return false;
-        case 1:
-            if ( pressure->drawHistory(display,false,970.0,1030.0) ) {
-                display->display();
-                subPage = 0;
-                return true;
-            } else {
-                display->display();
-                return false;
-            }
-        default:
-            subPage = 0;
-            return false;
-
-    }
-#endif
-}
-
-
-bool LogDataOutput::drawPage(Adafruit_SSD1306 * display) {
-    LogData *log = dataCollector.getLog();
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-#else
-    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    display->setCursor(0,12);   
-    if ( log == NULL) {
-        display->printf("L:----.-Nm\n"); // Log
-        display->setCursor(0,36);             
-        display->printf("T:----.-Nm\n"); // Trip
-    } else {
-        display->printf("L:%6.1fNm\n", log->log/1852.0); // Log
-        display->setCursor(0,36);             
-        display->printf("T:%6.1fNm\n", log->tripLog/1852.0); // Trip
-    }
-    display->display();
-    return true;
-#endif
-
-}
-
-
-bool LatLonDataOutput::drawPage(Adafruit_SSD1306 * display) {
-
-
-
-    display->clearDisplay();
-    display->setTextSize(2);              // Normal 1:1 pixel scale
-    display->setTextColor(SSD1306_WHITE); // Draw white text
-    display->setCursor(0,0);              // Start at top-left corner
-#if OLED_HEIGHT == 32
-#else
-    display->setTextSize(2);   // 12x16, 4 rows, 10.6 chars
-    display->setCursor(0,12);
-    display->cp437(true);         // Use full 256 char 'Code Page 437' font
-    double latitude,longitude;
-    int16_t age;
-    GnssData * gnss;
-    
-    switch(subPage) {
-        case 0:
-            if (!dataCollector.getLatLong(latitude, longitude, age)) {
-                display->printf(" --%c--.--N\n", 248); 
-                display->printf("---%c--.--E\n", 248); 
-            } else {
-                int deg = (int) latitude;
-                double min = (double) 60.0*(latitude-deg);
-                if ( deg >= 0 && min >= 0) {
-                    display->printf(" %02d%c%05.2fN\n", deg, 248, min); 
-                } else {
-                    display->printf(" %02d%c%05.2fS\n", -deg, 248, -min); 
-                }
-                deg = (int) longitude;
-                min = (double) 60.0*(longitude-deg);
-                display->setCursor(0,36);             
-                if ( deg >= 0 && min >= 0) {
-                    display->printf("%03d%c%05.2fE\n", deg,248,min); 
-                } else {
-                    display->printf("%03d%c%05.2fW\n", -deg,248,-min); 
-                }
-                display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
-                if ( age < 600 ) {
-                    display->printf("%ds\n", age); 
-                } else if (age < 7200 ) {
-                    display->printf("%dm\n", age/60); 
-                } else {
-                    display->printf("%dn\n", age/3600); 
-                }
-            }
-            display->cp437(false);         
-            display->display();
-            subPage = 1;
-            return false;
-        case 1:
-            gnss = dataCollector.getGnss();
-            if ( gnss != NULL ) {
-                age = (millis() - gnss->lastModified)/1000;
-                uint16_t daySerial = gnss->daysSince1970; 
-                double seconds = gnss->secondsSinceMidnight;
-                tmElements_t tm;
-                // docu
-                double tofLog = seconds+daySerial*SECS_PER_DAY; 
-                breakTime((time_t)tofLog, tm);
-                display->printf("%04d-%02d-%02d\n", tm.Year+1970, tm.Month, tm.Day);
-                display->printf("%02d:%02d:%02dZ\n", tm.Hour,tm.Minute,tm.Second);
-                display->setTextSize(1);   // 12x16, 4 rows, 10.6 chars
-                display->printf("%dZ\n", age);
-
-            } else {
-                display->printf("no gps\n");
-            }
-            display->display();
-            subPage = 0;
-            return true;
-        default:
-            subPage = 0;
-            return true;
-    }
-
-#endif
-
-}
 
 

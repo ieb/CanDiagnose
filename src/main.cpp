@@ -12,6 +12,7 @@
 #include <Wire.h>
 
 
+
 // Pins   
 #define ESP32_CAN_RX_PIN GPIO_NUM_22
 #define ESP32_CAN_TX_PIN GPIO_NUM_23
@@ -25,13 +26,7 @@
 #define RS485_RX GPIO_NUM_16
 #define RS485_EN GPIO_NUM_4
 
-// SPI Display impl TBD
-#define SPI_DISPLAY_MOSI GPIO_NUM_32
-#define SPI_DISPLAY_SCK GPIO_NUM_33
-#define SPI_DISPLAY_CS GPIO_NUM_25
-#define SPI_DISPLAY_DC GPIO_NUM_26
-#define SPI_DISPLAY_RST GPIO_NUM_27
-#define SPI_DISPLAY_BL GPIO_NUM_35
+
 
 // Calibrations to take account of resistor tollerances, this is specific to the board being flashed.
 // should probably be in a config file eventually.
@@ -50,37 +45,72 @@ tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
 // #include <NMEA2000_CAN.h>
 
 #include "listdevices.h"
-#include "datadisplay.h"
-#include "dataoutput.h"
+#include "N2KCollector.h"
+#include "N2KPrinter.h"
 #include "httpserver.h"
 #include "temperature.h"
-
-
-//#include "display.h"
-#include "einkdisplay.h"
-
 #include "logbook.h"
 #include "modbus.h"
+#include "dataoutput.h"
+
+
+// Display panel selection
+#define EINK_DISPLAY 1
+//#define OLED_DISPLAY 1
+
+#ifdef EINK_DISPLAY
+// SPI Display impl TBD
+#define SPI_DISPLAY_MOSI GPIO_NUM_32
+#define SPI_DISPLAY_SCK GPIO_NUM_33
+#define SPI_DISPLAY_CS GPIO_NUM_25
+#define SPI_DISPLAY_DC GPIO_NUM_26
+#define SPI_DISPLAY_RST GPIO_NUM_27
+#define SPI_DISPLAY_BL GPIO_NUM_35
+
+#include "einkdisplay.h"
+
+#define DISPLAY_MODULE EinkDisplay
+
+#elif OLED_DISPLAY
+
+#include "OLEDDisplay.h"
+#define DISPLAY_MODULE OledDisplay
+
+#else
+
+#define DISPLAY_MODULE NullDisplay
+class NullDisplay {
+public:
+  NullDisplay(N2KCollector &n2kCollector, Modbus &modbus, WebServer &webServer) {};
+  void nextPage() {};
+  void begin() {};
+  void update() {};
+
+};
+
+#endif
+
+
 
 // Only define this if the main loop os so slow that 
 // button presses dont work properly.
 // #define USE_INTERRUPT 1
 
 Stream *OutputStream = &Serial;
-DataDisplay dataDisplay(OutputStream);
-DataCollector dataCollector(OutputStream);
+N2KPrinter n2kPrinter(OutputStream);
+N2KCollector n2kCollector(OutputStream);
 ListDevices listDevices(&NMEA2000, OutputStream);
-EngineDataOutput engineDataOutput(dataCollector);
-BoatDataOutput boatDataOutput(dataCollector);
-NavigationDataOutput navigationDataOutput(dataCollector);
-EnvironmentDataOutput environmentDataOutput(dataCollector);
-TemperatureDataOutput temperatureDataOutput(dataCollector);
-XteDataOutput xteDataOutput(dataCollector);
-MagneticVariationDataOutput magneticVariationDataOutput(dataCollector);
-WindSpeedDataOutput windSpeedDataOutput(dataCollector);
-LogDataOutput logDataOutput(dataCollector);
-LatLonDataOutput latLonDataOutput(dataCollector);
-LeewayDataOutput leewayDataOutput(dataCollector);
+EngineDataOutput engineDataOutput(n2kCollector);
+BoatDataOutput boatDataOutput(n2kCollector);
+NavigationDataOutput navigationDataOutput(n2kCollector);
+EnvironmentDataOutput environmentDataOutput(n2kCollector);
+TemperatureDataOutput temperatureDataOutput(n2kCollector);
+XteDataOutput xteDataOutput(n2kCollector);
+MagneticVariationDataOutput magneticVariationDataOutput(n2kCollector);
+WindSpeedDataOutput windSpeedDataOutput(n2kCollector);
+LogDataOutput logDataOutput(n2kCollector);
+LatLonDataOutput latLonDataOutput(n2kCollector);
+LeewayDataOutput leewayDataOutput(n2kCollector);
 
 
 Temperature temperature(&NMEA2000, ONEWIRE_GPIO_PIN);
@@ -90,14 +120,12 @@ ModbusMaster modbusMaster(&Serial2, RS485_EN);
 Modbus modbus(&NMEA2000, modbusMaster);
 
 
-
-LogBook logbook(dataCollector);
+LogBook logbook(n2kCollector);
 
 
 WebServer webServer(OutputStream);
-//OledDisplay display;
-EinkDisplay display(dataCollector, modbus);
 
+DISPLAY_MODULE display(n2kCollector, modbus, webServer);
 
 #ifdef USE_INTERRUPT
 
@@ -113,8 +141,8 @@ void IRAM_ATTR buttonPressInterrupt() {
 
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
     listDevices.HandleMsg(N2kMsg);
-    dataDisplay.HandleMsg(N2kMsg);
-    dataCollector.HandleMsg(N2kMsg);
+    n2kPrinter.HandleMsg(N2kMsg);
+    n2kCollector.HandleMsg(N2kMsg);
 }
 
 void showHelp() {
@@ -152,7 +180,8 @@ void setup() {
     Serial.println("Done ");
   }
 
-  display.begin(0);
+
+  display.begin();
 
 
 
@@ -196,16 +225,6 @@ void setup() {
   webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
 
-/*
-  display.addDisplayPage(&windSpeedDataOutput);
-  display.addDisplayPage(&environmentDataOutput);
-  display.addDisplayPage(&navigationDataOutput);
-  display.addDisplayPage(&latLonDataOutput);
-  display.addDisplayPage(&logDataOutput);
-  display.addDisplayPage(&modbus);  
-  display.addDisplayPage(&engineDataOutput);
-  display.addDisplayPage(&webServer);
-*/
 
   // Set Product information
   NMEA2000.SetProductInformation("00000003", // Manufacturer's Model SerialIO code
@@ -269,8 +288,8 @@ void CheckCommand() {
         showStatus();
         break;
       case 'o': 
-        dataDisplay.showData = !dataDisplay.showData;
-        if (  dataDisplay.showData ) {
+        n2kPrinter.showData = !n2kPrinter.showData;
+        if (  n2kPrinter.showData ) {
           Serial.println("Data Output Enabled");   
         } else {
           Serial.println("Data Output Disabled");   

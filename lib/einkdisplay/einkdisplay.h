@@ -16,14 +16,16 @@
 #include <TimeLib.h>
 #include "dataoutput.h"
 #include "modbus.h"
+#include "httpserver.h"
 
 //#define DUMMYDATA 1
 
 class EinkDisplay {
     public:
         EinkDisplay(
-            DataCollector &dataCollector,
+            N2KCollector &n2kCollector,
             Modbus &modbus,
+            WebServer &webServer,
         	int8_t din_pin=SPI_DISPLAY_MOSI,
         	int8_t sck_pin=SPI_DISPLAY_SCK,
         	int8_t cs_pin=SPI_DISPLAY_CS, 
@@ -36,12 +38,12 @@ class EinkDisplay {
         					/*BUSY=D2*/ busy_pin)},
         		hspi(HSPI),
         		spi_settings(4000000, MSBFIRST, SPI_MODE0),
-                dataCollector{dataCollector},
+                n2kCollector{n2kCollector},
                 modbus{modbus} {
         	hspi.begin(sck_pin, SPI_DISPLAY_MIS0, din_pin, cs_pin);
                 
         };
-        void begin(int32_t baud=115200 );
+        void begin(int32_t baud=0 );
         void update();
         void nextPage(void); // must be fast as will be called by ISR.
         uint8_t getPageNo(void) {
@@ -60,7 +62,7 @@ class EinkDisplay {
         GxEPD2_BW<GxEPD2_370_TC1, GxEPD2_370_TC1::HEIGHT> display;
         SPIClass hspi;
         SPISettings spi_settings;
-        DataCollector &dataCollector;
+        N2KCollector &n2kCollector;
         Modbus &modbus;
         volatile unsigned long pageChangeAt = 0;
         volatile uint16_t pageNoCalls = 0;

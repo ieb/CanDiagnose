@@ -1,13 +1,9 @@
-#ifndef HTTPSERVER_H
-#define HTTPSERVER_H
-
-
+#pragma once
 
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include "local_secrets.h"
-#include "display.h"
 
 #ifndef WIFI_SSID
 #error "WIFI_SSID not defined, add in local_secrets.h file"
@@ -65,7 +61,7 @@ class CsvOutput {
 
 #define MAX_DATASETS 14
 
-class WebServer : public DisplayPage {
+class WebServer {
     public:
         WebServer(Stream *outputStream) : outputStream{outputStream} {};
         void begin(const char * configurationFile = "/config.txt");
@@ -79,8 +75,10 @@ class WebServer : public DisplayPage {
                 csvHandlers[id] = handler;
             }
         };
+        String getSSID() { return ssid; };
+        String getPassword() { return password; };
+        String getBasicAuth() { return basicAuth; };
 
-        bool drawPage(Adafruit_SSD1306 * display);
     private:    
         String handleTemplate(AsyncWebServerRequest * request, const String &var);
         void handleAllFileUploads(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
@@ -96,5 +94,3 @@ class WebServer : public DisplayPage {
 };
 
 
-
-#endif

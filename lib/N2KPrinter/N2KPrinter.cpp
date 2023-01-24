@@ -1,14 +1,14 @@
 
 
-#include "datadisplay.h"
+#include "N2KPrinter.h"
 #include <N2kMessagesEnumToStr.h>
 
 
-DataDisplay::DataDisplay(Stream *outputStream) :
+N2KPrinter::N2KPrinter(Stream *outputStream) :
         OutputStream{outputStream} {
 }
 
-void DataDisplay::HandleMsg(const tN2kMsg &N2kMsg) {
+void N2KPrinter::HandleMsg(const tN2kMsg &N2kMsg) {
   if ( showData ) {
       switch(N2kMsg.PGN) {
         case 60928L: AddressClaim(N2kMsg); break;
@@ -44,7 +44,7 @@ void DataDisplay::HandleMsg(const tN2kMsg &N2kMsg) {
 
 
 //*****************************************************************************
-void DataDisplay::SystemTime(const tN2kMsg &N2kMsg) {
+void N2KPrinter::SystemTime(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     uint16_t SystemDate;
     double SystemTime;
@@ -62,7 +62,7 @@ void DataDisplay::SystemTime(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Rudder(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Rudder(const tN2kMsg &N2kMsg) {
     unsigned char Instance;
     tN2kRudderDirectionOrder RudderDirectionOrder;
     double RudderPosition;
@@ -79,7 +79,7 @@ void DataDisplay::Rudder(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::EngineRapid(const tN2kMsg &N2kMsg) {
+void N2KPrinter::EngineRapid(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     double EngineSpeed;
     double EngineBoostPressure;
@@ -96,7 +96,7 @@ void DataDisplay::EngineRapid(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
+void N2KPrinter::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     double EngineOilPress;
     double EngineOilTemp;
@@ -132,7 +132,7 @@ void DataDisplay::EngineDynamicParameters(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::TransmissionParameters(const tN2kMsg &N2kMsg) {
+void N2KPrinter::TransmissionParameters(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     tN2kTransmissionGear TransmissionGear;
     double OilPressure;
@@ -151,7 +151,7 @@ void DataDisplay::TransmissionParameters(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::TripFuelConsumption(const tN2kMsg &N2kMsg) {
+void N2KPrinter::TripFuelConsumption(const tN2kMsg &N2kMsg) {
     unsigned char EngineInstance;
     double TripFuelUsed;
     double FuelRateAverage; 
@@ -170,7 +170,7 @@ void DataDisplay::TripFuelConsumption(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Heading(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Heading(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     tN2kHeadingReference HeadingReference;
     double Heading;
@@ -190,7 +190,7 @@ void DataDisplay::Heading(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::COGSOG(const tN2kMsg &N2kMsg) {
+void N2KPrinter::COGSOG(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     tN2kHeadingReference HeadingReference;
     double COG;
@@ -208,7 +208,7 @@ void DataDisplay::COGSOG(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::GNSS(const tN2kMsg &N2kMsg) {
+void N2KPrinter::GNSS(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     uint16_t DaysSince1970;
     double SecondsSinceMidnight; 
@@ -252,7 +252,7 @@ void DataDisplay::GNSS(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::UserDatumSettings(const tN2kMsg &N2kMsg) {
+void N2KPrinter::UserDatumSettings(const tN2kMsg &N2kMsg) {
   if (N2kMsg.PGN!=129045L) return;
   int Index=0;
   double val;
@@ -275,7 +275,7 @@ void DataDisplay::UserDatumSettings(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::GNSSSatsInView(const tN2kMsg &N2kMsg) {
+void N2KPrinter::GNSSSatsInView(const tN2kMsg &N2kMsg) {
   unsigned char SID;
   tN2kRangeResidualMode Mode;
   uint8_t NumberOfSVs;
@@ -297,7 +297,7 @@ void DataDisplay::GNSSSatsInView(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::LocalOffset(const tN2kMsg &N2kMsg) {
+void N2KPrinter::LocalOffset(const tN2kMsg &N2kMsg) {
     uint16_t SystemDate;
     double SystemTime;
     int16_t Offset;
@@ -313,7 +313,7 @@ void DataDisplay::LocalOffset(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
+void N2KPrinter::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double WaterTemperature;
     double OutsideAmbientAirTemperature;
@@ -331,7 +331,7 @@ void DataDisplay::OutsideEnvironmental(const tN2kMsg &N2kMsg) {
 
 
 //*****************************************************************************
-void DataDisplay::EnvironmentalParams(const tN2kMsg &N2kMsg) {
+void N2KPrinter::EnvironmentalParams(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double Temperature;
     double Humidity;
@@ -353,7 +353,7 @@ void DataDisplay::EnvironmentalParams(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Temperature(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Temperature(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char TempInstance;
     tN2kTempSource TempSource;
@@ -370,7 +370,7 @@ void DataDisplay::Temperature(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Humidity(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Humidity(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char Instance;
     tN2kHumiditySource HumiditySource;
@@ -386,7 +386,7 @@ void DataDisplay::Humidity(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Pressure(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Pressure(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char Instance;
     tN2kPressureSource PressureSource;
@@ -401,7 +401,7 @@ void DataDisplay::Pressure(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::TemperatureExt(const tN2kMsg &N2kMsg) {
+void N2KPrinter::TemperatureExt(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char TempInstance;
     tN2kTempSource TempSource;
@@ -418,7 +418,7 @@ void DataDisplay::TemperatureExt(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::BatteryConfigurationStatus(const tN2kMsg &N2kMsg) {
+void N2KPrinter::BatteryConfigurationStatus(const tN2kMsg &N2kMsg) {
     unsigned char BatInstance;
     tN2kBatType BatType;
     tN2kBatEqSupport SupportsEqual;
@@ -445,7 +445,7 @@ void DataDisplay::BatteryConfigurationStatus(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::DCStatus(const tN2kMsg &N2kMsg) {
+void N2KPrinter::DCStatus(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     unsigned char DCInstance;
     tN2kDCType DCType;
@@ -469,7 +469,7 @@ void DataDisplay::DCStatus(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataDisplay::DCBatteryStatus(const tN2kMsg &N2kMsg) {
+void N2KPrinter::DCBatteryStatus(const tN2kMsg &N2kMsg) {
     byte BatteryInstance;
     double BatteryVoltage;
     double BatteryCurrent;
@@ -490,7 +490,7 @@ void DataDisplay::DCBatteryStatus(const tN2kMsg &N2kMsg) {
 
 
 //*****************************************************************************
-void DataDisplay::Speed(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Speed(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double SOW;
     double SOG;
@@ -506,7 +506,7 @@ void DataDisplay::Speed(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::WaterDepth(const tN2kMsg &N2kMsg) {
+void N2KPrinter::WaterDepth(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double DepthBelowTransducer;
     double Offset;
@@ -533,7 +533,7 @@ void DataDisplay::WaterDepth(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::printLLNumber(Stream *OutputStream, unsigned long long n, uint8_t base)
+void N2KPrinter::printLLNumber(Stream *OutputStream, unsigned long long n, uint8_t base)
 {
   unsigned char buf[16 * sizeof(long)]; // Assumes 8-bit chars.
   unsigned long long i = 0;
@@ -555,7 +555,7 @@ void DataDisplay::printLLNumber(Stream *OutputStream, unsigned long long n, uint
 }
 
 //*****************************************************************************
-void DataDisplay::BinaryStatusFull(const tN2kMsg &N2kMsg) {
+void N2KPrinter::BinaryStatusFull(const tN2kMsg &N2kMsg) {
     unsigned char BankInstance;
     tN2kBinaryStatus BankStatus;
 
@@ -571,7 +571,7 @@ void DataDisplay::BinaryStatusFull(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::BinaryStatus(const tN2kMsg &N2kMsg) {
+void N2KPrinter::BinaryStatus(const tN2kMsg &N2kMsg) {
     unsigned char BankInstance;
     tN2kOnOff Status1,Status2,Status3,Status4;
 
@@ -590,7 +590,7 @@ void DataDisplay::BinaryStatus(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::FluidLevel(const tN2kMsg &N2kMsg) {
+void N2KPrinter::FluidLevel(const tN2kMsg &N2kMsg) {
     unsigned char Instance;
     tN2kFluidType FluidType;
     double Level=0;
@@ -633,7 +633,7 @@ void DataDisplay::FluidLevel(const tN2kMsg &N2kMsg) {
 }
 
 //*****************************************************************************
-void DataDisplay::Attitude(const tN2kMsg &N2kMsg) {
+void N2KPrinter::Attitude(const tN2kMsg &N2kMsg) {
     unsigned char SID;
     double Yaw;
     double Pitch;
@@ -650,7 +650,7 @@ void DataDisplay::Attitude(const tN2kMsg &N2kMsg) {
     }
 }
 
-void DataDisplay::AddressClaim(const tN2kMsg &N2kMsg) {
+void N2KPrinter::AddressClaim(const tN2kMsg &N2kMsg) {
     //PGN 60928
     int index = 0;
     uint64_t name = N2kMsg.GetUInt64(index);
