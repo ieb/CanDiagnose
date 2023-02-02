@@ -53,42 +53,19 @@ tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
 #include "modbus.h"
 #include "dataoutput.h"
 
-
-// Display panel selection
-#define EINK_DISPLAY 1
-//#define OLED_DISPLAY 1
-
-#ifdef EINK_DISPLAY
-// SPI Display impl TBD
-#define SPI_DISPLAY_MOSI GPIO_NUM_32
-#define SPI_DISPLAY_SCK GPIO_NUM_33
-#define SPI_DISPLAY_CS GPIO_NUM_25
-#define SPI_DISPLAY_DC GPIO_NUM_26
-#define SPI_DISPLAY_RST GPIO_NUM_27
-#define SPI_DISPLAY_BL GPIO_NUM_35
-
+// Display implementions
+#include "display.h"
 #include "einkdisplay.h"
-
-#define DISPLAY_MODULE EinkDisplay
-
-#elif OLED_DISPLAY
-
 #include "OLEDDisplay.h"
-#define DISPLAY_MODULE OledDisplay
+#include "TFTDisplay.h"
 
-#else
+// select one
+//#define DISPLAY_MODULE OledDisplay
+//#define DISPLAY_MODULE EinkDisplay
+#define DISPLAY_MODULE TFTDisplay
 
-#define DISPLAY_MODULE NullDisplay
-class NullDisplay {
-public:
-  NullDisplay(N2KCollector &n2kCollector, Modbus &modbus, WebServer &webServer) {};
-  void nextPage() {};
-  void begin() {};
-  void update() {};
+//#define DISPLAY_MODULE NullDisplay
 
-};
-
-#endif
 
 
 
@@ -125,7 +102,11 @@ LogBook logbook(n2kCollector);
 
 WebServer webServer(OutputStream);
 
-DISPLAY_MODULE display(n2kCollector, modbus, webServer);
+
+
+
+TFT_eSPI tftDisplayDriver = TFT_eSPI();
+TFTDisplay display(n2kCollector, modbus, webServer, tftDisplayDriver);
 
 #ifdef USE_INTERRUPT
 
@@ -426,24 +407,55 @@ bool checkPress() {
 }
 #endif
 
+unsigned long start = 0;
+void startTimer() {
+  start = millis();
+}
+void endTimer(const char * name) {
+  unsigned long end = millis();
+  if ( (end-start) > 100 ) {
+    Serial.print(name);
+    Serial.print(" ms:");
+    Serial.println((end-start));
+  }
+
+}
 //*****************************************************************************
 void loop() { 
+  startTimer();
   NMEA2000.ParseMessages();
+  endTimer("NMEA2000.ParseMessages");
 // Only on demand as it causes startup to take time to complete
 // listDevices.list();
+  startTimer();
   temperature.read();
+  endTimer("temperature.read");
+  startTimer();
   temperature.output();
+  endTimer("temperature.output");
+  startTimer();
   modbus.read();
+  endTimer("modbus.read");
+  startTimer();
   modbus.output();
+  endTimer("modbus.output");
+  startTimer();
 
   logbook.log();
+  endTimer("logbook.log");
 //  logbook.demoMode();
+  startTimer();
   CheckCommand();
+  endTimer("CheckCommand");
+  startTimer();
 #ifndef USE_INTERRUPT
   if ( checkPress() ) {
     Serial.println("Button Being pressed");
     display.nextPage();
   }
+  endTimer("checkPress");
+  startTimer();
 #endif
   display.update();
+  endTimer("display.update");
 }

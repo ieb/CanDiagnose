@@ -63,12 +63,21 @@ void Modbus::output() {
 }
 void Modbus::read() {
     unsigned long now = millis();
+    // this is async so looks a bit odd.
+    // readResponse reads the response if one is available and accumulates it
+    // not blocking, 
+    modbusMaster.readResponseAsync();
+    // send a request get get the data for the service battery.
+    // until its read more reads are noops so its ok to call repeatedly
+    serviceBattery.read();
+    engineBattery.read();
     if ( now > lastRead + readPeriod )  {
+        // Update the history periodically.
+        // this may get the value from the last read, but thats ok.
         lastRead = now;
-        serviceBattery.read();
-        engineBattery.read();
         storeHistory(serviceBattery.voltage);
     }
+
 }
 
 

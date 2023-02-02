@@ -121,12 +121,26 @@ Wire Wire Line
 Wire Wire Line
 	3100 1150 4100 1150
 Wire Wire Line
-	4600 1150 5600 1150
+	4600 1150 4850 1150
+Wire Wire Line
+	4850 1150 5150 1150
+Wire Wire Line
+	5150 1150 5350 1150
+Wire Wire Line
+	5350 1150 5600 1150
 Wire Wire Line
 	5350 1150 5350 1400
 Connection ~ 5350 1150
 Wire Wire Line
-	5150 1850 6750 1850
+	5150 1850 5350 1850
+Wire Wire Line
+	5350 1850 5600 1850
+Wire Wire Line
+	5600 1850 6050 1850
+Wire Wire Line
+	6050 1850 6550 1850
+Wire Wire Line
+	6550 1850 6750 1850
 Wire Wire Line
 	6750 1850 6750 1800
 Wire Wire Line
@@ -135,7 +149,11 @@ Wire Wire Line
 	6050 1850 6050 2050
 Connection ~ 6050 1850
 Wire Wire Line
-	6550 1150 7050 1150
+	6550 1150 6750 1150
+Wire Wire Line
+	6750 1150 6950 1150
+Wire Wire Line
+	6950 1150 7050 1150
 Wire Wire Line
 	6750 1150 6750 1400
 Wire Notes Line
@@ -214,11 +232,15 @@ F 3 "" H 10650 3300 60  0000 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	12150 3800 12650 3800
+	12150 3800 12350 3800
+Wire Wire Line
+	12350 3800 12650 3800
 Wire Wire Line
 	12250 4000 12650 4000
 Wire Wire Line
-	12250 3950 12250 4150
+	12250 3950 12250 4000
+Wire Wire Line
+	12250 4000 12250 4150
 Wire Wire Line
 	12250 3950 12150 3950
 NoConn ~ 12150 4100
@@ -266,7 +288,9 @@ $EndComp
 Wire Wire Line
 	12250 4550 12250 4650
 Wire Wire Line
-	12250 4650 12400 4650
+	12250 4650 12300 4650
+Wire Wire Line
+	12300 4650 12400 4650
 Wire Wire Line
 	12400 4650 12400 4550
 Wire Wire Line
@@ -310,12 +334,18 @@ F 3 "" H 13200 6600 30  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	10650 3500 10650 3950
+	10650 3500 10650 3800
+Wire Wire Line
+	10650 3800 10650 3950
 Connection ~ 10650 3800
 Wire Wire Line
-	10650 2950 10650 3100
+	10650 2950 10650 3000
 Wire Wire Line
-	10650 2950 10950 2950
+	10650 3000 10650 3100
+Wire Wire Line
+	10650 2950 10800 2950
+Wire Wire Line
+	10800 2950 10950 2950
 Wire Wire Line
 	10800 2950 10800 3950
 Wire Wire Line
@@ -367,10 +397,14 @@ Wire Wire Line
 Wire Wire Line
 	13100 6300 13100 7000
 Wire Wire Line
-	13000 7000 13250 7000
+	13000 7000 13100 7000
+Wire Wire Line
+	13100 7000 13250 7000
 Connection ~ 13100 7000
 Wire Wire Line
-	13000 7200 13250 7200
+	13000 7200 13200 7200
+Wire Wire Line
+	13200 7200 13250 7200
 $Comp
 L DCDCConverter U5
 U 1 1 6181648E
@@ -540,7 +574,11 @@ $EndComp
 Text GLabel 11050 7600 0    60   Input ~ 0
 3v3
 Wire Wire Line
-	11050 7600 11750 7600
+	11050 7600 11250 7600
+Wire Wire Line
+	11250 7600 11500 7600
+Wire Wire Line
+	11500 7600 11750 7600
 Wire Wire Line
 	11750 7600 11750 7750
 Wire Wire Line
@@ -606,13 +644,17 @@ F 3 "https://uk.rs-online.com/web/p/tvs-diodes/7147197" H 10550 6750 60  0001 C 
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	10100 6300 10650 6300
+	10100 6300 10550 6300
+Wire Wire Line
+	10550 6300 10650 6300
 Wire Wire Line
 	11150 6300 11550 6300
 Wire Wire Line
 	11150 6500 11550 6500
 Wire Wire Line
-	10100 6500 10650 6500
+	10100 6500 10350 6500
+Wire Wire Line
+	10350 6500 10650 6500
 Wire Wire Line
 	10550 6550 10550 6300
 Connection ~ 10550 6300
@@ -622,7 +664,9 @@ Connection ~ 10350 6500
 Wire Wire Line
 	10350 6950 10350 7200
 Wire Wire Line
-	10350 7200 10550 7200
+	10350 7200 10450 7200
+Wire Wire Line
+	10450 7200 10550 7200
 Wire Wire Line
 	10550 7200 10550 6950
 $Comp
@@ -657,11 +701,15 @@ Text GLabel 9650 5700 0    60   Input ~ 0
 Wire Wire Line
 	9650 5700 9700 5700
 Wire Wire Line
-	9700 5400 9700 6050
+	9700 5400 9700 5700
+Wire Wire Line
+	9700 5700 9700 6050
 Wire Wire Line
 	9300 6350 9100 6350
 Wire Wire Line
-	9100 6350 9100 6450
+	9100 6350 9100 6400
+Wire Wire Line
+	9100 6400 9100 6450
 Wire Wire Line
 	9100 6450 9300 6450
 Text GLabel 8900 6550 0    60   Input ~ 0
@@ -699,7 +747,9 @@ F 3 "" H 10150 5750 60  0000 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	9200 5400 10150 5400
+	9200 5400 9700 5400
+Wire Wire Line
+	9700 5400 10150 5400
 Wire Wire Line
 	10150 5400 10150 5550
 Connection ~ 9700 5700
@@ -880,48 +930,8 @@ Text GLabel 3400 5800 0    60   Output ~ 0
 SCK
 Text GLabel 3400 6000 0    60   Output ~ 0
 CS
-Text GLabel 1900 6750 2    60   Input ~ 0
-MOSI
-Text GLabel 1900 6850 2    60   Input ~ 0
-SCK
-Text GLabel 1900 6950 2    60   Input ~ 0
-CS
-$Comp
-L CONN_8 P104
-U 1 1 62C19D21
-P 1550 6900
-F 0 "P104" V 1500 6900 60  0000 C CNN
-F 1 "Dsiplay" V 1600 6900 60  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x08" H 1550 6900 60  0001 C CNN
-F 3 "" H 1550 6900 60  0001 C CNN
-	1    1550 6900
-	-1   0    0    1   
-$EndComp
-Text GLabel 1900 6550 2    60   Input ~ 0
-3v3
-$Comp
-L GND #PWR016
-U 1 1 62C1A102
-P 2350 6700
-F 0 "#PWR016" H 2350 6700 30  0001 C CNN
-F 1 "GND" H 2350 6630 30  0001 C CNN
-F 2 "" H 2350 6700 60  0001 C CNN
-F 3 "" H 2350 6700 60  0001 C CNN
-	1    2350 6700
-	1    0    0    -1  
-$EndComp
-Text GLabel 1900 7050 2    60   Input ~ 0
-DC
-Text GLabel 1900 7150 2    60   Input ~ 0
-RST
-Wire Wire Line
-	1900 6650 2350 6650
-Wire Wire Line
-	2350 6650 2350 6700
-Text GLabel 1900 7250 2    60   Output ~ 0
-BSY
 Text GLabel 3400 5400 0    60   Input ~ 0
-BSY
+MISO
 Text GLabel 3400 6200 0    60   Output ~ 0
 DC
 Text GLabel 3400 6400 0    60   Output ~ 0
@@ -960,18 +970,24 @@ F 3 "" H 9050 3650 30  0000 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	8850 4100 9300 4100
+	8850 4100 9050 4100
+Wire Wire Line
+	9050 4100 9300 4100
 Wire Wire Line
 	9050 3900 9050 4100
 Connection ~ 9050 4100
 Wire Wire Line
 	9450 3300 9450 3800
 Wire Wire Line
-	8650 3300 9450 3300
+	8650 3300 9050 3300
+Wire Wire Line
+	9050 3300 9450 3300
 Wire Wire Line
 	9050 3300 9050 3400
 Wire Wire Line
-	9700 4100 10900 4100
+	9700 4100 9900 4100
+Wire Wire Line
+	9900 4100 10900 4100
 Wire Wire Line
 	9900 3800 9900 4100
 Connection ~ 9900 4100
@@ -992,9 +1008,13 @@ F 3 "" H 8950 6150 60  0000 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	9150 6250 9300 6250
+	9150 6250 9200 6250
 Wire Wire Line
-	8550 6250 8750 6250
+	9200 6250 9300 6250
+Wire Wire Line
+	8550 6250 8650 6250
+Wire Wire Line
+	8650 6250 8750 6250
 Text GLabel 8650 3300 0    60   Input ~ 0
 3v3
 Connection ~ 9050 3300
@@ -1034,7 +1054,9 @@ Connection ~ 8650 6250
 Wire Wire Line
 	8650 5550 8650 5450
 Wire Wire Line
-	8450 5450 8900 5450
+	8450 5450 8650 5450
+Wire Wire Line
+	8650 5450 8900 5450
 Wire Wire Line
 	8900 5450 8900 5950
 Connection ~ 8650 5450
@@ -1042,4 +1064,54 @@ Text Notes 8050 5300 0    60   ~ 0
 RO is high impedence when RE/DE \nare high, so a level shifter is required.
 Text Notes 8700 4550 0    60   ~ 0
 Pin RXD is driven so this level shifter is strictly \nnot required and could be replaced by a R divider.\n\n3v into TXD is high enough for 5V logic.\n
+Text GLabel 3400 6600 0    60   Output ~ 0
+LED
+$Comp
+L CONN_12 P?
+U 1 1 63CF9FAE
+P 2100 6000
+F 0 "P?" V 2050 6000 60  0000 C CNN
+F 1 "CONN_12" V 2150 6000 60  0000 C CNN
+F 2 "" H 2100 6000 60  0001 C CNN
+F 3 "" H 2100 6000 60  0001 C CNN
+	1    2100 6000
+	-1   0    0    1   
+$EndComp
+Text GLabel 2450 6550 2    60   Input ~ 0
+3v3
+$Comp
+L GND #PWR?
+U 1 1 63CFA138
+P 2450 6350
+F 0 "#PWR?" H 2450 6350 30  0001 C CNN
+F 1 "GND" H 2450 6280 30  0001 C CNN
+F 2 "" H 2450 6350 60  0001 C CNN
+F 3 "" H 2450 6350 60  0001 C CNN
+	1    2450 6350
+	1    0    0    -1  
+$EndComp
+Text GLabel 2450 6450 2    60   Input ~ 0
+5V
+Text GLabel 2450 5750 2    60   Input ~ 0
+MOSI
+Text GLabel 2450 5650 2    60   Output ~ 0
+MISO
+Text GLabel 2450 5850 2    60   Input ~ 0
+SCK
+Text GLabel 2450 5950 2    60   Input ~ 0
+CS
+Text GLabel 2450 6050 2    60   Input ~ 0
+DC
+Text GLabel 2450 6150 2    60   Input ~ 0
+RST
+Text GLabel 2450 6250 2    60   Input ~ 0
+LED
+Text GLabel 2450 5450 2    60   Output ~ 0
+B1
+Text GLabel 2450 5550 2    60   Output ~ 0
+B2
+Text GLabel 3400 5000 0    60   Input ~ 0
+B1
+Text GLabel 3400 5200 0    60   Input ~ 0
+B2
 $EndSCHEMATC

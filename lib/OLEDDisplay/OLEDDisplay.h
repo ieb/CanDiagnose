@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ *  A SD1306 64x128 OLED display connected over I2C
+ * Displays a number of simple pages of information.
+ */ 
+
 #include <Wire.h>
 #define SSD1306_NO_SPLASH 1
 #include <Adafruit_SSD1306.h>
@@ -12,6 +17,7 @@
 #define OLED_SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 
 #define MAX_DISPLAYPAGES 10
+
 
 class DisplayPage {
     public:

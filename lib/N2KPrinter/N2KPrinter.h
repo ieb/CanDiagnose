@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Prints N2K messages to serial as they are recieved.
+ */ 
+
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 

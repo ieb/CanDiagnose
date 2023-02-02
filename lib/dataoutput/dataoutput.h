@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Dataoutput methods for N2K messages stored in the NK2Collector
+ */
+
 #include "httpserver.h"
 #include "N2KCollector.h"
 

@@ -20,8 +20,12 @@ void ModbusMaster::readStats() {
     Serial.println(errors);
 }
 
+/*
 int8_t ModbusMaster::readInput(uint8_t unit, uint16_t regNo, int8_t count) {
-    if ( count > MAX_COUNT ) {
+    if ( state == MODBUS_RECIEVE ) {
+        return MODBUS_BUSY;
+    }
+    if ( count > MODBUS_MAX_COUNT ) {
         return MODBUS_TOOMANY;
     }
     unsigned long tstart = micros();
@@ -55,12 +59,45 @@ int8_t ModbusMaster::readInput(uint8_t unit, uint16_t regNo, int8_t count) {
         Serial.println("us");
 
     }
-    return ret;
+    return ret;        
 }
+*/
 
-int8_t ModbusMaster::readHolding(uint8_t unit, uint16_t regNo, int16_t count) {
+int8_t ModbusMaster::readInputAsync(uint8_t unit, uint16_t regNo, int8_t count,  ModbusCallback *callback) {
+    if ( state == MODBUS_RECIEVE ) {
+        return MODBUS_BUSY;
+    }
+    if ( count > MODBUS_MAX_COUNT ) {
+        return MODBUS_TOOMANY;
+    }
     // clear pending data from the serial buffer.
-    if ( count > MAX_COUNT ) {
+    consumeTraffic();
+    frameLength = 0;
+    numRegisters = 0;
+
+    buffer[frameLength++] = unit;
+    buffer[frameLength++] = 0x04;
+    buffer[frameLength++] = 0xff&(regNo>>8);
+    buffer[frameLength++] = 0xff&regNo;
+    buffer[frameLength++] = 0xff&(count>>8);
+    buffer[frameLength++] = 0xff&count;
+    send();
+
+    modbusCallback = callback;
+    recieveFromUnit = unit;
+    readFunction = 0x04;
+    startRegister = regNo;
+    registerCount = count;
+    lenToRead = 0; // defined in the response
+    return MODBUS_SENT_OK;
+}
+/*
+int8_t ModbusMaster::readHolding(uint8_t unit, uint16_t regNo, int16_t count) {
+    if ( state == MODBUS_RECIEVE ) {
+        return MODBUS_BUSY;
+    }
+    // clear pending data from the serial buffer.
+    if ( count > MODBUS_MAX_COUNT ) {
         return MODBUS_TOOMANY;
     }
     unsigned long tstart = micros();
@@ -75,7 +112,6 @@ int8_t ModbusMaster::readHolding(uint8_t unit, uint16_t regNo, int16_t count) {
     buffer[frameLength++] = 0xff&(count>>8);
     buffer[frameLength++] = 0xff&count;
     send();
-
     // expecting to recieve 5+count*2 bytes in the response
     // first read 2 bytes to 
     int8_t ret = readResponse(unit, 0x03);
@@ -92,10 +128,45 @@ int8_t ModbusMaster::readHolding(uint8_t unit, uint16_t regNo, int16_t count) {
         Serial.print(micros()-tstart);
         Serial.println("us");
     }
-    return ret;
+    return ret;        
+}
+*/
+
+int8_t ModbusMaster::readHoldingAsync(uint8_t unit, uint16_t regNo, int16_t count, ModbusCallback *callback) {
+    if ( state == MODBUS_RECIEVE ) {
+        return MODBUS_BUSY;
+    }
+    // clear pending data from the serial buffer.
+    if ( count > MODBUS_MAX_COUNT ) {
+        return MODBUS_TOOMANY;
+    }
+    consumeTraffic();
+    frameLength = 0;
+    numRegisters = 0;
+
+    buffer[frameLength++] = unit;
+    buffer[frameLength++] = 0x03;
+    buffer[frameLength++] = 0xff&(regNo>>8);
+    buffer[frameLength++] = 0xff&regNo;
+    buffer[frameLength++] = 0xff&(count>>8);
+    buffer[frameLength++] = 0xff&count;
+    send();
+
+    modbusCallback = callback;
+    recieveFromUnit = unit;
+    readFunction = 0x03;
+    startRegister = regNo;
+    registerCount = count;
+    lenToRead = 0; // defined in the response
+    return MODBUS_SENT_OK;
 }
 
+
+/*
 int8_t ModbusMaster::writeHolding(uint8_t unit, uint16_t regNo, int16_t value) {
+    if ( state == MODBUS_RECIEVE ) {
+        return  MODBUS_BUSY;
+    }
     // clear pending data from the serial buffer.
     consumeTraffic();
     frameLength = 0;
@@ -125,8 +196,34 @@ int8_t ModbusMaster::writeHolding(uint8_t unit, uint16_t regNo, int16_t value) {
         }
     } else {
         return resp;
-    }
+    }        
 }
+*/
+
+int8_t ModbusMaster::writeHoldingAsync(uint8_t unit, uint16_t regNo, int16_t value, ModbusCallback *callback) {
+    if ( state == MODBUS_RECIEVE ) {
+        return MODBUS_BUSY;
+    }
+    frameLength = 0;
+    numRegisters = 0;
+    consumeTraffic();
+
+    buffer[frameLength++] = unit;
+    buffer[frameLength++] = 0x03;
+    buffer[frameLength++] = 0xff&(regNo>>8);
+    buffer[frameLength++] = 0xff&regNo;
+    buffer[frameLength++] = 0xff&(value>>8);
+    buffer[frameLength++] = 0xff&value;
+    send();
+
+    modbusCallback = callback;
+    recieveFromUnit = unit;
+    readFunction = 0x03;
+    startRegister = regNo;
+    lenToRead = 8; // including the CRC bytes.
+    return MODBUS_SENT_OK;
+}
+
 
 bool ModbusMaster::checkRegisterOffset(uint8_t offset) {
     if (offset > numRegisters ) {
@@ -163,7 +260,6 @@ int16_t ModbusMaster::getInt16Response(uint8_t offset) {
 }
 
 void ModbusMaster::consumeTraffic() {
-    //recieveEnable();
     if ( diagnosticsEnabled ) {
         if ( io->available() ) {
             Serial.print("Traffic:");
@@ -178,8 +274,6 @@ void ModbusMaster::consumeTraffic() {
             io->read();
         }
     }
-
-    //transmitEnable();
 }
 
 void ModbusMaster::recieveEnable() {
@@ -216,8 +310,132 @@ void ModbusMaster::send() {
         dumpFrame(frameLength);
     }
     frameLength = 0;
+    messageSent = millis();
+    state = MODBUS_RECIEVE;
 }
 
+void ModbusMaster::readResponseAsync() {
+    if ( state != MODBUS_RECIEVE ) {
+        // dump content, not expecting a response and this is the ModbusMaster
+        while (io->available()) {
+            io->read();
+        }
+        return;
+    } 
+    unsigned long now = millis();
+    if ( now > (messageSent+5000) ) {
+        state = MODBUS_TIMEOUT;
+        modbusCallback->onResponse(state);
+        return;
+    }
+    int i = io->available();
+    if ( i > 0 ) {
+        if ( i > (MODBUS_BUFFER_LENGTH-frameLength)) {
+            i = MODBUS_BUFFER_LENGTH-frameLength;
+        }
+        if ( i == 0 ) {
+            state = MODBUS_RECEIVE_OVERFLOW;
+            modbusCallback->onResponse(state);
+            return;
+        }
+        io->readBytes(&buffer[frameLength],i);
+        frameLength += i;
+
+        if ( frameLength >= 2 ) {
+            // start evaluating 
+            if ( buffer[0] != recieveFromUnit ) {
+                Serial.print("Wrong unit responded, expected:");
+                Serial.print(recieveFromUnit);
+                Serial.print(" got:");
+                Serial.println(buffer[0]);
+                debugDumpFrame(1);
+                // dont read any more
+                errors++;
+                state =  MODBUS_WRONGUNIT;
+                modbusCallback->onResponse(state);
+                return;
+            } else if ((buffer[1] & 0x7f) != readFunction ) {
+                // response had wrong function code.
+                Serial.println("Wrong function response, expected:");
+                Serial.print(readFunction);
+                Serial.print(" got:");
+                Serial.println(buffer[1]);
+                debugDumpFrame(2);
+                errors++;
+                state =  MODBUS_WRONGFUNCTION;
+                modbusCallback->onResponse(state);
+                return;
+            } else if ( frameLength >= 5 && (buffer[1] & 0x80) == 0x80 ) {
+                checkCrc(3);
+                Serial.print("Exception: 0x");
+                Serial.println(buffer[0]);
+                debugDumpFrame(3);
+                errors++;
+                state = MODBUS_EXCEPTION;
+                modbusCallback->onResponse(state);
+                return;
+            } else if (lenToRead == 0 ) {
+                if ( frameLength >= 3 ) {
+                    lenToRead = buffer[2] + 3 + 2 ; //  unit,function,len,[len bytes buffer[2]],crc1,crc2 
+                }
+            }
+            // now check if the content has been recieved
+            if ( frameLength >= lenToRead ) {
+                // whole frame has been recieved, last 2 bytes are the crc.
+                // if the buffer has > than lenToRead still assume lenToRead is the CRC
+                if ( !checkCrc(lenToRead-2) ) {
+                    errors++;
+                    Serial.println("CRC fail count len");
+                    debugDumpFrame(lenToRead);
+                    state = MODBUS_CRCFAIL;
+                    modbusCallback->onResponse(state);
+                } else {
+                    debugDumpFrame(lenToRead);
+                    recieved++;
+                    state = MODBUS_OK;
+                    modbusCallback->onResponse(state);
+                    state = MODBUS_IDLE;
+                    /*
+                    switch((buffer[1] & 0x7f)) {
+                        case 0x03:
+                            if ( writeOperation ) {
+                                if ( (buffer[0] == recieveFromUnit) && 
+                                        (buffer[1] == 0x03) &&
+                                        (buffer[2] == (0xff&(startRegister>>8))) &&
+                                        (buffer[3] == (0xff&startRegister)) &&
+                                        (buffer[4] == (0xff&(holdingValue>>8))) &&
+                                        (buffer[5] == (0xff&holdingValue))) {
+                                    state = MODBUS_OK;
+                                } else {
+                                    state = MODBUS_FAIL;
+                                }        
+                            } else {
+                                state = MODBUS_OK;
+                            }
+                            modbusCallback->onHoldingResonse(state);
+                            break;
+                        case 0x04:    
+                            state = MODBUS_OK;
+                            modbusCallback->onHoldingResonse(state);
+                            break;
+                        default:
+                            state = MODBUS_UNSUPPORTED_FUNCTION;
+                    }
+                    */
+                }
+            }
+        }
+    }    
+}
+
+void ModbusMaster::debugDumpFrame(uint8_t frameLength) {
+    if ( diagnosticsEnabled ) {
+        Serial.print("recv<");
+        dumpFrame(frameLength);
+    }
+}
+
+/*
 int8_t ModbusMaster::readResponse(uint8_t unit, uint8_t function, int16_t len) {
     recieveEnable();
     io->setTimeout(5000);
@@ -306,6 +524,7 @@ int8_t ModbusMaster::readResponse(uint8_t unit, uint8_t function, int16_t len) {
 
 
 }
+*/
 
 
 bool ModbusMaster::checkCrc(uint8_t p) {
@@ -317,13 +536,13 @@ bool ModbusMaster::checkCrc(uint8_t p) {
     }
     return true;
 }
-    /**
-    * @brief crc for mdbus, polynomial = 0x8005, reverse in, reverse out, init 0xffff;
-    * 
-    * @param array 
-    * @param length 
-    * @return uint16_t 
-    */
+/**
+* @brief crc for mdbus, polynomial = 0x8005, reverse in, reverse out, init 0xffff;
+* 
+* @param array 
+* @param length 
+* @return uint16_t 
+*/
 uint16_t ModbusMaster::crc16(const uint8_t *array, uint16_t length) {
     uint16_t crc = 0xffff;
     while (length--) {

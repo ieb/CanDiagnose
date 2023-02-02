@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * Collects and stores data from a N2K feed.
+ */ 
+
 #include <NMEA2000.h>
 #include <N2kMessages.h>
 

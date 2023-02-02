@@ -1,5 +1,12 @@
 #pragma once
 
+/**
+ * A waveshare EPD 3.7 inch eink display.
+ * 2 pages of text information, refreshed on button press.
+ * Data not updated live.
+ * Very low power, but also not that usable.
+ */ 
+
 #define SPI_DISPLAY_MOSI GPIO_NUM_32
 #define SPI_DISPLAY_MIS0 GPIO_NUM_35  // not connected
 #define SPI_DISPLAY_SCK GPIO_NUM_33
@@ -17,6 +24,7 @@
 #include "dataoutput.h"
 #include "modbus.h"
 #include "httpserver.h"
+
 
 //#define DUMMYDATA 1
 
