@@ -108,16 +108,6 @@ WebServer webServer(OutputStream);
 TFT_eSPI tftDisplayDriver = TFT_eSPI();
 TFTDisplay display(n2kCollector, modbus, webServer, tftDisplayDriver);
 
-#ifdef USE_INTERRUPT
-
-/*
- * Increment display page on button press 
- */
-void IRAM_ATTR buttonPressInterrupt() {
-  display.nextPage();
-}
-
-#endif
 
 
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
@@ -144,6 +134,8 @@ void setup() {
   Serial.begin(115200); 
   Serial2.begin(9600, SERIAL_8N1, RS485_RX, RS485_TX); // RS485 Modbus
   modbusMaster.begin();
+  display.begin();
+  display.update();
 
   if (!Wire.begin(SDA_PIN, SCL_PIN) ) {
     Serial.println("I2C failed to start");
@@ -161,8 +153,8 @@ void setup() {
     Serial.println("Done ");
   }
 
+  display.update("I2C scanned",0);
 
-  display.begin();
 
 
 
@@ -170,12 +162,11 @@ void setup() {
 
 
   pinMode(DISPLAY_BUTTON, INPUT_PULLUP);
-#ifdef USE_INTERRUPT
-  attachInterrupt(DISPLAY_BUTTON, buttonPressInterrupt, RISING);
-#endif
 
   temperature.begin();
   modbus.begin();
+
+  display.update("Sensors started",1);
  
   webServer.addJsonOutputHandler(0,&listDevices);
   webServer.addJsonOutputHandler(1,&engineDataOutput);
@@ -206,6 +197,7 @@ void setup() {
   webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
 
+  display.update("Web server started",2);
 
   // Set Product information
   NMEA2000.SetProductInformation("00000003", // Manufacturer's Model SerialIO code
@@ -236,6 +228,7 @@ void setup() {
 
   NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, 50);
   NMEA2000.Open();
+  display.update("NMEA2000 started",3);
 
   OutputStream->print("Running...");
   showHelp();
@@ -408,54 +401,84 @@ bool checkPress() {
 #endif
 
 unsigned long start = 0;
+const char *timerMessages[9] = {
+"NMEA2000.ParseMessages",
+"temperature.read",
+"temperature.output",
+"modbus.read",
+"modbus.output",
+"logbook.log",
+"CheckCommand",
+"checkPress",
+"display.update"  
+};
+int16_t totalCalls = 0;
+unsigned long lastPrint = 0;
+unsigned long counters[9] = {0,0,0,0,0,0,0,0,0};
+uint16_t calls[9] = {0,0,0,0,0,0,0,0,0};
 void startTimer() {
   start = millis();
 }
-void endTimer(const char * name) {
+void endTimer(int i) {
   unsigned long end = millis();
-  if ( (end-start) > 100 ) {
-    Serial.print(name);
-    Serial.print(" ms:");
-    Serial.println((end-start));
-  }
-
+  calls[i]++;
+  totalCalls++;
+  counters[i] = counters[i]+(end-start);
+  if ( end > (lastPrint+10000) ) {
+    lastPrint = end;
+    Serial.print(end);
+    Serial.print(" times:");
+    for(int i = 0; i < 9; i++ ) {
+      Serial.print(",");
+      if (calls[i] == 0) {
+        Serial.print("-");
+      } else {
+        Serial.print((float)(counters[i]/calls[i]));
+      }
+      counters[i] = 0;
+      calls[i] = 0;
+    }
+    Serial.print(",");
+    Serial.println(totalCalls);
+    totalCalls = 0;
+  } 
 }
 //*****************************************************************************
 void loop() { 
   startTimer();
   NMEA2000.ParseMessages();
-  endTimer("NMEA2000.ParseMessages");
+  endTimer(0);
 // Only on demand as it causes startup to take time to complete
 // listDevices.list();
   startTimer();
   temperature.read();
-  endTimer("temperature.read");
+  endTimer(1);
   startTimer();
   temperature.output();
-  endTimer("temperature.output");
+  endTimer(2);
   startTimer();
   modbus.read();
-  endTimer("modbus.read");
+  endTimer(3);
   startTimer();
   modbus.output();
-  endTimer("modbus.output");
+  endTimer(4);
   startTimer();
 
   logbook.log();
-  endTimer("logbook.log");
+  endTimer(5);
 //  logbook.demoMode();
   startTimer();
   CheckCommand();
-  endTimer("CheckCommand");
+  endTimer(6);
   startTimer();
 #ifndef USE_INTERRUPT
   if ( checkPress() ) {
     Serial.println("Button Being pressed");
     display.nextPage();
   }
-  endTimer("checkPress");
+  endTimer(7);
   startTimer();
 #endif
   display.update();
-  endTimer("display.update");
+  endTimer(8);
 }

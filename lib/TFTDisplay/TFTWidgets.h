@@ -20,8 +20,55 @@ public:
 	static unsigned int rainbow(byte value);
 	static float sineWave(int phase);
 	static void drawIcon(TFT_eSPI *tft, const unsigned short* icon, int16_t x, int16_t y, int8_t width, int8_t height);
+	/*static void textBox(TFT_eSPI *tft, const char *value, const char *previousValue, 
+			int x, int y, int height, int width, const char *bl, const char *br, bool firstPaint);*/
+
 	/*
 	static void textBot(TFT_eSPI *tft, float value, int x, int y, int w, const char *format, const char *title, const char * units);
 */
 };
 
+
+class TFTTextBox {
+public:
+	TFTTextBox(int _x, int _y, int _width, int _height, int _precision, 
+			float _minValue, 
+			float _maxValue, const char *_bl, const char *_br, char _positive=0, char _negative='-') {
+		x = _x;
+		y = _y;
+		width = _width;
+		height = _height;
+		precision = _precision;
+		bl = _bl;
+		br = _br;
+		maxValue = _maxValue;
+		minValue = _minValue;
+		positive = _positive;
+		negative = _negative;
+
+	};
+	void update(TFT_eSPI *tft, float value,  bool firstPaint);
+private:
+	void formatValue(float value, char *buffer);
+	const char *br, *bl;
+	int x, y, width, height, precision;
+	float previousValue, maxValue, minValue;
+	char positive, negative;
+};
+
+
+class TFTLatLonBox {
+public:
+	TFTLatLonBox(int _x, int _y, int _width, int _height) {
+		x = _x;
+		y = _y;
+		width = _width;
+		height = _height;
+
+	};
+	void update(TFT_eSPI *tft, float lat, float lon,  bool firstPaint);
+private:
+	const char *br, *bl;
+	int x, y, width, height, precision;
+	float previousLay, previousLon;
+};

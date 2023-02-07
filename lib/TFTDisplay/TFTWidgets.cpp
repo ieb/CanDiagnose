@@ -57,6 +57,159 @@ void loop() {
 }
 */
 
+/*
+void TFTWidgets::textBox(TFT_eSPI *tft, const char *value, const char *previousValue, 
+      int x, int y, int width, int height, const char *bl, const char *br, bool firstPaint) {
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  if ( firstPaint ) {
+    tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
+    tft->setTextDatum(BL_DATUM);
+    tft->drawString(bl, x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    tft->setTextDatum(BR_DATUM);
+    tft->drawString(br, x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+  }
+  if ( firstPaint || strcmp(value, previousValue) != 0) {
+    tft->setTextDatum(MC_DATUM);
+    tft->setTextColor(TFT_BLACK, TFT_BLACK);
+    tft->drawString(previousValue, x+width/2, y+height/2, 4);
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+    tft->drawString(value, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
+  }
+}
+*/
+
+void TFTTextBox::formatValue(float value, char *buffer) {
+  if ( value < minValue) {
+    buffer[0] = 'L';
+    buffer[1] = 0;
+  } else if ( value >  maxValue) {
+    buffer[0] = 'L';
+    buffer[1] = 0;    
+  } else if ( value < 0 ) {
+    buffer[0] = negative;
+    dtostrf(-value,1,precision, &buffer[1]);
+  } else {
+    if (positive != 0) {
+      buffer[0] = positive;
+      dtostrf(value,1,precision, &buffer[1]);
+    } else {
+      dtostrf(value,1,precision, buffer);
+    }
+  }
+}
+
+void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {  
+  tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  if ( firstPaint ) {
+    tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
+    tft->setTextDatum(BL_DATUM);
+    tft->drawString(bl, x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    tft->setTextDatum(BR_DATUM);
+    tft->drawString(br, x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+  }
+
+  char buffer1[10];
+  char buffer2[10];
+  formatValue(value, buffer1);
+  formatValue(previousValue, buffer2);
+  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
+    tft->setTextDatum(MC_DATUM);
+    tft->setTextColor(TFT_BLACK , TFT_BLACK);
+    tft->drawString(buffer2, x+width/2, y+height/2, 4);
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
+  }
+  previousValue = value;
+}
+
+void TFTLatLonBox::formatDeg( float v, char *buffer, bool isLatitude) {
+  if ( v < 0 ) {
+    v = -v;
+  }
+  int16_t d = (int) v;
+  int8_t h =  (d/100);
+  buffer[0] = h +'0';
+  int8_t t = (d-(h*100))/10;
+  buffer[1] = t+'0';
+  int8_t u = (d-(h*100)-(t*10));  
+  buffer[2] = u+'0';
+  if ( isLatitude && buffer[0] == '0' ) {
+    buffer[0] = ' ';
+  }
+  buffer[3] = 0;
+}
+void TFTLatLonBox::formatMin( float v, char *buffer, bool isLatitude) {
+  if ( v < 0 ) {
+    v = -v;
+  }
+  v = (v - (int)v)*60;
+  int16_t d = (int) v;
+        
+
+
+
+  char pad = '0';
+  if ( isLatitude ) {
+    pad = ' ';
+    buffer[0] = ' ';
+    if ( )
+    itoa((int)v,&buffer[1],10);
+  } else {
+    itoa((int)v,&buffer[1],10);
+  }
+}
+void formatMin(float v, char *buffer) {
+  if ( v < 0 ) {
+    v = -v;
+  }
+  float min = (int)((v-floor(v))*60.0);
+  buffer[3] = ' ';
+  dtostrf(v,2,3,&buffer[4]);
+  // 000 00.000 N
+  for (int i = strlen(buffer); i <  11) {
+    buffer[i] = '0';
+  }
+  buffer[11] = ' ';
+  buffer[12] = sign;
+  buffer[13] = '\0';  
+}  
+
+
+void TFTLatLonBox::update(TFT_eSPI *tft, float lat, float lon, bool firstPaint) {  
+  tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  if ( firstPaint ) {
+    tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
+    tft->setTextDatum(BL_DATUM);
+    tft->drawString(bl, x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    tft->setTextDatum(BR_DATUM);
+    tft->drawString(br, x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+  }
+
+
+  char buffer1[14];
+  char buffer2[14];
+  formatDeg(lat, buffer1, 'N', 'S');
+  formatDeg(previousLat, buffer2, 'N', 'S' );
+  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
+    tft->setTextDatum(MC_DATUM);
+    tft->setTextColor(TFT_BLACK , TFT_BLACK);
+    tft->drawString(buffer2, x+width/2, y+height/2, 4);
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
+  }
+  formatValue(lon, buffer1, 'E', 'W');
+  formatValue(previousLon, buffer2, 'E', 'W');
+  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
+    tft->setTextDatum(MC_DATUM);
+    tft->setTextColor(TFT_BLACK , TFT_BLACK);
+    tft->drawString(buffer2, x+width/2, y+height/2, 4);
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
+  }
+  previousValue = value;
+}
+
+
 // #########################################################################
 //  Draw the meter on the screen, returns x coord of righthand side
 // #########################################################################

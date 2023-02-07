@@ -116,7 +116,7 @@ void ModbusShunt::onResponse(int res) {
                 Serial.print(modbusMaster.getInt16Response(3));
                 Serial.print(" errors sent:");
                 Serial.print(modbusMaster.getInt16Response(4));
-                Serial.print(" buffer overblow:");
+                Serial.print(" buffer overflow:");
                 Serial.print(modbusMaster.getInt16Response(5));
                 Serial.println("}");
 
