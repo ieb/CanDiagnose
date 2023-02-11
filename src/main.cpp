@@ -110,6 +110,9 @@ WebServer webServer(OutputStream);
 TFT_eSPI tftDisplayDriver = TFT_eSPI();
 TFTDisplay display(n2kCollector, modbus, webServer, tftDisplayDriver);
 
+unsigned long lastButtonPress = 0;
+unsigned long lastButtonRelease = 0;
+
 
 
 void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
@@ -128,6 +131,8 @@ void showHelp() {
   OutputStream->println("  - Send 'd' to toggle packet dump, can be high volume");
   OutputStream->println("  - Send 'm' to toggle modbus diagnostics");
   OutputStream->println("  - Send 'b' to change brightness");
+  OutputStream->println("  - Send 'S' to put to sleep");
+   
 }
 
 
@@ -142,9 +147,10 @@ void setup() {
     Serial.print("Free PSRAM:  ");Serial.println(ESP.getFreePsram());
   }
   modbusMaster.begin();
-  
+
   display.begin();
-  display.update();
+  display.update(0);
+  display.setBacklightLevel(16);
 
   if (!Wire.begin(SDA_PIN, SCL_PIN) ) {
     Serial.println("I2C failed to start");
@@ -158,9 +164,11 @@ void setup() {
         } else {
             Serial.print(" --");
         }
+        display.setBacklightLevel(16+addr/2);
     }
     Serial.println("Done ");
   }
+  display.setBacklightLevel(144);
 
   display.update("I2C scanned",0);
 
@@ -173,7 +181,9 @@ void setup() {
   pinMode(DISPLAY_BUTTON, INPUT_PULLUP);
 
   temperature.begin();
+  display.setBacklightLevel(160);
   modbus.begin();
+  display.setBacklightLevel(176);
 
   display.update("Sensors started",1);
  
@@ -205,6 +215,7 @@ void setup() {
   webServer.addCsvOutputHandler(12,&latLonDataOutput);  
   webServer.addCsvOutputHandler(13,&leewayDataOutput);  
   webServer.begin();
+  display.setBacklightLevel(192);
 
   display.update("Web server started",2);
 
@@ -236,11 +247,14 @@ void setup() {
   NMEA2000.SetMsgHandler(HandleNMEA2000Msg);
 
   NMEA2000.SetMode(tNMEA2000::N2km_ListenAndNode, 50);
+  display.setBacklightLevel(208);
   NMEA2000.Open();
   display.update("NMEA2000 started",3);
 
   OutputStream->print("Running...");
+  display.setBacklightLevel(224);
   showHelp();
+
   
 }
 
@@ -305,8 +319,12 @@ void CheckCommand() {
         break;
 
       case 'b': 
-        display.nextPage(); 
-      break;
+
+        display.incTargetBrightness();
+        break;
+      case 'S':
+        lastButtonPress = lastButtonRelease =  millis()-60000;
+        break;
     }
   }
 }
@@ -393,6 +411,7 @@ bool checkTouch() {
 
 #ifndef USE_INTERRUPT
 
+
 bool checkPress() {
   static bool beingPressed = false;
   static unsigned long lastBtnChange = 0;
@@ -403,12 +422,14 @@ bool checkPress() {
   } else if ( beingPressed ) {
     if ( dr == LOW ) {
       beingPressed = false;
-      lastBtnChange = now;      
+      lastBtnChange = now;
+      lastButtonPress = now;      
     }
   } else {
     if ( dr == HIGH ) {
       beingPressed = true;
-      lastBtnChange = now;      
+      lastBtnChange = now;
+      lastButtonRelease = now;
       return true;
     }
   }
@@ -495,6 +516,6 @@ void loop() {
   endTimer(7);
   startTimer();
 #endif
-  display.update();
+  display.update(lastButtonRelease);
   endTimer(8);
 }

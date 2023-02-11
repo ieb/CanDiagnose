@@ -15,6 +15,12 @@ void TFTDisplay::begin() {
 	if (!SPIFFS.begin()) {
     Serial.println("SPIFFS initialisation failed, no images.");
   } 
+  // backlight control
+  pinMode(TFT_PWM_BL, OUTPUT);
+  ledcSetup(0, 5000, 8);
+	ledcAttachPin(TFT_PWM_BL, 0);
+	ledcWrite(0, 0);
+
 
   tft.begin();
   tft.setRotation(1);
@@ -27,22 +33,28 @@ void TFTDisplay::begin() {
 #define SAILING_PAGE 2
 #define MAXI_PAGE 3
 
-void TFTDisplay::update() {
+void TFTDisplay::update(unsigned long lastButtonPress) {
  	if ( currentPage == NULL ) {
  		pageNo = MAX_PAGES-1;
  		nextPage();
  	}
-	currentPage->update();
+	currentPage->update(paintScreen(lastButtonPress));
+	
 }
 void TFTDisplay::nextPage() {
-	if (currentPage != NULL ) {
-		delete(currentPage);
-	}
-	pageNo++;
-	if ( pageNo == MAX_PAGES) {
-		pageNo = 0;
+	// dont advance the page if waking up the display.
+	if ( lastLevel == targetLevel ) {
+		pageNo++;
+	} else if ( currentPage != NULL ) {
+		// keep the current page if its available, otherwise make sure its not null.
+		return;
 	}
 
+	// dispose of the current page as it will have changed here.
+	if (currentPage != NULL ) {
+		delete(currentPage);
+		currentPage = NULL; // just to be sure the pointer is not re-used.
+	}
 	switch(pageNo) {
 		case ENGINE_PAGE:
 			currentPage = new TFTEngineDisplayPage(tft);
@@ -59,6 +71,46 @@ void TFTDisplay::nextPage() {
 	}
 }
 
+void TFTDisplay::setBacklightLevel(int level) {
+	if ( level < 0 ) {
+		level = 0;
+	} else if (level > targetLevel) {
+		level = targetLevel;
+	}
+	if ( level != lastLevel ) {
+			ledcWrite(0, level);
+			lastLevel = level;		
+	}
+}
+
+/** 
+ * Sleep the screen after 60s of no activity,
+ * After 70s it should be turned off.
+ * After a press brighten to the target level in 10s
+ * Otherwise track the target level 
+ * @return false if the screen is off, and true if on.
+ */
+bool TFTDisplay::paintScreen(unsigned long lastButtonPress) {
+	unsigned long elapsed = millis() - lastButtonPress;
+	if ( elapsed > 70000 ) {
+		setBacklightLevel(0);
+		return false;
+	} else if ( elapsed > 60000 ) {
+		setBacklightLevel((255-((elapsed-60000)/39)));
+	} else {
+		if ( lastLevel < targetLevel ) {
+			if ( elapsed < 10000 ) {
+				setBacklightLevel((elapsed/39));
+			} else {
+				setBacklightLevel(lastLevel+1);
+			}
+		} else if ( lastLevel > targetLevel) {
+			setBacklightLevel(lastLevel-1);
+		}
+	}
+	return true;
+}
+
 
 
 
@@ -69,7 +121,10 @@ void TFTDisplay::nextPage() {
  * numbers for Engine volts, Service Volts and Alternator volts
  * numbers for Alternator temperature, Exhaust temperature, Charger temperature, service battery temperatire.
  */
-void TFTEngineDisplayPage::update() {
+void TFTEngineDisplayPage::update(bool paintScreen) {
+	if ( !paintScreen) {
+		return;
+	}
 	if ( !displaying ) {
 		// draw for the first time
 		Serial.println("Enter Engine Display");
@@ -119,7 +174,10 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap){
 
 
 
-void TFTLogoDisplayPage::update() {
+void TFTLogoDisplayPage::update(bool paintScreen) {
+	if ( !paintScreen ) {
+		return;
+	}
 	if ( !displaying ) {
 
 
@@ -155,13 +213,16 @@ void TFTLogoDisplayPage::update() {
   }
 }
 void TFTLogoDisplayPage::update(const char *message, int lineNo) {
-  		tft.fillRect(0,318-30,480,30,TFT_WHITE);
-  		tft.setTextDatum(BC_DATUM);
-	    tft.drawString(message, 480/2, 318, 4); // Value in middle
+	tft.fillRect(0,318-30,480,30,TFT_WHITE);
+	tft.setTextDatum(BC_DATUM);
+  tft.drawString(message, 480/2, 318, 4); // Value in middle
 }
 
 
-void TFTMaxiDisplayPage::update() {
+void TFTMaxiDisplayPage::update(bool paintScreen) {
+		if ( !paintScreen) {
+			return;
+		}
   	uint16_t value = millis()/1000;
   	if ( value != currentValue ) {
   		currentValue = value;
@@ -183,11 +244,16 @@ void TFTMaxiDisplayPage::update() {
 }
 
 
-void TFTGridBoxesDisplayPage::update() {
+void TFTGridBoxesDisplayPage::update(bool paintScreen) {
+
+	if ( !paintScreen) {
+		return;
+	}
+
 	if ( !displaying ) {
-		// draw for the first time
-		Serial.println("Enter Logo Page");
-		tft.fillScreen(TFT_BLACK);
+			// draw for the first time
+			Serial.println("Enter Logo Page");
+			tft.fillScreen(TFT_BLACK);
   	}
 
   	unsigned long now = millis();

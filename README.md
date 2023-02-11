@@ -127,6 +127,20 @@ This uses SPI output only with a bunch of additional pins.
 
  
 
+# 4 inch TFT display 480x320 24 bit colour driven by a ILI9488 driver.
 
+uses SPI + a PWM blacklight. Control via a TPP233 Touch switch. Library is TFT_eSPI library. Pin mappings defined as compile definitions.
 
+    -D TFT_MISO=GPIO_NUM_35
+    -D TFT_MOSI=GPIO_NUM_32
+    -D TFT_SCLK=GPIO_NUM_33
+    -D TFT_CS=GPIO_NUM_25
+    -D TFT_DC=GPIO_NUM_26
+    -D TFT_RST=GPIO_NUM_27
+    -D TFT_PWM_BL=GPIO_NUM_14
+    -D ILI9488_DRIVER
+
+The display sleeps after 60s of inactivity to reduce power drain, but turning off the backlight. Sleeping the IMI9488 driver has not been done as of yet.  Pages are implemented as classes using widgets. When a page is selected it is allocated into heap and does not exist while not displaying. On other drivers here all pages were compiled in, however the RAM usage is higher on account of full colour and display size. 
+
+In most cases attempts to update the screen, on screen causes flickering so double buffering of updates is done using sprits with DMA transfers from the sprite to the screen. Images for screen are stored in jpg on flash, consuming about 30KB per screen.
 

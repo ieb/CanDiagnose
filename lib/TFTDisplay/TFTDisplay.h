@@ -32,8 +32,9 @@ class TFTDisplayPage {
 		TFTDisplayPage(TFT_eSPI &tft): tft{tft} {
 		};
 		virtual ~TFTDisplayPage() = default;
-		virtual void update();
+		virtual void update(bool paintScreen);
 		virtual void update(const char * message, int lineNo) {};
+
 	protected:
         TFT_eSPI &tft;
 		TFTDisplayPage *nextDisplayPage;
@@ -46,7 +47,7 @@ class TFTEngineDisplayPage : public TFTDisplayPage {
 		TFTEngineDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
 		};
 		~TFTEngineDisplayPage() override = default;
-		void update() override;
+		void update(bool paintScreen) override;
 	private:
 		int d = 0; // dummy value
 };
@@ -56,7 +57,7 @@ class TFTLogoDisplayPage : public TFTDisplayPage {
 		TFTLogoDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
 		};
 		~TFTLogoDisplayPage() override = default;
-		void update() override;
+		void update(bool paintScreen) override;
 		void update(const char * message, int lineNo) override;
 	private:
 		int d = 0; // dummy value
@@ -68,7 +69,7 @@ class TFTMaxiDisplayPage : public TFTDisplayPage {
 		TFTMaxiDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
 		};
 		~TFTMaxiDisplayPage() override = default;
-		void update() override;
+		void update(bool paintScreen) override;
 	private:
 		uint16_t currentValue = 0; 
 
@@ -87,7 +88,7 @@ class TFTGridBoxesDisplayPage : public TFTDisplayPage {
 
 		};
 		~TFTGridBoxesDisplayPage() override = default;
-		void update() override;
+		void update(bool paintScreen) override;
 	private:
 		unsigned long lastUpdate = 0;
 		int d = 0; // dummy value
@@ -133,12 +134,15 @@ class TFTDisplay {
 
         };
         void begin();
-        void update();
+        void update(unsigned long lastButtonPress);
         void update(const char * message, int lineNo) {
         	currentPage->update(message, lineNo);
         };
         void nextPage();
-
+		void setBacklightLevel(int level);
+        void incTargetBrightness() {
+        	targetLevel++;
+        };
     private:
         N2KCollector &n2kCollector;
         Modbus &modbus;
@@ -146,6 +150,9 @@ class TFTDisplay {
         TFT_eSPI &tft;
         uint8_t pageNo = 0;
         TFTDisplayPage *currentPage = NULL;
+		uint8_t lastLevel = 0; // current backlight level
+		uint8_t targetLevel = 255; // target backlight level
+		bool paintScreen(unsigned long lastButtonPress);
 
 	
 };
