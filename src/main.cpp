@@ -239,6 +239,10 @@ void setup() {
 
 void showStatus() {
   modbus.readStats();
+  Serial.print("Total heap:  ");Serial.println(ESP.getHeapSize());
+  Serial.print("Free heap:   ");Serial.println(ESP.getFreeHeap());
+  Serial.print("Total PSRAM: ");Serial.println(ESP.getPsramSize());
+  Serial.print("Free PSRAM:  ");Serial.println(ESP.getFreePsram());
 }
 
 //*****************************************************************************

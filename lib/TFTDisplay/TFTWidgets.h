@@ -31,7 +31,7 @@ public:
 
 class TFTTextBox {
 public:
-	TFTTextBox(int _x, int _y, int _width, int _height, int _precision, 
+	TFTTextBox(int _x, int _y, int _width, int _height, int _gap, int _precision, 
 			float _minValue, 
 			float _maxValue, const char *_bl, const char *_br, char _positive=0, char _negative='-') {
 		x = _x;
@@ -49,26 +49,53 @@ public:
 	};
 	void update(TFT_eSPI *tft, float value,  bool firstPaint);
 private:
-	void formatValue(float value, char *buffer);
 	const char *br, *bl;
 	int x, y, width, height, precision;
 	float previousValue, maxValue, minValue;
 	char positive, negative;
+	void formatValue(float value, char *buffer);
+	float adjustValue(float v, float p);
+
 };
 
 
 class TFTLatLonBox {
 public:
-	TFTLatLonBox(int _x, int _y, int _width, int _height) {
+	TFTLatLonBox(int _x, int _y, int _width, int _height, int _gap) {
 		x = _x;
 		y = _y;
-		width = _width;
+		width = _width*2+_gap;
 		height = _height;
 
 	};
 	void update(TFT_eSPI *tft, float lat, float lon,  bool firstPaint);
 private:
-	const char *br, *bl;
-	int x, y, width, height, precision;
-	float previousLay, previousLon;
+	int x, y, width, height;
+	float previousLat, previousLon;
+	bool updateString(TFT_eSPI *tft,  int x, int y, const char *prev, const char* current, bool force, bool updated);
+	void formatMinDec( float v, char *buffer, bool isLatitude);
+	void formatDeg( float v, char *buffer, bool isLatitude);
+	void formatMin( float v, char *buffer, bool isLatitude);
+};
+
+class TFTDial {
+public:
+	TFTDial(int _x, int _y, int _width, int _height, int _gap, 
+		const char * _dialTitle, const char * _dialUnits, const char * _valueUnits ) {
+		x = _x;
+		y = _y;
+		width = _width;
+		height = _height;
+		dialTitle =  _dialTitle;
+		dialUnits = _dialUnits;
+		valueUnits = _valueUnits;
+
+	};
+	void update(TFT_eSPI *tft, float dial, float value,  bool firstPaint);
+private:
+	int x, y, width, height;
+	float previousDial, previousValue;
+	const char * dialTitle;
+	const char * dialUnits;
+	const char * valueUnits;
 };

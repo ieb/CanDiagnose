@@ -97,6 +97,24 @@ void TFTTextBox::formatValue(float value, char *buffer) {
     }
   }
 }
+float TFTTextBox::adjustValue(float v, float p) {
+  float d = v - p;
+  float inc = 1;
+  for (int i = 0; i < precision; i++) {
+    inc = inc/10;
+  }  
+  if ( d > 50*inc ) {
+    return p+49*inc;
+  } else if ( d < -50*inc ) {
+    return p-49*inc;
+  } else if ( d > inc ) {
+    return p+inc;
+  } else if ( d < -inc ) {
+    return p-inc;
+  } else {
+    return v;
+  }
+}
 
 void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {  
   tft->setTextColor(TFT_WHITE, TFT_BLACK);
@@ -110,16 +128,23 @@ void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {
 
   char buffer1[10];
   char buffer2[10];
-  formatValue(value, buffer1);
+  float displayValue = adjustValue(value, previousValue);
+
+
+  formatValue(displayValue, buffer1);
   formatValue(previousValue, buffer2);
   if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
-    tft->setTextDatum(MC_DATUM);
-    tft->setTextColor(TFT_BLACK , TFT_BLACK);
-    tft->drawString(buffer2, x+width/2, y+height/2, 4);
-    tft->setTextColor(TFT_WHITE, TFT_BLACK);
-    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
+    TFT_eSprite textSprite = TFT_eSprite(tft);
+    textSprite.setColorDepth(1);
+    textSprite.createSprite(width-4, height-40);
+    textSprite.setTextColor(TFT_WHITE, TFT_BLACK);
+    textSprite.setTextDatum(MC_DATUM);
+    textSprite.drawString(buffer1, (width-4)/2, (height-40)/2, 4);
+    tft->setBitmapColor(TFT_WHITE, TFT_BLACK); 
+    textSprite.pushSprite(x+2, y+20);
+
   }
-  previousValue = value;
+  previousValue = displayValue;
 }
 
 void TFTLatLonBox::formatDeg( float v, char *buffer, bool isLatitude) {
@@ -144,70 +169,170 @@ void TFTLatLonBox::formatMin( float v, char *buffer, bool isLatitude) {
   }
   v = (v - (int)v)*60;
   int16_t d = (int) v;
-        
-
-
-
-  char pad = '0';
-  if ( isLatitude ) {
-    pad = ' ';
-    buffer[0] = ' ';
-    if ( )
-    itoa((int)v,&buffer[1],10);
-  } else {
-    itoa((int)v,&buffer[1],10);
-  }
+  int8_t t = (d/10);
+  buffer[0] = t+'0';
+  int8_t u = (d-(t*10));  
+  buffer[1] = u+'0';
+  buffer[2] = 0;
 }
-void formatMin(float v, char *buffer) {
+
+void TFTLatLonBox::formatMinDec( float v, char *buffer, bool isLatitude) {
+  char sign = 'N';
+  if ( isLatitude ) {
+    if ( v < 0 ) {
+      sign = 'S';
+    }
+  } else {
+    if ( v < 0 ) {
+      sign = 'W';
+    } else {
+      sign = 'E';
+    }
+  }
   if ( v < 0 ) {
     v = -v;
   }
-  float min = (int)((v-floor(v))*60.0);
-  buffer[3] = ' ';
-  dtostrf(v,2,3,&buffer[4]);
-  // 000 00.000 N
-  for (int i = strlen(buffer); i <  11) {
-    buffer[i] = '0';
+  v = (v - (int)v)*60;
+  v = (v - (int)v)*1000;
+  int16_t d = v;
+  buffer[0] = '.';
+  int8_t h =  (d/100);
+  buffer[1] = h +'0';
+  int8_t t =  (d-h*100)/10;
+  buffer[2] = t +'0';
+  int8_t u =  (d-h*100-t*10);
+  buffer[3] = u +'0';
+  buffer[4] = ' ';
+  buffer[5] = sign;
+  buffer[6] = 0;
+}
+        
+/*
+bool TFTLatLonBox::updateString(TFT_eSPI *tft, int x, int y, const char *prev, const char* current, bool force,  bool updated) {
+  if ( force || strcmp(prev, current) != 0) {
+    tft->setTextColor(TFT_BLACK , TFT_BLACK);
+    tft->drawString(prev, x, y, 4);
+    tft->setTextColor(TFT_WHITE, TFT_BLACK);
+    tft->drawString(current, x, y, 4); // Value in middle, Font 8 only as numbers, no letters.
+    return true;    
   }
-  buffer[11] = ' ';
-  buffer[12] = sign;
-  buffer[13] = '\0';  
-}  
-
+  return updated;
+} 
+*/ 
 
 void TFTLatLonBox::update(TFT_eSPI *tft, float lat, float lon, bool firstPaint) {  
-  tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  if ( ! (firstPaint || lat != previousLat || lon != previousLon) ) {
+    // no change, dontupdate
+    return;
+  }
+
+#define degWidth    42
+#define degSymWidth 13
+#define minWidth    28
+#define minSymWidth 3
+#define minDecWidth 72
+#define fontHeight  26
+
+#ifndef degWidth
+  int degWidth = tft->textWidth("000",4);
+  int degSymWidth = tft->textWidth("o",2)+5;
+  int minWidth = tft->textWidth("00",4);
+  int minSymWidth = tft->textWidth("'",2);
+  int minDecWidth = tft->textWidth(".000 N",4);
+  int fontHeight = tft->fontHeight(4);
+
   if ( firstPaint ) {
+    Serial.print("#define degWidth    "); Serial.println(degWidth);
+    Serial.print("#define degSymWidth "); Serial.print(degSymWidth);
+    Serial.print("#define minWidth    "); Serial.print(minWidth);
+    Serial.print("#define minSymWidth "); Serial.print(minSymWidth);
+    Serial.print("#define minDecWidth "); Serial.print(minDecWidth);
+    Serial.print("#define fontHeight  "); Serial.println(fontHeight);
+  }
+#endif
+
+  // right aligned
+  int degx = degWidth-((degWidth+degSymWidth+minWidth+minSymWidth+minDecWidth)/2);
+  // left aligned
+  int minx = degx+degSymWidth;
+  int minDecx = minx+minWidth+minSymWidth;
+
+
+  degx = degx+(width/2);
+  minx = minx+(width/2);
+  minDecx = minDecx+(width/2);
+  int laty = height/2;
+  int lony = height/2;
+
+
+  char buffer[10];
+
+
+  // setup 1 bit sprite for the whole widget.
+  // and draw it all, no conditionals.
+  TFT_eSprite textSprite = TFT_eSprite(tft);
+  textSprite.setColorDepth(1);
+  textSprite.createSprite(width, height);
+  textSprite.setTextColor(TFT_WHITE, TFT_BLACK);
+
+
+  formatDeg(lat, buffer, true);
+  textSprite.setTextDatum(BR_DATUM);
+  textSprite.drawString(buffer, degx, laty, 4); 
+
+  
+  formatMin(lat, buffer, true);
+  textSprite.setTextDatum(BL_DATUM);
+  textSprite.drawString(buffer, minx, laty, 4); 
+  
+  formatMinDec(lat, buffer, true);
+  textSprite.drawString(buffer, minDecx, laty, 4); 
+  textSprite.setTextDatum(TL_DATUM);
+  textSprite.drawString("o", degx, laty-fontHeight-5, 2); 
+  textSprite.drawString("'", minx+minWidth, laty-fontHeight, 2); 
+
+  formatDeg(lon, buffer, false);
+  textSprite.setTextDatum(TR_DATUM);
+  textSprite.drawString(buffer, degx, lony, 4); 
+
+  formatMin(lon, buffer, false);
+  textSprite.setTextDatum(TL_DATUM);
+  textSprite.drawString(buffer, minx, lony, 4); 
+
+  formatMinDec(lon, buffer, false);
+  textSprite.drawString(buffer, minDecx, lony, 4); 
+  textSprite.drawString("o", degx, lony-5, 2); 
+  textSprite.drawString("'", minx+minWidth, lony, 2);
+
+  textSprite.drawRoundRect(0, 0, width, height, 5, TFT_WHITE);
+  textSprite.setTextDatum(BL_DATUM);
+  textSprite.drawString("FIX", 5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+  textSprite.setTextDatum(BR_DATUM);
+  textSprite.drawString("d m.m", width-5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+
+  tft->setBitmapColor(TFT_WHITE, TFT_BLACK); 
+  textSprite.pushSprite(x, y);
+
+  previousLat = lat;
+  previousLon = lon;
+
+}
+
+
+
+
+void TFTDial::update(TFT_eSPI *tft, float dial, float value,  bool firstPaint) {
+    if ( firstPaint ) {
     tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
     tft->setTextDatum(BL_DATUM);
-    tft->drawString(bl, x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    tft->drawString("FIX", x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
     tft->setTextDatum(BR_DATUM);
-    tft->drawString(br, x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    tft->drawString("d m.m", x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
   }
 
 
-  char buffer1[14];
-  char buffer2[14];
-  formatDeg(lat, buffer1, 'N', 'S');
-  formatDeg(previousLat, buffer2, 'N', 'S' );
-  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
-    tft->setTextDatum(MC_DATUM);
-    tft->setTextColor(TFT_BLACK , TFT_BLACK);
-    tft->drawString(buffer2, x+width/2, y+height/2, 4);
-    tft->setTextColor(TFT_WHITE, TFT_BLACK);
-    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
-  }
-  formatValue(lon, buffer1, 'E', 'W');
-  formatValue(previousLon, buffer2, 'E', 'W');
-  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
-    tft->setTextDatum(MC_DATUM);
-    tft->setTextColor(TFT_BLACK , TFT_BLACK);
-    tft->drawString(buffer2, x+width/2, y+height/2, 4);
-    tft->setTextColor(TFT_WHITE, TFT_BLACK);
-    tft->drawString(buffer1, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
-  }
-  previousValue = value;
 }
+
 
 
 // #########################################################################

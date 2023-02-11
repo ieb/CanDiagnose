@@ -141,51 +141,61 @@ void TFTGridBoxesDisplayPage::update() {
   	if ( now > lastUpdate + 1000) {
   		lastUpdate = now;
 	  	d += 4; if (d >= 360) d = 0;
-	  	int reading = d-180;
+	  }
 
 	//	static void textBox(TFT_eSPI *tft,char *value, int x, int y, int height, int width, char *bl, char *br);
 
 
-	  	awa.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 90);
-	  	aws.update(&tft, 0.2+reading, !displaying );
-	    reading = d-180+2;
-	  	twa.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	tws.update(&tft, 0.2+reading, !displaying );
+	  int reading = d-180;
+	  
+  	awa.update(&tft, 0.1+reading, !displaying );
+    reading = 20 + 20 * TFTWidgets::sineWave(d + 90);
+  	aws.update(&tft, 0.2+reading, !displaying );
+    reading = d-180+2;
+  	twa.update(&tft, 0.1+reading, !displaying );
+    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
+  	tws.update(&tft, 0.2+reading, !displaying );
 
 
-	    reading = (d+45)%360;
-	  	cog.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	sog.update(&tft, 0.2+reading, !displaying );
-	    reading = (d+55)%360;
-	  	hdg.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	stw.update(&tft, 0.2+reading, !displaying );
+    reading = (d+45)%360;
+  	cog.update(&tft, 0.1+reading, !displaying );
+    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
+  	sog.update(&tft, 0.2+reading, !displaying );
+    reading = (d+55)%360;
+  	hdg.update(&tft, 0.1+reading, !displaying );
+    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
+  	stw.update(&tft, 0.2+reading, !displaying );
 
 
-	    reading = 100 + 100 * TFTWidgets::sineWave(d + 93);
-	  	dbt.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	swt.update(&tft, 0.2+reading, !displaying );
-	    reading = 1000 + 100 * TFTWidgets::sineWave(d + 93);
-	  	mbar.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	ert.update(&tft, 0.2+reading, !displaying );
+    reading = 100 + 100 * TFTWidgets::sineWave(d + 93);
+  	dbt.update(&tft, 0.1+reading, !displaying );
+    reading = 500 + 500 * TFTWidgets::sineWave(d + 93);
+  	log.update(&tft, 0.2+reading, !displaying );
+    float lat = 0 + 90 * TFTWidgets::sineWave(d + 93);
+    float lon = 0 + 180 * TFTWidgets::sineWave(d + 93);
+  	pos.update(&tft, lat, lon, !displaying );
+    reading = 1000 + 100 * TFTWidgets::sineWave(d + 93);
+  	mbar.update(&tft, 0.1+reading, !displaying );
 
-	    reading = 12 + 3 * TFTWidgets::sineWave(d + 93);
-	  	ebv.update(&tft, 0.1+reading, !displaying );
-	    reading = 12 + 3 * TFTWidgets::sineWave(d + 88);
-	  	sbv.update(&tft, 0.2+reading, !displaying );
-	    reading = 0 + 100 * TFTWidgets::sineWave(d + 93);
-	  	sbc.update(&tft, 0.1+reading, !displaying );
-	    reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
-	  	sbt.update(&tft, 0.2+reading, !displaying );
+    reading = 12 + 3 * TFTWidgets::sineWave(d + 93);
+  	ebv.update(&tft, 0.1+reading, !displaying );
+    reading = 12 + 3 * TFTWidgets::sineWave(d + 88);
+  	sbv.update(&tft, 0.2+reading, !displaying );
+    reading = 0 + 100 * TFTWidgets::sineWave(d + 93);
+  	sbc.update(&tft, 0.1+reading, !displaying );
+    //reading = 20 + 20 * TFTWidgets::sineWave(d + 93);
+  	//sbt.update(&tft, 0.2+reading, !displaying );
+		
 
-  		displaying = true;
+		/*
+  	 reading = 12 + 3 * TFTWidgets::sineWave(d + 88);
+  	sbv.update(&tft, 0.2+reading, !displaying );
+		*/
 
-  	}
+		displaying = true;
+
+
+
 
 
 }
