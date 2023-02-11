@@ -1,4 +1,5 @@
 #pragma once
+#ifdef ENABLE_OLED_DISPLAY
 
 /**
  *  A SD1306 64x128 OLED display connected over I2C
@@ -159,4 +160,6 @@ class OledDisplay {
 
 
 };
+
+#endif
 

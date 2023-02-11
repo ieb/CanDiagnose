@@ -1,3 +1,4 @@
+#ifdef ENABLE_EINK_DISPLAY
 // 'LunaLogo', 240x480px
 const uint16_t lunaLogo_Large_w=240;
 const uint16_t lunaLogo_Large_h=480;
@@ -1019,5 +1020,5 @@ const unsigned char lunaLogo_Small [] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-
+#endif
 

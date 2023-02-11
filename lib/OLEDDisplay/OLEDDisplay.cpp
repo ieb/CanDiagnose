@@ -1,3 +1,4 @@
+#ifdef ENABLE_OLED_DISPLAY
 
 #include "OLEDDisplay.h"
 #include <Wire.h>
@@ -676,3 +677,6 @@ bool ModbusDisplayPage::drawPage(Adafruit_SSD1306 * display, Modbus *modbus) {
     }
 #endif
 }
+
+
+#endif

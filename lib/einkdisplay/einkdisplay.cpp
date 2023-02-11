@@ -1,4 +1,4 @@
-
+#ifdef ENABLE_EINK_DISPLAY
 
 #include "einkdisplay.h"
 
@@ -451,3 +451,5 @@ void EinkDisplay::updateValues(bool force) {
 	    }
 	}
 }
+
+#endif

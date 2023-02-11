@@ -2,17 +2,22 @@
 
 #include "TFTDisplay.h"
 #include "TFTWidgets.h"
+#include <TJpg_Decoder.h>
+
+// Include SPIFFS
+#define FS_NO_GLOBALS
+#include <FS.h>
+#include "SPIFFS.h" 
+
 
 void TFTDisplay::begin() {
-Serial.println("TFT Begin");
+	Serial.println("TFT Begin");
+	if (!SPIFFS.begin()) {
+    Serial.println("SPIFFS initialisation failed, no images.");
+  } 
+
   tft.begin();
-  //Serial.begin(9600);
   tft.setRotation(1);
-
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("LUNA", 10, 10, 8); // Value in middle
-
   Serial.println("TFT Begin done");
 
 }
@@ -37,6 +42,7 @@ void TFTDisplay::nextPage() {
 	if ( pageNo == MAX_PAGES) {
 		pageNo = 0;
 	}
+
 	switch(pageNo) {
 		case ENGINE_PAGE:
 			currentPage = new TFTEngineDisplayPage(tft);
@@ -91,20 +97,67 @@ void TFTEngineDisplayPage::update() {
 
 }
 
+
+// 
+struct {
+	TFT_eSPI *tft;
+	int x_offset, y_offset;
+} tft_output_config;
+bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap){
+		if ( tft_output_config.tft == NULL ) return 0;
+	  if ( y >= tft_output_config.tft->height() ) return 0;
+
+	  // This function will clip the image block rendering automatically at the TFT boundaries
+	  tft_output_config.tft->pushImage(tft_output_config.x_offset+x, tft_output_config.y_offset+y, w, h, bitmap);
+
+	  // This might work instead if you adapt the sketch to use the Adafruit_GFX library
+	  // tft.drawRGBBitmap(x, y, bitmap, w, h);
+
+	  // Return 1 to decode next block
+	  return 1;
+};
+
+
+
 void TFTLogoDisplayPage::update() {
 	if ( !displaying ) {
-		// draw for the first time
-		Serial.println("Enter Logo Page");
+
+
+	  tft.setTextColor(TFT_BLACK, TFT_WHITE);
+	  tft.fillScreen(TFT_WHITE);
+	  tft.setSwapBytes(true); // We need to swap the colour bytes (endianess)
+
+	  // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
+	  TJpgDec.setJpgScale(1);
+
+	  // create a lambda to call back to
+	  tft_output_config.tft = &tft;
+	  tft_output_config.x_offset = 0;
+	  tft_output_config.y_offset = 0;
+	  // The decoder must be given the exact name of the rendering function above
+	  TJpgDec.setCallback(tft_output);
+
+	  unsigned long t = millis();
+	  // Get the width and height in pixels of the jpeg if you wish
+	  uint16_t w = 0, h = 0;
+	  TJpgDec.getFsJpgSize(&w, &h, "/LunaLogo480_320.jpg"); // Note name preceded with "/"
+	  Serial.print("Width = "); Serial.print(w); Serial.print(", height = "); Serial.println(h);
+
+	  // Draw the image, top left at 0,0
+	  TJpgDec.drawFsJpg(0, 0, "/LunaLogo480_320.jpg");
+	  tft_output_config.tft = NULL;
+
+	  t = millis() - t;
+	  Serial.print(t); Serial.println(" ms");
+
+
 		displaying = true;
-		tft.fillScreen(TFT_BLACK);
-		tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  		tft.setTextDatum(MC_DATUM);
-	    tft.drawString("Luna Pogo 1250", 480/2, 320/2, 4); // Value in middle
-  	}
+  }
 }
 void TFTLogoDisplayPage::update(const char *message, int lineNo) {
-  		tft.setTextDatum(TC_DATUM);
-	    tft.drawString(message, 480/2, 320/2+15*(lineNo+1), 2); // Value in middle
+  		tft.fillRect(0,318-30,480,30,TFT_WHITE);
+  		tft.setTextDatum(BC_DATUM);
+	    tft.drawString(message, 480/2, 318, 4); // Value in middle
 }
 
 

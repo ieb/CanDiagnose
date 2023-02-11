@@ -55,9 +55,11 @@ tNMEA2000 &NMEA2000=*(new tNMEA2000_esp32(ESP32_CAN_TX_PIN, ESP32_CAN_RX_PIN));
 
 // Display implementions
 #include "display.h"
-#include "einkdisplay.h"
-#include "OLEDDisplay.h"
+//#include "einkdisplay.h"
+//#include "OLEDDisplay.h"
 #include "TFTDisplay.h"
+
+#include "esp32-hal-psram.h"
 
 // select one
 //#define DISPLAY_MODULE OledDisplay
@@ -133,7 +135,14 @@ void showHelp() {
 void setup() {
   Serial.begin(115200); 
   Serial2.begin(9600, SERIAL_8N1, RS485_RX, RS485_TX); // RS485 Modbus
+  if ( !psramInit() ) {
+    Serial.println("PSRAM not available.");
+  } else {
+    Serial.print("Total PSRAM: ");Serial.println(ESP.getPsramSize());
+    Serial.print("Free PSRAM:  ");Serial.println(ESP.getFreePsram());
+  }
   modbusMaster.begin();
+  
   display.begin();
   display.update();
 
@@ -241,6 +250,9 @@ void showStatus() {
   modbus.readStats();
   Serial.print("Total heap:  ");Serial.println(ESP.getHeapSize());
   Serial.print("Free heap:   ");Serial.println(ESP.getFreeHeap());
+  // ESP32-WROOM chips which are common dont have PSRAM. 
+  // ESP32-WRover do. See https://en.wikipedia.org/wiki/ESP32
+  Serial.print("Has PSRAM:");Serial.println(psramFound());
   Serial.print("Total PSRAM: ");Serial.println(ESP.getPsramSize());
   Serial.print("Free PSRAM:  ");Serial.println(ESP.getFreePsram());
 }

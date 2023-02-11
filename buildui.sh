@@ -24,6 +24,8 @@ cp src/admin.css ../../data/admin.css
 
 cd ../../
 
+cp lib/TFTDisplay/images/*.jpg data/
+
 pio run --target buildfs --environment nodemcu-32s
 ls -l data
 ls -l .pio/build/nodemcu-32s/spiffs.bin

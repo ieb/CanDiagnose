@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef ENABLE_EINK_DISPLAY
 /**
  * A waveshare EPD 3.7 inch eink display.
  * 2 pages of text information, refreshed on button press.
@@ -134,3 +134,4 @@ class EinkDisplay {
 };
 
 
+#endif
