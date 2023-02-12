@@ -43,7 +43,7 @@ void TFTDisplay::update(unsigned long lastButtonPress) {
 }
 void TFTDisplay::nextPage() {
 	// dont advance the page if waking up the display.
-	if ( lastLevel == targetLevel ) {
+	if ( lastLevel > 0 ) {
 		pageNo++;
 	} else if ( currentPage != NULL ) {
 		// keep the current page if its available, otherwise make sure its not null.
@@ -91,15 +91,29 @@ void TFTDisplay::setBacklightLevel(int level) {
  * @return false if the screen is off, and true if on.
  */
 bool TFTDisplay::paintScreen(unsigned long lastButtonPress) {
-	unsigned long elapsed = millis() - lastButtonPress;
+	unsigned long now = millis();
+	unsigned long elapsed = now - lastButtonPress;
 	if ( elapsed > 70000 ) {
 		setBacklightLevel(0);
 		return false;
 	} else if ( elapsed > 60000 ) {
 		setBacklightLevel((255-((elapsed-60000)/39)));
+	} else if (startRampUp > 0) {
+		if ( lastLevel < targetLevel ) {
+			// complete the ramp un in brightness.
+			elapsed = now - startRampUp;
+			setBacklightLevel((elapsed/39));
+		} else {
+			// once complete disable ramp up.
+			startRampUp = 0;
+		}
 	} else {
 		if ( lastLevel < targetLevel ) {
 			if ( elapsed < 10000 ) {
+				// store when the turn on happened so that if 
+				// there is a repeat button press it doesnt start
+				// again from scratch.
+				startRampUp = now;
 				setBacklightLevel((elapsed/39));
 			} else {
 				setBacklightLevel(lastLevel+1);

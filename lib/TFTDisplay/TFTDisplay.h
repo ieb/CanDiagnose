@@ -152,6 +152,7 @@ class TFTDisplay {
         TFTDisplayPage *currentPage = NULL;
 		uint8_t lastLevel = 0; // current backlight level
 		uint8_t targetLevel = 255; // target backlight level
+		unsigned long startRampUp = 0;
 		bool paintScreen(unsigned long lastButtonPress);
 
 	
