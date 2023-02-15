@@ -49,7 +49,10 @@ class TFTEngineDisplayPage : public TFTDisplayPage {
 		~TFTEngineDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
-		int d = 0; // dummy value
+		int rpm = 0; // dummy value
+		int rpmadd = 1000;
+		unsigned long lastUpdate = 0;
+		TFTTachometer tachometer = TFTTachometer(10,10,313,313,"/VPTaco.jpg");
 };
 
 class TFTLogoDisplayPage : public TFTDisplayPage {	
@@ -61,6 +64,7 @@ class TFTLogoDisplayPage : public TFTDisplayPage {
 		void update(const char * message, int lineNo) override;
 	private:
 		int d = 0; // dummy value
+		TFTSplash splash = TFTSplash("/LunaLogo480_320.jpg");
 };
 
 

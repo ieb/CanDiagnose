@@ -2,12 +2,6 @@
 
 #include "TFTDisplay.h"
 #include "TFTWidgets.h"
-#include <TJpg_Decoder.h>
-
-// Include SPIFFS
-#define FS_NO_GLOBALS
-#include <FS.h>
-#include "SPIFFS.h" 
 
 
 void TFTDisplay::begin() {
@@ -142,49 +136,28 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 	if ( !displaying ) {
 		// draw for the first time
 		Serial.println("Enter Engine Display");
-		displaying = true;
 		tft.fillScreen(TFT_BLACK);
 	} 
 	// update data elements.
 
-	d += 4; if (d >= 360) d = 0;
-
-
-	// RPM
-    int reading = 0 + 3500 * TFTWidgets::sineWave(d + 90);
-    TFTWidgets::ringMeter(&tft,reading, /* min */ 0, /* max */ 3500, /* x */ (480/2)-128,  /* y */ (320/2)-128,  /* radius */ 128, "RPM", BLUE2RED); // Draw analogue meter
-
-    // temperature
-    reading = 0 + 100 * TFTWidgets::sineWave(d + 90);
-    TFTWidgets::ringMeter(&tft, reading, /* min */ 0, /* max */ 100, /* x */ 480-128,  /* y */ 0,  /* radius */ 64, "Coolant C", BLUE2RED); // Draw analogue meter
-
-    // fuel
-    reading = 0 + 100 * TFTWidgets::sineWave(d + 90);
-    TFTWidgets::ringMeter(&tft, reading, /* min */ 0, /* max */ 100, /* x */ 480-128,  /* y */ 320-128,  /* radius */ 64, "Fuel %", BLUE2RED); // Draw analogue meter
-
-
+	unsigned long now = millis();
+	if ( now > lastUpdate + 1000) {
+		lastUpdate = now;
+		rpm+=rpmadd;
+		if ( rpm > 4000 ) {
+			rpmadd = -1000;
+		} else if ( rpm < 0 ) {
+			rpm = 0;
+			rpmadd = 1000;
+		} 
+  }
+  tachometer.update(&tft, rpm, !displaying);
+	displaying = true;
 
 }
 
 
-// 
-struct {
-	TFT_eSPI *tft;
-	int x_offset, y_offset;
-} tft_output_config;
-bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap){
-		if ( tft_output_config.tft == NULL ) return 0;
-	  if ( y >= tft_output_config.tft->height() ) return 0;
 
-	  // This function will clip the image block rendering automatically at the TFT boundaries
-	  tft_output_config.tft->pushImage(tft_output_config.x_offset+x, tft_output_config.y_offset+y, w, h, bitmap);
-
-	  // This might work instead if you adapt the sketch to use the Adafruit_GFX library
-	  // tft.drawRGBBitmap(x, y, bitmap, w, h);
-
-	  // Return 1 to decode next block
-	  return 1;
-};
 
 
 
@@ -193,36 +166,7 @@ void TFTLogoDisplayPage::update(bool paintScreen) {
 		return;
 	}
 	if ( !displaying ) {
-
-
-	  tft.setTextColor(TFT_BLACK, TFT_WHITE);
-	  tft.fillScreen(TFT_WHITE);
-	  tft.setSwapBytes(true); // We need to swap the colour bytes (endianess)
-
-	  // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
-	  TJpgDec.setJpgScale(1);
-
-	  // create a lambda to call back to
-	  tft_output_config.tft = &tft;
-	  tft_output_config.x_offset = 0;
-	  tft_output_config.y_offset = 0;
-	  // The decoder must be given the exact name of the rendering function above
-	  TJpgDec.setCallback(tft_output);
-
-	  unsigned long t = millis();
-	  // Get the width and height in pixels of the jpeg if you wish
-	  uint16_t w = 0, h = 0;
-	  TJpgDec.getFsJpgSize(&w, &h, "/LunaLogo480_320.jpg"); // Note name preceded with "/"
-	  Serial.print("Width = "); Serial.print(w); Serial.print(", height = "); Serial.println(h);
-
-	  // Draw the image, top left at 0,0
-	  TJpgDec.drawFsJpg(0, 0, "/LunaLogo480_320.jpg");
-	  tft_output_config.tft = NULL;
-
-	  t = millis() - t;
-	  Serial.print(t); Serial.println(" ms");
-
-
+		splash.display(&tft);
 		displaying = true;
   }
 }

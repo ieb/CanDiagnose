@@ -10,7 +10,33 @@
 //#include "alert.h" // Out of range alert icon
 
 #include "TFTWidgets.h"
+#include <TJpg_Decoder.h>
 
+// Include SPIFFS
+#define FS_NO_GLOBALS
+#include <FS.h>
+#include "SPIFFS.h" 
+
+
+
+// 
+
+
+TFTOutputConfig tft_output_config;
+bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap){
+    if ( tft_output_config.tft == NULL ) return 0;
+    if ( (tft_output_config.y_offset+y) >= tft_output_config.tft->height() ) return 0; // start of bitmap is beyond area
+    tft_output_config.tft->pushImage(tft_output_config.x_offset+x, tft_output_config.y_offset+y, w, h, bitmap);  
+    return 1;    
+}
+
+
+bool sprite_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap){
+    if ( tft_output_config.sprite == NULL ) return 0;
+    if ( tft_output_config.y_offset+y >= tft_output_config.sprite->height() ) return 0;
+    tft_output_config.sprite->pushImage(tft_output_config.x_offset+x, tft_output_config.y_offset+y, w, h, bitmap);
+    return 1;
+}  
 
 /*
 void loop() {
@@ -321,17 +347,6 @@ void TFTLatLonBox::update(TFT_eSPI *tft, float lat, float lon, bool firstPaint) 
 
 
 
-void TFTDial::update(TFT_eSPI *tft, float dial, float value,  bool firstPaint) {
-    if ( firstPaint ) {
-    tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
-    tft->setTextDatum(BL_DATUM);
-    tft->drawString("FIX", x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
-    tft->setTextDatum(BR_DATUM);
-    tft->drawString("d m.m", x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
-  }
-
-
-}
 
 
 
@@ -779,4 +794,159 @@ void TFTLinearMeter::plotLinearPointers(TFT_eSPI *tft, int * value, int *display
   }
 }
 */
+
+
+void TFTSplash::display(TFT_eSPI *tft) {
+    tft->setTextColor(TFT_BLACK, TFT_WHITE);
+    tft->fillScreen(TFT_WHITE);
+    tft->setSwapBytes(true); // We need to swap the colour bytes (endianess)
+    // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
+    TJpgDec.setJpgScale(1);
+    // create a lambda to call back to
+    tft_output_config.tft = tft;
+    tft_output_config.x_offset = 0;
+    tft_output_config.y_offset = 0;
+    // The decoder must be given the exact name of the rendering function above
+    TJpgDec.setCallback(tft_output);
+    // Draw the image, top left at 0,0
+    TJpgDec.drawFsJpg(0, 0, fileName);
+    tft_output_config.tft = NULL;
+}
+
+void TFTTachometer::drawBackground(TFT_eSPI *tft) {
+    tft->setSwapBytes(true); // We need to swap the colour bytes (endianess)
+    tft_output_config.tft = tft;
+    tft_output_config.x_offset = 0;
+    tft_output_config.y_offset = 0;
+    TJpgDec.setCallback(tft_output);
+    TJpgDec.drawFsJpg(0, 0, backgroundImage);
+    tft_output_config.tft = NULL;
+    tft->setSwapBytes(false); // We need to swap the colour bytes (endianess)
+}
+
+void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
+  if ( firstPaint ) {
+ 
+#define NEEDLE_LENGTH 62 // Visible length
+#define NEEDLE_WIDTH   5  // Width of needle - make it an odd number
+#define NEEDLE_RADIUS 84  // Radius at tip
+
+    if ( needle == NULL ) {
+      needle = new TFT_eSprite(tft);
+
+      needle->setColorDepth(16);
+      needle->createSprite(NEEDLE_WIDTH, NEEDLE_LENGTH);  // create the needle Sprite
+      needle->fillSprite(TFT_BLACK); // Fill with black
+
+      // Define needle pivot point relative to top left corner of Sprite
+      uint16_t piv_x = NEEDLE_WIDTH / 2; // pivot x in Sprite (middle)
+      uint16_t piv_y = NEEDLE_RADIUS;    // pivot y in Sprite
+      needle->setPivot(piv_x, piv_y);     // Set pivot point in this Sprite
+
+      // Draw the red needle in the Sprite
+      needle->fillRect(0, 0, NEEDLE_WIDTH, NEEDLE_LENGTH, TFT_MAROON);
+      needle->fillRect(1, 1, NEEDLE_WIDTH-2, NEEDLE_LENGTH-2, TFT_RED);
+    }
+
+  }
+
+
+    // redraw the area to update in a sprite and push it to the image.
+    // the area to update needs to cover the old needle and the new.
+    // we need to draw to the sprite the background and the rotaited needle
+    // reading from the display to fetch the background image is not reliable
+    // on a ILI9488 which is why the TFT_eSPI animated needle doesnt work for me.
+    // There is not enough memory to write the whole jpeg image (312x312x2=194K)
+    // into a sprite, but there is enough to write, small needle movements.
+  // Sprites and screen have to be drawn 16 bit.
+
+  int16_t angle = (int16_t)(-120.0+((240.0)*(value)/(4000.0)));
+
+
+  if ( angle < -120 ) angle = -120;
+  else if (angle > 120) angle = 120;
+  if ( angle != previousAngle ) {
+
+
+    int16_t min_x, min_y, max_x, max_y;
+    // before updating the angle, get the bounds of the current needle relative to the screen
+    tft->setPivot(x+width/2, y+138);
+    needle->getRotatedBounds(previousAngle, &min_x, &min_y, &max_x, &max_y);
+
+    previousAngle += (angle-previousAngle)/6;
+    if ( previousAngle < angle ) previousAngle++;
+    if ( previousAngle > angle ) previousAngle--;
+
+    // get the bounds of the new needle
+    int16_t min_x1, min_y1, max_x1, max_y1;
+    needle->getRotatedBounds(previousAngle, &min_x1, &min_y1, &max_x1, &max_y1);
+
+    // find the bounds of both needles in screen co-ordinates.
+    if ( min_x1 < min_x ) min_x = min_x1;
+    if ( min_y1 < min_y ) min_y = min_y1;
+    if ( max_x1 > max_x ) max_x = max_x1;
+    if ( max_x1 > max_x ) max_x = max_x1;
+
+    // translate to take account of widget origin
+    min_x = min_x - x;
+    max_x = max_x - x;
+    min_y = min_y - y;
+    max_y = max_y - y;
+
+    int16_t uw = max_x-min_x;
+    int16_t uh = max_y-min_y;
+
+
+
+
+    // check the size of the sprite bitmap
+    if ( firstPaint || (uw*uh*2) > 20000 ) {
+      // fill background, needle can come on next call.
+      drawBackground(tft);
+    } else {
+      // use sprite.
+      TFT_eSprite background = TFT_eSprite(tft);
+      background.setColorDepth(16);
+      background.createSprite(uw, uh);  // create the background Sprite
+      background.fillSprite(TFT_BLACK); // Fill with black
+
+
+      background.setSwapBytes(true); // We need to swap the colour bytes (endianess)
+      tft_output_config.sprite = &background;
+      // offset the output back to the widget origin relative to sprite bounds.
+      tft_output_config.x_offset = -min_x;
+      tft_output_config.y_offset = -min_y;
+      TJpgDec.setCallback(sprite_output);
+      TJpgDec.drawFsJpg(0, 0, backgroundImage);
+      tft_output_config.sprite = NULL;
+      background.setSwapBytes(false); // We need to swap the colour bytes (endianess)
+
+
+
+      // set the pivot point relative to the backgound sprite origin.
+
+      background.setPivot((width/2)-min_x, 138-min_y);
+      needle->pushRotated(&background, previousAngle, TFT_BLACK);
+      background.pushSprite(min_x, min_y);
+
+      Serial.print("angle:");Serial.print(previousAngle);
+      Serial.print(" min_x:");Serial.print(min_x);
+      Serial.print(" min_y:");Serial.print(min_y);
+      Serial.print(" uw:");Serial.print(uw);
+      Serial.print(" uh:");Serial.println(uh);
+
+
+
+    }
+
+
+
+
+
+
+  }
+}
+
+
+
 

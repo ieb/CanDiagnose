@@ -12,6 +12,15 @@
 
 #define TFT_GREY 0x2104 // Dark grey 16 bit colour
 
+typedef struct {
+  TFT_eSPI *tft;
+  TFT_eSprite *sprite;
+  int x_offset, y_offset;
+} TFTOutputConfig;
+
+// callback and control for loading jpeg images.
+extern TFTOutputConfig  tft_output_config;
+extern bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap);
 
 class TFTWidgets {
 public:
@@ -31,20 +40,20 @@ public:
 
 class TFTTextBox {
 public:
-	TFTTextBox(int _x, int _y, int _width, int _height, int _gap, int _precision, 
-			float _minValue, 
-			float _maxValue, const char *_bl, const char *_br, char _positive=0, char _negative='-') {
-		x = _x;
-		y = _y;
-		width = _width;
-		height = _height;
-		precision = _precision;
-		bl = _bl;
-		br = _br;
-		maxValue = _maxValue;
-		minValue = _minValue;
-		positive = _positive;
-		negative = _negative;
+	TFTTextBox(int x, int y, int width, int height, int gap, int precision, 
+			float minValue, 
+			float maxValue, const char *bl, const char *br, char positive=0, char negative='-') {
+		this->x = x;
+		this->y = y;
+		this->width = width;
+		this->height = height;
+		this->precision = precision;
+		this->bl = bl;
+		this->br = br;
+		this->maxValue = maxValue;
+		this->minValue = minValue;
+		this->positive = positive;
+		this->negative = negative;
 
 	};
 	void update(TFT_eSPI *tft, float value,  bool firstPaint);
@@ -61,11 +70,11 @@ private:
 
 class TFTLatLonBox {
 public:
-	TFTLatLonBox(int _x, int _y, int _width, int _height, int _gap) {
-		x = _x;
-		y = _y;
-		width = _width*2+_gap;
-		height = _height;
+	TFTLatLonBox(int x, int y, int width, int height, int gap) {
+		this->x = x;
+		this->y = y;
+		this->width = width*2+gap;
+		this->height = height;
 
 	};
 	void update(TFT_eSPI *tft, float lat, float lon,  bool firstPaint);
@@ -78,24 +87,46 @@ private:
 	void formatMin( float v, char *buffer, bool isLatitude);
 };
 
-class TFTDial {
+class TFTTachometer {
 public:
-	TFTDial(int _x, int _y, int _width, int _height, int _gap, 
-		const char * _dialTitle, const char * _dialUnits, const char * _valueUnits ) {
-		x = _x;
-		y = _y;
-		width = _width;
-		height = _height;
-		dialTitle =  _dialTitle;
-		dialUnits = _dialUnits;
-		valueUnits = _valueUnits;
+	TFTTachometer(int x, int y, int width, int height, const char * backgroundImage ) {
+		this->x = x;
+		this->y = y;
+		this->width = width;
+		this->height = height;
+		this->backgroundImage = backgroundImage;
 
 	};
-	void update(TFT_eSPI *tft, float dial, float value,  bool firstPaint);
+	~TFTTachometer() {
+		if ( needle != NULL) {
+			delete(needle);
+			needle = NULL;
+		}
+	};
+	void update(TFT_eSPI *tft, float value,  bool firstPaint);
 private:
-	int x, y, width, height;
-	float previousDial, previousValue;
-	const char * dialTitle;
-	const char * dialUnits;
-	const char * valueUnits;
+	int16_t x;
+	int16_t y;
+	int16_t width;
+	int16_t height;
+
+	float previousValue;
+
+	int previousAngle = -120;
+	const char * backgroundImage;
+
+	TFT_eSprite * needle = NULL; // Sprite object for needle
+	void drawBackground(TFT_eSPI *tft);
+
+};
+
+
+class TFTSplash {
+public:
+	TFTSplash(const char *fileName) {
+		this->fileName = fileName;
+	};
+	void display(TFT_eSPI *tft);
+private:
+	const char * fileName;
 };
