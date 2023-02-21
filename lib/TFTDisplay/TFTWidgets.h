@@ -87,38 +87,101 @@ private:
 	void formatMin( float v, char *buffer, bool isLatitude);
 };
 
-class TFTTachometer {
+
+class TFTDial {
 public:
-	TFTTachometer(int x, int y, int width, int height, const char * backgroundImage ) {
+	TFTDial(int16_t x, int16_t y, int16_t width, int16_t height, 
+			int8_t needleLength, int8_t needleWidth, int8_t needleRadius, 
+			int8_t needleOffsetX = 0, int8_t needleOffsetY = 0 )  {
 		this->x = x;
 		this->y = y;
 		this->width = width;
 		this->height = height;
-		this->backgroundImage = backgroundImage;
+		this->needleLength = needleLength;
+		this->needleWidth = needleWidth;
+		this->needleRadius = needleRadius;
+		this->needleOffsetX = needleOffsetX;
+		this->needleOffsetY = needleOffsetY;
+	};
+	virtual void loadJpg();
+	virtual int16_t getNeedleAngle(float value);
 
-	};
-	~TFTTachometer() {
-		if ( needle != NULL) {
-			delete(needle);
-			needle = NULL;
-		}
-	};
 	void update(TFT_eSPI *tft, float value,  bool firstPaint);
+	void dispose();
 private:
 	int16_t x;
 	int16_t y;
 	int16_t width;
 	int16_t height;
+	int8_t needleOffsetX;
+	int8_t needleOffsetY;
+	int8_t needleLength;
+	int8_t needleWidth;
+	int8_t needleRadius;
+
 
 	float previousValue;
 
 	int previousAngle = -120;
-	const char * backgroundImage;
 
 	TFT_eSprite * needle = NULL; // Sprite object for needle
 	void drawBackground(TFT_eSPI *tft);
 
 };
+
+
+#define NEEDLE_LENGTH 62 // Visible length
+#define NEEDLE_WIDTH   5  // Width of needle - make it an odd number
+#define NEEDLE_RADIUS 84  // Radius at tip
+
+class TFTTachometer : public TFTDial {
+public:
+	TFTTachometer(int16_t x, int16_t y): TFTDial{x,y, 310, 310, NEEDLE_LENGTH, NEEDLE_WIDTH, NEEDLE_RADIUS, 0, -17} {
+
+	};
+	~TFTTachometer() {
+		dispose();
+	};
+	void loadJpg() override;
+	int16_t getNeedleAngle(float value) override;
+
+};
+
+class TFTFuelGauge: public TFTDial {
+public:
+	TFTFuelGauge(int16_t x, int16_t y): TFTDial{x,y, 		/* needle length */    33, 
+		/* needle width */      5, 
+		/* needle tip radius */45, 
+		/* center x offset */   0, 
+		/* center y offset */  28} 
+		 {
+
+	};
+	~TFTFuelGauge() {
+		dispose();
+	};
+	void loadJpg() override;
+	int16_t getNeedleAngle(float value) override;
+};
+
+class TFTCoolantGauge: public TFTDial {
+public:
+	TFTCoolantGauge(int16_t x, int16_t y): TFTDial{x,y, 130, 130, 
+		/* needle length */    33, 
+		/* needle width */      5, 
+		/* needle tip radius */45, 
+		/* center x offset */   0, 
+		/* center y offset */  28} 
+		{
+
+	};
+	~TFTCoolantGauge() {
+		dispose();
+	};
+	void loadJpg() override;
+	int16_t getNeedleAngle(float value) override;
+};
+
 
 
 class TFTSplash {

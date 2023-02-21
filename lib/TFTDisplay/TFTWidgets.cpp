@@ -18,6 +18,9 @@
 #include "SPIFFS.h" 
 
 
+#include "images.h"
+
+
 
 // 
 
@@ -813,39 +816,46 @@ void TFTSplash::display(TFT_eSPI *tft) {
     tft_output_config.tft = NULL;
 }
 
-void TFTTachometer::drawBackground(TFT_eSPI *tft) {
+
+void TFTDial::drawBackground(TFT_eSPI *tft) {
     tft->setSwapBytes(true); // We need to swap the colour bytes (endianess)
     tft_output_config.tft = tft;
-    tft_output_config.x_offset = 0;
-    tft_output_config.y_offset = 0;
+    tft_output_config.x_offset = x;
+    tft_output_config.y_offset = y;
     TJpgDec.setCallback(tft_output);
-    TJpgDec.drawFsJpg(0, 0, backgroundImage);
+
+
+    loadJpg();
+
     tft_output_config.tft = NULL;
     tft->setSwapBytes(false); // We need to swap the colour bytes (endianess)
 }
 
-void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
+void TFTDial::dispose() {
+    if ( this->needle != NULL) {
+      delete(this->needle);
+      this->needle = NULL;
+    }
+}
+
+void TFTDial::update(TFT_eSPI *tft, float value,  bool firstPaint) {
   if ( firstPaint ) {
  
-#define NEEDLE_LENGTH 62 // Visible length
-#define NEEDLE_WIDTH   5  // Width of needle - make it an odd number
-#define NEEDLE_RADIUS 84  // Radius at tip
-
     if ( needle == NULL ) {
       needle = new TFT_eSprite(tft);
 
       needle->setColorDepth(16);
-      needle->createSprite(NEEDLE_WIDTH, NEEDLE_LENGTH);  // create the needle Sprite
+      needle->createSprite(needleWidth, needleLength);  // create the needle Sprite
       needle->fillSprite(TFT_BLACK); // Fill with black
 
       // Define needle pivot point relative to top left corner of Sprite
-      uint16_t piv_x = NEEDLE_WIDTH / 2; // pivot x in Sprite (middle)
-      uint16_t piv_y = NEEDLE_RADIUS;    // pivot y in Sprite
+      uint16_t piv_x = needleWidth / 2; // pivot x in Sprite (middle)
+      uint16_t piv_y = needleRadius;    // pivot y in Sprite
       needle->setPivot(piv_x, piv_y);     // Set pivot point in this Sprite
 
       // Draw the red needle in the Sprite
-      needle->fillRect(0, 0, NEEDLE_WIDTH, NEEDLE_LENGTH, TFT_MAROON);
-      needle->fillRect(1, 1, NEEDLE_WIDTH-2, NEEDLE_LENGTH-2, TFT_RED);
+      needle->fillRect(0, 0, needleWidth, needleLength, TFT_MAROON);
+      needle->fillRect(1, 1, needleWidth-2, needleLength-2, TFT_RED);
     }
 
   }
@@ -860,17 +870,14 @@ void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
     // into a sprite, but there is enough to write, small needle movements.
   // Sprites and screen have to be drawn 16 bit.
 
-  int16_t angle = (int16_t)(-120.0+((240.0)*(value)/(4000.0)));
 
-
-  if ( angle < -120 ) angle = -120;
-  else if (angle > 120) angle = 120;
+  int16_t angle = getNeedleAngle(value);
   if ( angle != previousAngle ) {
 
 
     int16_t min_x, min_y, max_x, max_y;
     // before updating the angle, get the bounds of the current needle relative to the screen
-    tft->setPivot(x+width/2, y+138);
+    tft->setPivot(x+(width/2)+needleOffsetX, y+(height/2)+needleOffsetY);
     needle->getRotatedBounds(previousAngle, &min_x, &min_y, &max_x, &max_y);
 
     previousAngle += (angle-previousAngle)/6;
@@ -887,22 +894,35 @@ void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
     if ( max_x1 > max_x ) max_x = max_x1;
     if ( max_x1 > max_x ) max_x = max_x1;
 
-    // translate to take account of widget origin
+
+    // translate screen co-ordinates to widget co-ordinates.
     min_x = min_x - x;
     max_x = max_x - x;
     min_y = min_y - y;
     max_y = max_y - y;
 
+    min_x -= 2;
+    min_y -= 2;
+    max_x += 2;
+    max_y += 2;
+    if ( min_x < 0 ) min_x = 0;
+    if ( min_y < 0 ) min_y = 0;
+
     int16_t uw = max_x-min_x;
     int16_t uh = max_y-min_y;
 
-
+    // The sprite will be uw, uh
+    // the origin of the sprite relative to the jpg is at min_x, min_y
+    // so the jpg must be shifted to -min_x, -min_y when drawing onto the 
+    // sprite.
+    //
 
 
     // check the size of the sprite bitmap
     if ( firstPaint || (uw*uh*2) > 20000 ) {
       // fill background, needle can come on next call.
       drawBackground(tft);
+      Serial.print("tobig:");Serial.print(uw*uh*2);
     } else {
       // use sprite.
       TFT_eSprite background = TFT_eSprite(tft);
@@ -917,27 +937,31 @@ void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
       tft_output_config.x_offset = -min_x;
       tft_output_config.y_offset = -min_y;
       TJpgDec.setCallback(sprite_output);
-      TJpgDec.drawFsJpg(0, 0, backgroundImage);
+
+      loadJpg();      
+     
       tft_output_config.sprite = NULL;
       background.setSwapBytes(false); // We need to swap the colour bytes (endianess)
 
 
 
       // set the pivot point relative to the backgound sprite origin.
-
-      background.setPivot((width/2)-min_x, 138-min_y);
+      //155-138
+      // set the pivot relative to the sprite co-ordrinates.
+      background.setPivot((width/2)-min_x+needleOffsetX, (height/2)-min_y+needleOffsetY);
       needle->pushRotated(&background, previousAngle, TFT_BLACK);
-      background.pushSprite(min_x, min_y);
-
-      Serial.print("angle:");Serial.print(previousAngle);
-      Serial.print(" min_x:");Serial.print(min_x);
-      Serial.print(" min_y:");Serial.print(min_y);
-      Serial.print(" uw:");Serial.print(uw);
-      Serial.print(" uh:");Serial.println(uh);
+      // In screen co-ordinates.
+      background.pushSprite(x+min_x, y+min_y);
 
 
-
+      Serial.print("nx:");Serial.print(x+min_x);
+      Serial.print("ny:");Serial.print(y+min_y);
     }
+    Serial.print(" angle:");Serial.print(previousAngle);
+    Serial.print(" min_x:");Serial.print(min_x);
+    Serial.print(" min_y:");Serial.print(min_y);
+    Serial.print(" uw:");Serial.print(uw);
+    Serial.print(" uh:");Serial.println(uh);
 
 
 
@@ -945,8 +969,44 @@ void TFTTachometer::update(TFT_eSPI *tft, float value,  bool firstPaint) {
 
 
   }
+
+
 }
 
+void TFTTachometer::loadJpg() {
+  TJpgDec.drawJpg(0,0,jpg_tacho_gauge, sizeof(jpg_tacho_gauge));
+}
+
+int16_t TFTTachometer::getNeedleAngle(float value) {
+  int16_t angle = (int16_t)(-120.0+((240.0)*(value)/(4000.0)));
+  if ( angle < -120 ) angle = -120;
+  else if (angle > 120) angle = 120;
+  return angle;
+}
+
+
+
+void TFTFuelGauge::loadJpg() {
+  TJpgDec.drawJpg(0,0,jpg_fuel_gauge, sizeof(jpg_fuel_gauge));
+}
+
+int16_t TFTFuelGauge::getNeedleAngle(float value) {
+  int16_t angle = (int16_t)(-60.0+((120.0)*(value)/(100.0)));
+  if ( angle < -60 ) angle = -60;
+  else if (angle > 60) angle = 60;
+  return angle;
+}
+
+void TFTCoolantGauge::loadJpg() {
+  TJpgDec.drawJpg(0,0,jpg_coolant_gauge, sizeof(jpg_coolant_gauge));
+}
+
+int16_t TFTCoolantGauge::getNeedleAngle(float value) {
+  int16_t angle = (int16_t)(-60.0+((120.0)*(value)/(120.0)));
+  if ( angle < -60 ) angle = -60;
+  else if (angle > 60) angle = 60;
+  return angle;
+}
 
 
 

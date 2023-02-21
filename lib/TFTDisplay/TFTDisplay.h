@@ -51,8 +51,14 @@ class TFTEngineDisplayPage : public TFTDisplayPage {
 	private:
 		int rpm = 0; // dummy value
 		int rpmadd = 1000;
+		int fuelLevel = 80;
+		int fuelLevelAdd = 12;
+		int coolantTemperature = 20;
+		int coolantTemperatureAdd = 12;
 		unsigned long lastUpdate = 0;
-		TFTTachometer tachometer = TFTTachometer(10,10,313,313,"/VPTaco.jpg");
+		TFTTachometer tachometer = TFTTachometer(10,10);
+		TFTFuelGauge fuel = TFTFuelGauge(480-130-10,10);
+		TFTCoolantGauge coolant = TFTCoolantGauge(480-130-10,320-130-10);
 };
 
 class TFTLogoDisplayPage : public TFTDisplayPage {	

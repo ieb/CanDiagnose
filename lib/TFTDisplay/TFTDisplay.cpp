@@ -143,6 +143,7 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 	unsigned long now = millis();
 	if ( now > lastUpdate + 1000) {
 		lastUpdate = now;
+
 		rpm+=rpmadd;
 		if ( rpm > 4000 ) {
 			rpmadd = -1000;
@@ -150,8 +151,24 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 			rpm = 0;
 			rpmadd = 1000;
 		} 
+		fuelLevel+=fuelLevelAdd;
+		if ( fuelLevel > 100 ) {
+			fuelLevelAdd = -12;
+		} else if ( fuelLevel < 0 ) {
+			fuelLevel = 0;
+			fuelLevelAdd = 31;
+		} 
+		coolantTemperature+=coolantTemperatureAdd;
+		if ( coolantTemperature > 110 ) {
+			coolantTemperatureAdd = -12;
+		} else if ( coolantTemperature < 20 ) {
+			coolantTemperature = 20;
+			coolantTemperatureAdd = 31;
+		} 
   }
   tachometer.update(&tft, rpm, !displaying);
+  fuel.update(&tft, fuelLevel, !displaying);
+  coolant.update(&tft, coolantTemperature, !displaying);
 	displaying = true;
 
 }
