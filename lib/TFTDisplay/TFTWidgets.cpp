@@ -884,7 +884,7 @@ void TFTDial::update(TFT_eSPI *tft, float value,  bool firstPaint) {
     if ( previousAngle < angle ) previousAngle++;
     if ( previousAngle > angle ) previousAngle--;
 
-    previousAngle  = angle;
+    //previousAngle  = angle;
 
     // get the bounds of the new needle
     int16_t min_x1, min_y1, max_x1, max_y1;

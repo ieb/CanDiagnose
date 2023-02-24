@@ -49,6 +49,7 @@ class TFTEngineDisplayPage : public TFTDisplayPage {
 		~TFTEngineDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
+		int d = 0;
 		int rpm = 0; // dummy value
 		int rpmadd = 1000;
 		int fuelLevel = 80;
