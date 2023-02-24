@@ -108,9 +108,11 @@ public:
 
 	void update(TFT_eSPI *tft, float value,  bool firstPaint);
 	void dispose();
-private:
+protected:
 	int16_t x;
 	int16_t y;
+
+private:
 	int16_t width;
 	int16_t height;
 	int8_t needleOffsetX;
@@ -136,7 +138,12 @@ private:
 
 class TFTTachometer : public TFTDial {
 public:
-	TFTTachometer(int16_t x, int16_t y): TFTDial{x,y, 310, 310, NEEDLE_LENGTH, NEEDLE_WIDTH, NEEDLE_RADIUS, 0, -17} {
+	TFTTachometer(int16_t x, int16_t y): TFTDial{x,y, 310, 310, 
+		/* needle length */ 50, 
+		/* needle width */ 5, 
+		/* needle radius */ 84, 
+		-3, 
+		-12} {
 
 	};
 	~TFTTachometer() {
@@ -144,15 +151,22 @@ public:
 	};
 	void loadJpg() override;
 	int16_t getNeedleAngle(float value) override;
+	void updateLCD(TFT_eSPI *tft, float *values,  bool firstPaint);
+private:
+	unsigned long lastLCDUpdate = 0;
+	unsigned long lastLCDChange = 0;
+	uint8_t lcdView = 0;
+
 
 };
 
 class TFTFuelGauge: public TFTDial {
 public:
-	TFTFuelGauge(int16_t x, int16_t y): TFTDial{x,y, 		/* needle length */    33, 
+	TFTFuelGauge(int16_t x, int16_t y): TFTDial{x,y, 130, 130,		
+	    /* needle length */    33, 
 		/* needle width */      5, 
 		/* needle tip radius */45, 
-		/* center x offset */   0, 
+		/* center x offset */   3, 
 		/* center y offset */  28} 
 		 {
 

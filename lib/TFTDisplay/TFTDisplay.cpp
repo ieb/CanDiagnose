@@ -141,16 +141,27 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 	// update data elements.
 
 	unsigned long now = millis();
-	if ( now > lastUpdate + 1000) {
+	if ( now > lastUpdate + 2000) {
 		lastUpdate = now;
 
-		rpm+=rpmadd;
-		if ( rpm > 4000 ) {
-			rpmadd = -1000;
-		} else if ( rpm < 0 ) {
+//		rpm+=rpmadd;
+//		if ( rpm > 4000 ) {
+//			rpmadd = -1000;
+//		} else if ( rpm < 0 ) {
+//			rpm = 0;
+//			rpmadd = 1000;
+//		} 
+		rpm+=500;
+		if (rpm > 4000 ) {
 			rpm = 0;
-			rpmadd = 1000;
-		} 
+		}
+
+		fuelLevel+=25;
+		if  (fuelLevel > 100) {
+			fuelLevel = 0;
+		}
+
+		/*
 		fuelLevel+=fuelLevelAdd;
 		if ( fuelLevel > 100 ) {
 			fuelLevelAdd = -12;
@@ -158,6 +169,12 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 			fuelLevel = 0;
 			fuelLevelAdd = 31;
 		} 
+		*/
+		coolantTemperature+=20;
+		if ( coolantTemperature > 120 ) {
+			coolantTemperature = 40;
+		}
+		/*
 		coolantTemperature+=coolantTemperatureAdd;
 		if ( coolantTemperature > 110 ) {
 			coolantTemperatureAdd = -12;
@@ -165,10 +182,27 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
 			coolantTemperature = 20;
 			coolantTemperatureAdd = 31;
 		} 
+		*/
+//		Serial.print(" rpm: ");Serial.print(rpm);
+//		Serial.print(" fuel: ");Serial.print(fuelLevel);
+//		Serial.print(" coolant: ");Serial.println(coolantTemperature);
+
   }
   tachometer.update(&tft, rpm, !displaying);
+  float values[] = {
+  	(float)rpm,
+  	(float)coolantTemperature,
+  	(float)fuelLevel,
+  	7.3,
+  	14.2,
+  	13.6,
+  	15.2,
+  	13.7
+  };
+  tachometer.updateLCD(&tft, values, !displaying);
   fuel.update(&tft, fuelLevel, !displaying);
   coolant.update(&tft, coolantTemperature, !displaying);
+
 	displaying = true;
 
 }

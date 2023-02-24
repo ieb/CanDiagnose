@@ -884,6 +884,8 @@ void TFTDial::update(TFT_eSPI *tft, float value,  bool firstPaint) {
     if ( previousAngle < angle ) previousAngle++;
     if ( previousAngle > angle ) previousAngle--;
 
+    previousAngle  = angle;
+
     // get the bounds of the new needle
     int16_t min_x1, min_y1, max_x1, max_y1;
     needle->getRotatedBounds(previousAngle, &min_x1, &min_y1, &max_x1, &max_y1);
@@ -892,7 +894,7 @@ void TFTDial::update(TFT_eSPI *tft, float value,  bool firstPaint) {
     if ( min_x1 < min_x ) min_x = min_x1;
     if ( min_y1 < min_y ) min_y = min_y1;
     if ( max_x1 > max_x ) max_x = max_x1;
-    if ( max_x1 > max_x ) max_x = max_x1;
+    if ( max_y1 > max_y ) max_y = max_y1;
 
 
     // translate screen co-ordinates to widget co-ordinates.
@@ -954,34 +956,173 @@ void TFTDial::update(TFT_eSPI *tft, float value,  bool firstPaint) {
       background.pushSprite(x+min_x, y+min_y);
 
 
-      Serial.print("nx:");Serial.print(x+min_x);
-      Serial.print("ny:");Serial.print(y+min_y);
+
+//      Serial.print("nx:");Serial.print(x+min_x);
+//      Serial.print("ny:");Serial.print(y+min_y);
     }
-    Serial.print(" angle:");Serial.print(previousAngle);
-    Serial.print(" min_x:");Serial.print(min_x);
-    Serial.print(" min_y:");Serial.print(min_y);
-    Serial.print(" uw:");Serial.print(uw);
-    Serial.print(" uh:");Serial.println(uh);
-
-
-
-
-
+//    Serial.print(" value:");Serial.print(value);
+//    Serial.print(" angle:");Serial.print(previousAngle);
+//    Serial.print(" min_x:");Serial.print(min_x);
+//    Serial.print(" min_y:");Serial.print(min_y);
+//    Serial.print(" uw:");Serial.print(uw);
+//    Serial.print(" uh:");Serial.println(uh);
 
   }
+  /*
 
+ rpm: 0 fuel: 0 coolant: 40
+nx:84ny:163 value:0.00 angle:-120 min_x:74 min_y:153 uw:155 uh:38
+ rpm: 1000 fuel: 50 coolant: 80
+nx:75ny:117 value:1000.00 angle:-69 min_x:65 min_y:107 uw:61 uh:47
+rpm: 500 fuel: 25 coolant: 60
+nx:75ny:151 value:500.00 angle:-94 min_x:65 min_y:141 uw:61 uh:49
+   rpm: 1500 fuel: 75 coolant: 100
+nx:79ny:79 value:1500.00 angle:-35 min_x:69 min_y:69 uw:70 uh:68
+   rpm: 2000 fuel: 100 coolant: 120
+nx:109ny:65 value:2000.00 angle:0 min_x:99 min_y:55 uw:60 uh:66
+rpm: 2500 fuel: 0 coolant: 40
+nx:156ny:65 value:2500.00 angle:35 min_x:146 min_y:55 uw:60 uh:58
+   rpm: 3000 fuel: 25 coolant: 60
+nx:175ny:80 value:3000.00 angle:69 min_x:165 min_y:70 uw:68 uh:51
+ rpm: 3500 fuel: 50 coolant: 80
+
+nx:190ny:118 value:3500.00 angle:96 min_x:180 min_y:108 uw:59 uh:30
+ rpm: 4000 fuel: 75 coolant: 100
+nx:185ny:150 value:4000.00 angle:120 min_x:175 min_y:140 uw:64 uh:18
+*/
 
 }
+
+void TFTTachometer::updateLCD(TFT_eSPI *tft, 
+    float *values,  bool firstPaint) {
+
+    unsigned long now = millis();
+    if ( now > lastLCDUpdate + 500 ) {
+      if ( now > lastLCDChange + 5000 ) {
+        lcdView++;
+        if ( lcdView > 3) lcdView = 0;
+        lastLCDChange = now;
+      } 
+      int16_t uw = 118;
+      int16_t uh = 50;
+      int16_t posx = 93;  // offset from dial background
+      int16_t posy = 192;
+
+      // build the LCD background which is a subset of the dial background.
+      TFT_eSprite background = TFT_eSprite(tft);
+      background.setColorDepth(16);
+      background.createSprite(uw, uh);  // create the background Sprite
+      background.fillSprite(TFT_BLACK); // Fill with black
+
+
+      background.setSwapBytes(true); // We need to swap the colour bytes (endianess)
+      tft_output_config.sprite = &background;
+      // offset the output back to the widget origin relative to sprite bounds.
+      tft_output_config.x_offset = 0;
+      tft_output_config.y_offset = 0;
+      TJpgDec.setCallback(sprite_output);
+
+      TJpgDec.drawJpg(0,0,jpg_tacho_lcd, sizeof(jpg_tacho_lcd));
+     
+      tft_output_config.sprite = NULL;
+      background.setSwapBytes(false); // We need to swap the colour bytes (endianess)
+
+
+      // 3 rows, 
+      // vertical alignment top, center, bottom with 5 padding
+      // horizontal left, center, right with 5 padding
+      // rpm   blank  alternator Voltage
+      // coolant  stw   alternator current
+      // fule engine V service V
+
+
+      char buffer[20];
+      background.setTextColor(TFT_WHITE);
+      switch(lcdView) {
+        case 0:
+          sprintf(buffer, "%4.0frpm",values[0]);
+          background.setTextDatum(TC_DATUM);
+          background.drawString(buffer, uw/2, 1, 4);
+
+          sprintf(buffer, "%4.1fkn",values[3]);
+          background.setTextDatum(BC_DATUM);
+          background.drawString(buffer, uw/2, uh-1, 4);
+          break;
+        case 1:
+          sprintf(buffer, "tmp %3.0fC",values[1]);
+          background.setTextDatum(TC_DATUM);
+          background.drawString(buffer, uw/2, 1, 4);
+
+          sprintf(buffer, "fuel %3.0f%%",values[2]);
+          background.setTextDatum(BC_DATUM);
+          background.drawString(buffer, uw/2, uh-1, 4);
+          break;
+        case 2:
+          sprintf(buffer, "alt %5.2fV",values[5]);
+          background.setTextDatum(TC_DATUM);
+          background.drawString(buffer, uw/2, 1, 4);
+
+          sprintf(buffer, "chg %5.1fA",values[6]);
+          background.setTextDatum(BC_DATUM);
+          background.drawString(buffer, uw/2, uh-1, 4);
+          break;
+        case 3:
+          sprintf(buffer, "eb %5.2fV",values[4]);
+          background.setTextDatum(TC_DATUM);
+          background.drawString(buffer, uw/2, 1, 4);
+
+          sprintf(buffer, "sb %5.2fV",values[7]);
+          background.setTextDatum(BC_DATUM);
+          background.drawString(buffer, uw/2, uh-1, 4);
+          break;
+      }
+      
+      background.pushSprite(posx+x, posy+y);
+
+    }
+
+}
+
 
 void TFTTachometer::loadJpg() {
   TJpgDec.drawJpg(0,0,jpg_tacho_gauge, sizeof(jpg_tacho_gauge));
 }
 
 int16_t TFTTachometer::getNeedleAngle(float value) {
+  
+  // the needle angle is non linear vs rpm
+  // numbers measured from the image.
+  // if the image changes the numbers need to change.
+  // the error is < 1 degree for the interpolations here
+  if ( value < 0 ) {
+    return -120;
+  } else if ( value < 500 ) {
+    return round((0.0485187634*value)-120);
+  } else if ( value < 1000 ) {
+    return round((0.0508696651*(value-500))-94.3510779516);  
+  } else if (value < 1500 ) {
+    return round((0.068529859*(value-1000))-68.9162454176);
+  } else if (value < 2000 ) {
+    return round((0.0693026318*(value-1500))-34.651315912);
+  } else if (value < 2500 ) {
+    return round((0.0693026318*(value-2500))+34.651315912);
+  } else if (value < 3000 ) {
+    return round((0.068529859*(value-3000))+68.9162454176);
+  } else if (value < 3500 ) {
+    return round((0.0508696651*(value-3500))+94.3510779516);
+  } else if (value < 4000 ) {
+    return round((0.0485187634*(value-4000))+120);
+  } else {
+    return 120;
+  }
+
+  /*
   int16_t angle = (int16_t)(-120.0+((240.0)*(value)/(4000.0)));
   if ( angle < -120 ) angle = -120;
   else if (angle > 120) angle = 120;
   return angle;
+  */
+  
 }
 
 
@@ -991,9 +1132,9 @@ void TFTFuelGauge::loadJpg() {
 }
 
 int16_t TFTFuelGauge::getNeedleAngle(float value) {
-  int16_t angle = (int16_t)(-60.0+((120.0)*(value)/(100.0)));
-  if ( angle < -60 ) angle = -60;
-  else if (angle > 60) angle = 60;
+  int16_t angle = (int16_t)(-45.0+((87.0)*(value)/(100.0)));
+  if ( angle < -45 ) angle = -45;
+  else if (angle > 42) angle = 42;
   return angle;
 }
 
@@ -1002,10 +1143,28 @@ void TFTCoolantGauge::loadJpg() {
 }
 
 int16_t TFTCoolantGauge::getNeedleAngle(float value) {
-  int16_t angle = (int16_t)(-60.0+((120.0)*(value)/(120.0)));
-  if ( angle < -60 ) angle = -60;
-  else if (angle > 60) angle = 60;
+  // scale is non linear,
+  // neasured from image.
+  if ( value < 40 ) {
+    return -45;
+  } else if ( value < 60 ) {
+    return round((0.4528944064*(value-40))-45);
+  } else if ( value < 80 ) {
+    return round((0.8381551923*(value-60))-35.9421118714);
+  } else if ( value < 100 ) {
+    return round((1.6175780725*(value-80))-19.1790080258);
+  } else if ( value < 120 ) {
+    return round((1.4179608659*(value-100))+13.1725534233);
+  } else {
+    return 44;
+  }
+
+/*
+  int16_t angle = (int16_t)(-43.0+((86.0)*(value-40.0)/(80.0)));
+  if ( angle < -43 ) angle = -43;
+  else if (angle > 43) angle = 43;
   return angle;
+  */
 }
 
 
