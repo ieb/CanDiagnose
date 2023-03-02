@@ -207,3 +207,59 @@ public:
 private:
 	const char * fileName;
 };
+
+
+class TFTSailing {
+public:
+
+	TFTSailing(int16_t x, int16_t y, int16_t uw, int16_t uh) {
+		this->x = x;
+		this->y = y;
+		this->uw = uw;
+		this->uh = uh;
+		outer_r = uw/2;;
+  		inner_r = (uw*60)/100;
+  		txt_r = (uw*55)/100;
+	};
+ 	void display(TFT_eSPI *tft, bool firstPaint);
+
+ 	#define MAX_WIND_HISTORY 10
+	// data
+
+ 	int16_t hdg = 0;
+	int16_t twa = 0;
+	int16_t awa = 0;
+	int16_t twah[MAX_WIND_HISTORY];
+	int16_t awah[MAX_WIND_HISTORY];
+	uint8_t ntwah = 0;
+	uint8_t nawah = 0;;
+	int16_t portLL = 0;
+	int16_t stbdLL = 0;
+	int16_t orangePointerAngle = 0;
+	int16_t yellowPointerAngle = 0;
+	int16_t purplePointerAngle = 0;
+	int16_t currentAngle = 0;
+
+private:
+	int16_t x; // top left
+	int16_t y; // top left
+	int16_t uw; // widget width
+	int16_t uh; // widget height
+	int16_t outer_r;
+	int16_t inner_r;
+	int16_t txt_r;
+
+
+
+
+	void rotatePoints(int16_t *x, int16_t *y, int8_t n, int16_t a, int16_t tx, int16_t ty);
+	void drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8_t nah, int16_t cx, int16_t cy, int8_t pallet_idx);
+	void drawSector(TFT_eSprite *dial, int16_t a, int16_t cx, int16_t cy, int8_t pallet_idx);
+	void drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy, int8_t fill, int8_t outline);
+	void drawDial(TFT_eSPI *tft, int sx, int sy, int sw, int sh);
+
+
+
+
+
+};

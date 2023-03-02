@@ -41,6 +41,7 @@ bool sprite_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitma
     return 1;
 }  
 
+
 /*
 void loop() {
   if (millis() - runTime >= 0L) { // Execute every TBD ms
@@ -1167,5 +1168,311 @@ int16_t TFTCoolantGauge::getNeedleAngle(float value) {
   */
 }
 
+// in Arduino.h #define DEG_TO_RAD 0.0174532925
 
+void TFTSailing::rotatePoints(int16_t *x, int16_t *y, int8_t n, int16_t a, int16_t tx, int16_t ty) {
+  float sinA = sin(a*DEG_TO_RAD);
+  float cosA = cos(a*DEG_TO_RAD);
+  for (int i = 0; i < n; i++) {
+    float rx = x[i]*cosA - y[i]*sinA;
+    float ry = y[i]*cosA + x[i]*sinA;
+    x[i] = rx+tx;
+    y[i] = ry+ty;
+  }
+}
+
+void TFTSailing::drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8_t nah, int16_t cx, int16_t cy, int8_t pallet_idx) {
+  int16_t tx[4];
+  int16_t ty[4];
+  tx[0] =  0;
+  tx[1] = 10;
+  tx[2] = -10;
+  tx[3] = 0;
+  ty[0] = -inner_r;
+  ty[1] = 15-inner_r;
+  ty[2] = 15-inner_r;
+  ty[3] = 20-inner_r;
+  rotatePoints(tx,ty,4,a, cx, cy);
+  dial->fillTriangle(
+    tx[0],ty[0],
+    tx[1],ty[1],
+    tx[2],ty[2],
+    pallet_idx
+  );
+  dial->fillTriangle(
+    tx[1],ty[1],
+    tx[2],ty[2],
+    tx[3],ty[3],
+    pallet_idx
+  );
+
+  tx[0] = 0; ty[0] = -inner_r+20;
+  rotatePoints(tx,ty,1,a, cy, cy);
+  tx[1] = tx[0]; ty[1] = ty[0];  
+  int16_t hlen = ((uw*47)/100)/10;
+  for(int i = 0; i < nah; i++) {
+    tx[0] = 0; ty[0] = -inner_r+(i+1)*hlen;
+    rotatePoints(tx, ty, 1, ah[i], cy, cy);
+    dial->drawLine(tx[1],ty[1],tx[0], ty[0], pallet_idx);
+    tx[1] = tx[0];
+    ty[1] = ty[0];
+  }  
+
+}
+
+void TFTSailing::drawSector(TFT_eSprite *dial, int16_t a, int16_t cx, int16_t cy, int8_t pallet_idx) {
+  int16_t tx[3];
+  tx[0] = -5;
+  tx[1] = 5;
+  tx[2] = 0;
+  int16_t ty[3];
+  ty[0] = -inner_r;
+  ty[1] = -inner_r;
+  ty[2] = 0;
+  rotatePoints(tx,ty,3,a, cy, cy);
+  dial->fillTriangle(
+    tx[0], ty[0],
+    tx[1], ty[1],
+    tx[2], ty[2],
+    pallet_idx);
+}
+
+
+
+void TFTSailing::drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy, int8_t fill, int8_t outline) {
+#define BOAT_HEIGHT 78
+#define BOAT_SEG_SPACE 7
+  int16_t ys = cy-BOAT_HEIGHT/2;
+  // total height = 77
+  // 7 pixel spacing
+  uint8_t segwidth[12] = {
+    13,
+    15,  // 7
+    17,  // 14
+    18,  // 21
+    19,  // 28
+    19,  // 35
+    18,  // 42
+    17,  // 49
+    15,  // 56
+    12,  // 63
+    6,  // 70
+    0    // 77
+  };
+  
+  // fill the shape by drawing horizontal lines, which are fast,
+  // using widths interpolated from measurements every 7 pixels.
+  // segwidth is half width to ensure center line remains straight.
+  for (int16_t ypx = 1; y < BOAT_HEIGHT; y++ ) {
+    int16_t yi = ypx/BOAT_SEG_SPACE;
+    int16_t xw = ((segwidth[yi+1]-segwidth[yi])*(ypx-yi*BOAT_SEG_SPACE))/BOAT_SEG_SPACE;
+    dial->drawFastHLine(cx-xw, ys+ypx, xw*2, fill);      
+  }
+
+  // draw the outline using lines.
+  dial->drawFastHLine(cx-segwidth[0], ys, segwidth[0]*2, outline);
+  for (int i = 1; i < 12; i++) {
+    dial->drawLine(cx-segwidth[i-1],ys+BOAT_SEG_SPACE*(i-1),cx-segwidth[i],ys+BOAT_SEG_SPACE*(i), outline);
+    dial->drawLine(cx+segwidth[i-1],ys+BOAT_SEG_SPACE*(i-1),cx+segwidth[i],ys+BOAT_SEG_SPACE*(i), outline);
+  }
+}
+
+
+
+
+
+
+void TFTSailing::drawDial(TFT_eSPI *tft, 
+    int sx, // sprite x offset from dial origin
+    int sy, // sprite y offset from dial origin
+    int sw, // sprite witdth
+    int sh  // sprite height
+    ) {
+    TFT_eSprite dial = TFT_eSprite(tft);
+    dial.setColorDepth(4);
+    uint16_t palette[16];
+#define PLT_BLACK 0
+#define PLT_ORANGE 1
+#define PLT_PURPLE 5
+#define PLT_DARKGREY 7
+#define PLT_GREY 8
+#define PLT_BLUE 9
+#define PLT_GREEN 10
+#define PLT_RED 12
+#define PLT_YELLOW 14
+#define PLT_WHITE 15
+
+    palette[PLT_BLACK]  = TFT_BLACK;
+    palette[PLT_ORANGE]  = TFT_ORANGE;
+    palette[2]  = TFT_DARKGREEN;
+    palette[3]  = TFT_DARKCYAN;
+    palette[4]  = TFT_MAROON;
+    palette[PLT_PURPLE]  = TFT_PURPLE;
+    palette[6]  = TFT_OLIVE;
+    palette[PLT_DARKGREY]  = TFT_DARKGREY;
+    palette[PLT_GREY]  = TFT_GREY;
+    palette[PLT_BLUE]  = TFT_BLUE;
+    palette[PLT_GREEN] = TFT_GREEN;
+    palette[11] = TFT_CYAN;
+    palette[PLT_RED] = TFT_RED;
+    palette[13] = TFT_NAVY;
+    palette[PLT_YELLOW] = TFT_YELLOW;
+    palette[PLT_WHITE] = TFT_WHITE; 
+    dial.setColorDepth(4);
+    dial.createSprite(sw, sh); // 320*320/2, might be a problem, so may have to call this multiple times
+    dial.createPalette(palette);
+
+
+
+
+    // use dial origin as drawing origin.
+    int16_t cx = uw/2-sx;
+    int16_t cy = uh/2-sy;
+    int16_t tx[5];
+    int16_t ty[5];
+
+    dial.drawCircle(cx, cy, outer_r, PLT_GREY);
+    dial.drawCircle(cx, cy, inner_r, PLT_GREY);
+    dial.drawCircle(cx, cy, uw/6, PLT_GREY);
+
+    // draw compass dial rotated for heading.
+    char deg[4];
+    dial.setTextDatum(MC_DATUM);
+    for (int i = 0; i < 360; i+=10) {
+
+
+
+
+      if ( i%90 == 0  ) {
+        tx[0] = 0; 
+        tx[1] = 0; 
+        tx[2] = 0; 
+        tx[3] = 5; 
+        tx[4] = -5;
+        ty[0] = -txt_r;
+        ty[1] = -outer_r;
+        ty[2] = -inner_r;
+        ty[3] =  0;
+        ty[4] =  0;
+        rotatePoints(tx,ty,5,(hdg-i), cx, cy);
+        dial.setTextColor(PLT_WHITE);
+        if ( i == 0) {
+          dial.drawString("N",tx[0],ty[0],2);
+        } else {
+          itoa(i,deg,10);
+          dial.drawString(deg,tx[0],ty[0],2);
+        }
+        // add the triangle
+        dial.fillTriangle(
+          tx[2], ty[2],
+          tx[3], ty[3],
+          ty[4], ty[4],
+            PLT_DARKGREY
+          );
+        // add dots
+        dial.fillCircle(tx[1],ty[1],5,PLT_WHITE);
+        dial.fillCircle(tx[2],ty[2],5,PLT_WHITE);
+      } else if ( i%30 == 0 ) {
+        tx[0] = 0;
+        ty[0] = -txt_r;
+        rotatePoints(tx,ty,1,(hdg-i), cx, cy);
+        itoa(i,deg,10);
+        dial.setTextColor(PLT_DARKGREY);
+        dial.drawString(deg,tx[0],ty[0],2);            
+      } else {
+        tx[0] = 0;
+        ty[0] = -txt_r;
+        rotatePoints(tx,ty,1,(hdg-i), cx, cy);
+        dial.fillCircle(tx[0],ty[0],5,PLT_WHITE);
+      }
+    } 
+
+    // draw heading rectangle, allways at the top.
+    dial.fillRoundRect(cx-15,0,15,10,4,PLT_WHITE);
+    dial.setTextColor(PLT_WHITE);
+    dial.setTextDatum(MC_DATUM);
+    itoa(hdg,deg,10);
+    dial.drawString(deg, cx,5, 2);
+
+
+    // wind pointers
+    drawWindpointer(&dial, twa, twah, ntwah, cx, cy, PLT_RED);
+    drawWindpointer(&dial, awa, awah, nawah, cx, cy, PLT_GREEN);
+
+    // port and starboard track
+    drawSector(&dial, hdg-portLL, cx, cy, PLT_RED); 
+    drawSector(&dial, hdg-stbdLL, cx, cy, PLT_RED);
+
+    // orange pointer
+    tx[0] = -5;
+    tx[1] = 5;
+    tx[2] = 0;
+    ty[0] = (-txt_r-outer_r)/2;
+    ty[1] = (-txt_r-outer_r)/2;
+    ty[2] = -inner_r;
+    rotatePoints(tx,ty,3, orangePointerAngle, cy, cy);
+    dial.fillTriangle(
+      tx[0], ty[0],
+      tx[1], ty[1],
+      tx[2], ty[2],
+      PLT_ORANGE);
+
+    // yellow pointer
+    tx[0] = 0;
+    tx[1] = 0;
+    ty[0] = -inner_r+10;
+    ty[1] = -inner_r;
+    rotatePoints(tx,ty,2, yellowPointerAngle, cy, cy);
+    dial.fillCircle(tx[0], ty[0], 8, PLT_YELLOW);
+    dial.drawLine(tx[0], ty[0], tx[1], ty[1], PLT_YELLOW);
+
+    // purple pointer
+    tx[0] = 0;
+    tx[1] = -3;
+    tx[2] = 3;
+    tx[3] = 0;
+    ty[0] = -outer_r;
+    ty[1] = -inner_r;
+    ty[2] = -inner_r;
+    ty[3] = -inner_r;
+    rotatePoints(tx,ty,4, purplePointerAngle, cy, cy);
+    dial.fillTriangle(
+      tx[0], ty[0],
+      tx[1], ty[1],
+      tx[2], ty[2],
+      PLT_PURPLE);
+    dial.fillCircle(tx[3], ty[3], 3, PLT_PURPLE);
+
+    drawBoat(&dial, cx, cy, PLT_BLACK, PLT_GREY);
+
+    // current
+    tx[0] = 0;
+    tx[1] = -3;
+    tx[2] = 3;
+    tx[3] = 0;
+    tx[4] = 0;
+    ty[0] = -10;
+    ty[1] = -2;
+    ty[2] = -2;
+    ty[3] = -2;
+    ty[4] = -10;
+    rotatePoints(tx,ty,5, currentAngle, cy, cy);
+    dial.fillTriangle(
+      tx[0], ty[0],
+      tx[1], ty[1],
+      tx[2], ty[2],
+      PLT_BLUE);
+    dial.drawWedgeLine(
+      tx[3], ty[3],
+      tx[4], ty[4],
+      6, 7,
+      PLT_BLUE
+      ); 
+
+    dial.pushSprite(x+sx,y+sy);    
+}
+
+void TFTSailing::display(TFT_eSPI *tft, bool firstPaint) {
+    drawDial(tft, 0,0,uh,uw);  // may need to iterate over the dial to reduce memory requirements.
+}
 

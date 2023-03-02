@@ -197,7 +197,7 @@ void TFTEngineDisplayPage::update(bool paintScreen) {
   	(float)rpm,
   	(float)coolantTemperature,
   	(float)fuelLevel,
-  	(float)(5.0 + 3.0 * TFTWidgets::sineWave(d + 90)),
+  	(float)(7.0 + 2.0 * TFTWidgets::sineWave(d + 90)),
   	(float)(11.5 + 3 * TFTWidgets::sineWave(d + 10)),
   	(float)(11.5 + 3 * TFTWidgets::sineWave(d + 60)),
   	(float)(20 + 20 * TFTWidgets::sineWave(d + 110)),
