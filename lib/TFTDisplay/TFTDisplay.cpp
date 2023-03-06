@@ -21,11 +21,12 @@ void TFTDisplay::begin() {
   Serial.println("TFT Begin done");
 
 }
-#define MAX_PAGES 4
+#define MAX_PAGES 5
 #define LOGO_PAGE 0
-#define ENGINE_PAGE 1
-#define SAILING_PAGE 2
-#define MAXI_PAGE 3
+#define SAILING_PAGE 1
+#define ENGINE_PAGE 2
+#define GRIDBOXES_PAGE 3
+#define MAXI_PAGE 4
 
 void TFTDisplay::update(unsigned long lastButtonPress) {
  	if ( currentPage == NULL ) {
@@ -56,8 +57,11 @@ void TFTDisplay::nextPage() {
 		case MAXI_PAGE:
 			currentPage = new TFTMaxiDisplayPage(tft);
 			break;
-		case SAILING_PAGE:
+		case GRIDBOXES_PAGE:
 			currentPage = new TFTGridBoxesDisplayPage(tft);
+			break;
+		case SAILING_PAGE:
+			currentPage = new TFTSailingDisplayPage(tft);
 			break;
 		default:
 			pageNo = 0;
@@ -331,3 +335,53 @@ void TFTGridBoxesDisplayPage::update(bool paintScreen) {
 
 
 }
+
+void TFTSailingDisplayPage::update(bool paintScreen) {
+	if ( !paintScreen ) {
+		return;
+	}
+	if ( !displaying ) {
+  	sailing.display(&tft,!displaying);
+  	displaying = true;
+  	trueWind.display(&tft, ">52", "18.1Kn", !displaying);
+  	apparentWind.display(&tft, ">33", "24.1Kn", !displaying);
+  	polar.display(&tft, "7.5kn", "60%", !displaying);
+  	current.display(&tft, "57", "1.4kn", !displaying);
+  } else {
+  	unsigned long now = millis();
+  	if ( now > lastUpdate + 1000) {
+  		int16_t inc = (now - lastUpdate)%8;
+
+  		lastUpdate = now;
+
+	  	sailing.hdg+=(inc-4); 
+	  	if ( sailing.hdg < 0 ) sailing.hdg += 360;
+	  	if (sailing.hdg >= 360) sailing.hdg -= 360;
+	  	for ( int i = MAX_WIND_HISTORY-1; i > 0; i-- ) {
+	  		sailing.twah[i] = sailing.twah[i-1];
+	  		sailing.awah[i] = sailing.awah[i-1];
+	  	}
+	  	sailing.awa += (sailing.hdg%6)-3;
+	  	if ( sailing.awa < -180 ) sailing.awa += 360;
+	  	if ( sailing.awa >= 180 ) sailing.awa -= 360;
+	  	sailing.twa += (sailing.hdg%4)-2;
+	  	if ( sailing.twa < -180 ) sailing.awa += 360;
+	  	if ( sailing.twa >= 180 ) sailing.twa -= 360;
+	  	sailing.awah[0] = sailing.awa;
+	  	sailing.twah[0] = sailing.twa;
+	  	if ( sailing.ntwah < MAX_WIND_HISTORY ) {
+		  	sailing.ntwah++;
+	  	}
+	  	if ( sailing.nawah < MAX_WIND_HISTORY ) {
+		  	sailing.nawah++;
+	  	}	  		
+	  }
+  	sailing.display(&tft,!displaying);
+  	trueWind.display(&tft, ">52", "18.1Kn", !displaying);
+  	apparentWind.display(&tft, ">33", "24.1Kn", !displaying);
+  	polar.display(&tft, "7.5kn", "60%", !displaying);
+  	current.display(&tft, "57", "1.4kn", !displaying);
+
+  }
+}
+

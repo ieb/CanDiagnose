@@ -86,6 +86,23 @@ class TFTMaxiDisplayPage : public TFTDisplayPage {
 
 };
 
+
+
+class TFTSailingDisplayPage : public TFTDisplayPage {	
+	public:
+		TFTSailingDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
+		};
+		~TFTSailingDisplayPage() override = default;
+		void update(bool paintScreen) override;
+	private:
+		unsigned long lastUpdate = 0;
+		TFTSailing sailing = TFTSailing(480/2-320/2,0,320,320);
+		TFTInfoBlock trueWind =     TFTInfoBlock(        5,        5, 200, 80,    0xD802, "True Wind", TFTInfoBlock::topLeft);
+		TFTInfoBlock apparentWind = TFTInfoBlock(480-5-200,        5, 200, 80,    0x0566,  "App Wind", TFTInfoBlock::topRight);
+		TFTInfoBlock polar =        TFTInfoBlock(        5, 320-5-80, 200, 80, TFT_WHITE, "VMG/Polar", TFTInfoBlock::bottomLeft);
+		TFTInfoBlock current =      TFTInfoBlock(480-5-200, 320-5-80, 200, 80,    0x2CF9,   "Current", TFTInfoBlock::bottomRight);
+};
+
 #define GRID_GAP 4
 #define  GRID_4_WIDTH ((480/4)-GRID_GAP)
 #define  GRID_4_HEIGHT ((320/4)-GRID_GAP)

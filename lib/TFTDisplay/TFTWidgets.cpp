@@ -42,71 +42,7 @@ bool sprite_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitma
 }  
 
 
-/*
-void loop() {
-  if (millis() - runTime >= 0L) { // Execute every TBD ms
-    runTime = millis();
 
-    // Test with a slowly changing value from a Sine function
-    d += 4; if (d >= 360) d = 0;
-
-    // Set the the position, gap between meters, and inner radius of the meters
-    int xpos = 0, ypos = 5, gap = 4, radius = 52;
-
-    // Draw meter and get back x position of next meter
-
-    // Test with Sine wave function, normally reading will be from a sensor
-    reading = 250 + 250 * sineWave(d+0);
-    xpos = gap + ringMeter(reading, 0, 500, xpos, ypos, radius, "mA", GREEN2RED); // Draw analogue meter
-
-    reading = 20 + 30 * sineWave(d+60);
-    xpos = gap + ringMeter(reading, -10, 50, xpos, ypos, radius, "degC", BLUE2RED); // Draw analogue meter
-
-    reading = 50 + 50 * sineWave(d + 120);
-    ringMeter(reading, 0, 100, xpos, ypos, radius, "%RH", BLUE2BLUE); // Draw analogue meter
-
-
-    // Draw two more larger meters
-    xpos = 20, ypos = 115, gap = 24, radius = 64;
-
-    reading = 1000 + 150 * sineWave(d + 90);
-    xpos = gap + ringMeter(reading, 850, 1150, xpos, ypos, radius, "mb", BLUE2RED); // Draw analogue meter
-
-    reading = 15 + 15 * sineWave(d + 150);
-    xpos = gap + ringMeter(reading, 0, 30, xpos, ypos, radius, "Volts", GREEN2GREEN); // Draw analogue meter
-
-    // Draw a large meter
-    //xpos = 480/2 - 160, ypos = 0, gap = 15, radius = 170;
-    //reading +=(ramp);
-    //if (reading>98) ramp = -1;
-    //if (reading<0) ramp = 1;
-    // Comment out above meters, then uncomment the next line to show large meter
-    //ringMeter(reading,0,100, xpos,ypos,radius," Watts",GREEN2RED); // Draw analogue meter
-    //if (reading<0) delay(1000);
-  }
-}
-*/
-
-/*
-void TFTWidgets::textBox(TFT_eSPI *tft, const char *value, const char *previousValue, 
-      int x, int y, int width, int height, const char *bl, const char *br, bool firstPaint) {
-    tft->setTextColor(TFT_WHITE, TFT_BLACK);
-  if ( firstPaint ) {
-    tft->drawRoundRect(x, y, width, height, 5, TFT_WHITE);
-    tft->setTextDatum(BL_DATUM);
-    tft->drawString(bl, x+5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
-    tft->setTextDatum(BR_DATUM);
-    tft->drawString(br, x+width-5, y+height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
-  }
-  if ( firstPaint || strcmp(value, previousValue) != 0) {
-    tft->setTextDatum(MC_DATUM);
-    tft->setTextColor(TFT_BLACK, TFT_BLACK);
-    tft->drawString(previousValue, x+width/2, y+height/2, 4);
-    tft->setTextColor(TFT_WHITE, TFT_BLACK);
-    tft->drawString(value, x+width/2, y+height/2, 4); // Value in middle, Font 8 only as numbers, no letters.    
-  }
-}
-*/
 
 void TFTTextBox::formatValue(float value, char *buffer) {
   if ( value < minValue) {
@@ -555,249 +491,6 @@ void TFTWidgets::drawIcon(TFT_eSPI *tft, const unsigned short* icon, int16_t x, 
 
   tft->endWrite();
 }
-/*
-
-static void TFTWidgets::textBox(TFT_eSPI *tft, float value, int x, int y, int w, const char *format, const char *title, const char * units) {
-  tft->fillRect(x, y, 239, 126, TFT_WHITE);
-  tft->fillRect(x+5, y+3, 230, 119, TFT_WHITE);
-
-
-
-}
-
-
-
-// #########################################################################
-//  Draw the analogue meter on the screen
-// #########################################################################
-static void TFTWidgets::analogMeter(TFT_eSPI *tft, int x, int y)
-{
-  // Meter outline
-  tft->fillRect(x, y, 239, 126, TFT_GREY);
-  tft->fillRect(x+5, y+3, 230, 119, TFT_WHITE);
-
-  tft->setTextColor(TFT_BLACK);  // Text colour
-
-  // Draw ticks every 5 degrees from -50 to +50 degrees (100 deg. FSD swing)
-  for (int i = -50; i < 51; i += 5) {
-    // Long scale tick length
-    int tl = 15;
-
-    // Coodinates of tick to draw
-    float sx = cos((i - 90) * 0.0174532925);
-    float sy = sin((i - 90) * 0.0174532925);
-    uint16_t x0 = x + sx * (100 + tl) + 120;
-    uint16_t y0 = y + sy * (100 + tl) + 140;
-    uint16_t x1 = x + sx * 100 + 120;
-    uint16_t y1 = y + sy * 100 + 140;
-
-    // Coordinates of next tick for zone fill
-    float sx2 = cos((i + 5 - 90) * 0.0174532925);
-    float sy2 = sin((i + 5 - 90) * 0.0174532925);
-    int x2 = x + sx2 * (100 + tl) + 120;
-    int y2 = y + sy2 * (100 + tl) + 140;
-    int x3 = x + sx2 * 100 + 120;
-    int y3 = y + sy2 * 100 + 140;
-
-    // Yellow zone limits
-    //if (i >= -50 && i < 0) {
-    //  tft.fillTriangle(x0, y0, x1, y1, x2, y2, TFT_YELLOW);
-    //  tft.fillTriangle(x1, y1, x2, y2, x3, y3, TFT_YELLOW);
-    //}
-
-    // Green zone limits
-    if (i >= 0 && i < 25) {
-      tft->fillTriangle(x0, y0, x1, y1, x2, y2, TFT_GREEN);
-      tft->fillTriangle(x1, y1, x2, y2, x3, y3, TFT_GREEN);
-    }
-
-    // Orange zone limits
-    if (i >= 25 && i < 50) {
-      tft->fillTriangle(x0, y0, x1, y1, x2, y2, TFT_ORANGE);
-      tft->fillTriangle(x1, y1, x2, y2, x3, y3, TFT_ORANGE);
-    }
-
-    // Short scale tick length
-    if (i % 25 != 0) tl = 8;
-
-    // Recalculate coords incase tick lenght changed
-    x0 = x + sx * (100 + tl) + 120;
-    y0 = y + sy * (100 + tl) + 140;
-    x1 = x + sx * 100 + 120;
-    y1 = y + sy * 100 + 140;
-
-    // Draw tick
-    tft->drawLine(x0, y0, x1, y1, TFT_BLACK);
-
-    // Check if labels should be drawn, with position tweaks
-    if (i % 25 == 0) {
-      // Calculate label positions
-      x0 = x + sx * (100 + tl + 10) + 120;
-      y0 = y + sy * (100 + tl + 10) + 140;
-      switch (i / 25) {
-        case -2: tft->drawCentreString("0", x0, y0 - 12, 2); break;
-        case -1: tft->drawCentreString("25", x0, y0 - 9, 2); break;
-        case 0: tft->drawCentreString("50", x0, y0 - 6, 2); break;
-        case 1: tft->drawCentreString("75", x0, y0 - 9, 2); break;
-        case 2: tft->drawCentreString("100", x0, y0 - 12, 2); break;
-      }
-    }
-
-    // Now draw the arc of the scale
-    sx = cos((i + 5 - 90) * 0.0174532925);
-    sy = sin((i + 5 - 90) * 0.0174532925);
-    x0 = x + sx * 100 + 120;
-    y0 = y + sy * 100 + 140;
-    // Draw scale arc, don't draw the last part
-    if (i < 50) tft->drawLine(x0, y0, x1, y1, TFT_BLACK);
-  }
-
-  tft->drawString("%RH", x + 5 + 230 - 40, y + 119 - 20, 2); // Units at bottom right
-  tft->drawCentreString("%RH", x + 120, y + 70, 4); // Comment out to avoid font 4
-  tft->drawRect(x + 5, y + 3 , 230, 119, TFT_BLACK); // Draw bezel line
-}
-
-// #########################################################################
-// Update needle position
-// This function is blocking while needle moves, time depends on ms_delay
-// 10ms minimises needle flicker if text is drawn within needle sweep area
-// Smaller values OK if text not in sweep area, zero for instant movement but
-// does not look realistic... (note: 100 increments for full scale deflection)
-// #########################################################################
-static int TFTWidgets::plotNeedle(TFT_eSPI *tft, int value, int displayed_value, 
-        int minValue, int maxValue, int x, int y, byte ms_delay)
-{
-  tft->setTextColor(TFT_BLACK, TFT_WHITE);
-  char buf[8]; dtostrf(value, 4, 0, buf);
-  tft->drawRightString(buf, 40, 119 - 20, 2);
-
-  if (value < minValue) value = minValue; // Limit value to emulate needle end stops
-  if (value > maxValue) value = maxValue;
-
-
-
-  float sdeg = map(displayed_value, minValue, maxValue, -150, -30); // Map value to angle
-  float sx = cos(sdeg * 0.0174532925);
-  float sy = sin(sdeg * 0.0174532925);
-  float ltx = tan((sdeg + 90) * 0.0174532925);
-  float osx = x + sx * 98 + 120;
-  float osy = x + sy * 98 + 140;
-
-  // Move the needle util new value reached
-  while (!(value == displayed_value)) {
-    if (displayed_value < value) displayed_value++;
-    else displayed_value--;
-
-    if (ms_delay == 0) displayed_value = value; // Update immediately id delay is 0
-
-    sdeg = map(displayed_value, minValue, maxValue, -150, -30); // Map value to angle
-    // Calcualte tip of needle coords
-    sx = cos(sdeg * 0.0174532925);
-    sy = sin(sdeg * 0.0174532925);
-
-    // Calculate x delta of needle start (does not start at pivot point)
-    float tx = tan((sdeg + 90) * 0.0174532925);
-
-    // Erase old needle image
-    tft->drawLine(x + 120 + 20 * ltx - 1, y + 140 - 20, osx - 1, osy, TFT_WHITE);
-    tft->drawLine(x + 120 + 20 * ltx, y + 140 - 20, osx, osy, TFT_WHITE);
-    tft->drawLine(x + 120 + 20 * ltx + 1, y +  140 - 20, osx + 1, osy, TFT_WHITE);
-
-    // Re-plot text under needle
-    tft->setTextColor(TFT_BLACK);
-    tft->drawCentreString("%RH", x + 120, y + 70, 4); // // Comment out to avoid font 4
-
-    // Store new needle end coords for next erase
-    ltx = tx;
-    osx = x + sx * 98 + 120;
-    osy = x + sy * 98 + 140;
-
-    // Draw the needle in the new postion, magenta makes needle a bit bolder
-    // draws 3 lines to thicken needle
-    tft->drawLine(x + 120 + 20 * ltx - 1, y + 140 - 20, osx - 1, osy, TFT_RED);
-    tft->drawLine(x + 120 + 20 * ltx, y + 140 - 20, osx, osy, TFT_MAGENTA);
-    tft->drawLine(x + 120 + 20 * ltx + 1, y + 140 - 20, osx + 1, osy, TFT_RED);
-
-    // Slow needle down slightly as it approaches new postion
-    if (abs(displayed_value - value) < 10) ms_delay += ms_delay / 5;
-
-    // Wait before next update
-    delay(ms_delay);
-  }
-  return displayed_value;
-}
-
-// #########################################################################
-//  Draw a linear meter on the screen
-// #########################################################################
-void TFTLinearMeter::linearMeters(TFT_eSPI *tft, const char **label, int n, int x, int y)
-{
-  int w = 36;
-
-  for (int i = 0; i < n; i++)  {
-    int xp = x+i*40;
-    tft->drawRect(xp, y, w, 155, TFT_GREY);
-    tft->fillRect(xp+2, y + 19, w-3, 155 - 38, TFT_WHITE);
-    tft->setTextColor(TFT_CYAN, TFT_BLACK);
-    tft->drawCentreString(label[i], x + w / 2, y + 2, 2);
-
-    for (int i = 0; i < 110; i += 10)
-    {
-      tft->drawFastHLine(xp + 20, y + 27 + i, 6, TFT_BLACK);
-    }
-
-    for (int i = 0; i < 110; i += 50)
-    {
-      tft->drawFastHLine(xp + 20, y + 27 + i, 9, TFT_BLACK);
-    }
-    
-    tft->fillTriangle(xp+3, y + 127, xp+3+16, y+127, xp + 3, y + 127 - 5, TFT_RED);
-    tft->fillTriangle(xp+3, y + 127, xp+3+16, y+127, xp + 3, y + 127 + 5, TFT_RED);
-    
-    tft->drawCentreString("---", xp + w / 2, y + 155 - 18, 2);
-  }
-}
-
-// #########################################################################
-//  Adjust 6 linear meter pointer positions
-// #########################################################################
-void TFTLinearMeter::plotLinearPointers(TFT_eSPI *tft, int * value, int *display_value, int n, int x, int y)
-{
-  int dy = 187;
-  byte pw = 16;
-
-
-  // todo, make it possible to possition the pointers so they match the linear meterx x and y.
-  tft->setTextColor(TFT_GREEN, TFT_BLACK);
-
-  // Move the 6 pointers one pixel towards new value
-  for (int i = 0; i < n; i++)
-  {
-    char buf[8]; dtostrf(value[i], 4, 0, buf);
-    tft->drawRightString(buf, i * 40 + 36 - 5, 187 - 27 + 155 - 18, 2);
-
-    int dx = 3 + 40 * i;
-    if (value[i] < 0) value[i] = 0; // Limit value to emulate needle end stops
-    if (value[i] > 100) value[i] = 100;
-
-    while (!(value[i] == display_value[i])) {
-      dy = 187 + 100 - display_value[i];
-      if (old_value[i] > value[i])
-      {
-        tft->drawLine(dx, dy - 5, dx + pw, dy, TFT_WHITE);
-        display_value[i]--;
-        tft->drawLine(dx, dy + 6, dx + pw, dy + 1, TFT_RED);
-      }
-      else
-      {
-        tft->drawLine(dx, dy + 5, dx + pw, dy, TFT_WHITE);
-        display_value[i]++;
-        tft->drawLine(dx, dy - 6, dx + pw, dy - 1, TFT_RED);
-      }
-    }
-  }
-}
-*/
 
 
 void TFTSplash::display(TFT_eSPI *tft) {
@@ -1169,10 +862,23 @@ int16_t TFTCoolantGauge::getNeedleAngle(float value) {
 }
 
 // in Arduino.h #define DEG_TO_RAD 0.0174532925
+#define PLT_BLACK 0
+#define PLT_ORANGE 1
+#define PLT_TRANSPARENT 2
+#define PLT_PURPLE 5
+#define PLT_LIGHTGREY 6
+#define PLT_DARKGREY 7
+#define PLT_GREY 8
+#define PLT_BLUE 9
+#define PLT_GREEN 10
+#define PLT_RED 12
+#define PLT_YELLOW 14
+#define PLT_WHITE 15
+
 
 void TFTSailing::rotatePoints(int16_t *x, int16_t *y, int8_t n, int16_t a, int16_t tx, int16_t ty) {
-  float sinA = sin(a*DEG_TO_RAD);
-  float cosA = cos(a*DEG_TO_RAD);
+  float sinA = sin(-a*DEG_TO_RAD);
+  float cosA = cos(-a*DEG_TO_RAD);
   for (int i = 0; i < n; i++) {
     float rx = x[i]*cosA - y[i]*sinA;
     float ry = y[i]*cosA + x[i]*sinA;
@@ -1185,13 +891,13 @@ void TFTSailing::drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8
   int16_t tx[4];
   int16_t ty[4];
   tx[0] =  0;
-  tx[1] = 10;
-  tx[2] = -10;
+  tx[1] = 8;
+  tx[2] = -8;
   tx[3] = 0;
   ty[0] = -inner_r;
-  ty[1] = 15-inner_r;
-  ty[2] = 15-inner_r;
-  ty[3] = 20-inner_r;
+  ty[1] = 18-inner_r;
+  ty[2] = 18-inner_r;
+  ty[3] = 25-inner_r;
   rotatePoints(tx,ty,4,a, cx, cy);
   dial->fillTriangle(
     tx[0],ty[0],
@@ -1206,10 +912,10 @@ void TFTSailing::drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8
     pallet_idx
   );
 
-  tx[0] = 0; ty[0] = -inner_r+20;
+  tx[0] = 0; ty[0] = -inner_r+25;
   rotatePoints(tx,ty,1,a, cy, cy);
   tx[1] = tx[0]; ty[1] = ty[0];  
-  int16_t hlen = ((uw*47)/100)/10;
+  int16_t hlen = ((uw*47)/100)/MAX_WIND_HISTORY;
   for(int i = 0; i < nah; i++) {
     tx[0] = 0; ty[0] = -inner_r+(i+1)*hlen;
     rotatePoints(tx, ty, 1, ah[i], cy, cy);
@@ -1217,7 +923,6 @@ void TFTSailing::drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8
     tx[1] = tx[0];
     ty[1] = ty[0];
   }  
-
 }
 
 void TFTSailing::drawSector(TFT_eSprite *dial, int16_t a, int16_t cx, int16_t cy, int8_t pallet_idx) {
@@ -1239,10 +944,10 @@ void TFTSailing::drawSector(TFT_eSprite *dial, int16_t a, int16_t cx, int16_t cy
 
 
 
-void TFTSailing::drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy, int8_t fill, int8_t outline) {
+void TFTSailing::drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy) {
 #define BOAT_HEIGHT 78
 #define BOAT_SEG_SPACE 7
-  int16_t ys = cy-BOAT_HEIGHT/2;
+  int16_t ys = cy+BOAT_HEIGHT/2;
   // total height = 77
   // 7 pixel spacing
   uint8_t segwidth[12] = {
@@ -1263,17 +968,17 @@ void TFTSailing::drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy, int8_t fill
   // fill the shape by drawing horizontal lines, which are fast,
   // using widths interpolated from measurements every 7 pixels.
   // segwidth is half width to ensure center line remains straight.
-  for (int16_t ypx = 1; y < BOAT_HEIGHT; y++ ) {
+  for (int16_t ypx = 1; ypx < BOAT_HEIGHT; ypx++ ) {
     int16_t yi = ypx/BOAT_SEG_SPACE;
-    int16_t xw = ((segwidth[yi+1]-segwidth[yi])*(ypx-yi*BOAT_SEG_SPACE))/BOAT_SEG_SPACE;
-    dial->drawFastHLine(cx-xw, ys+ypx, xw*2, fill);      
+    int16_t xw = segwidth[yi]+(((segwidth[yi+1]-segwidth[yi])*(ypx-yi*BOAT_SEG_SPACE))/BOAT_SEG_SPACE);
+    dial->drawFastHLine(cx-xw, ys-ypx, xw*2, PLT_BLACK);      
   }
 
   // draw the outline using lines.
-  dial->drawFastHLine(cx-segwidth[0], ys, segwidth[0]*2, outline);
+  dial->drawFastHLine(cx-segwidth[0], ys, segwidth[0]*2, PLT_LIGHTGREY);
   for (int i = 1; i < 12; i++) {
-    dial->drawLine(cx-segwidth[i-1],ys+BOAT_SEG_SPACE*(i-1),cx-segwidth[i],ys+BOAT_SEG_SPACE*(i), outline);
-    dial->drawLine(cx+segwidth[i-1],ys+BOAT_SEG_SPACE*(i-1),cx+segwidth[i],ys+BOAT_SEG_SPACE*(i), outline);
+    dial->drawLine(cx-segwidth[i-1],ys-BOAT_SEG_SPACE*(i-1),cx-segwidth[i],ys-BOAT_SEG_SPACE*(i), PLT_LIGHTGREY);
+    dial->drawLine(cx+segwidth[i-1],ys-BOAT_SEG_SPACE*(i-1),cx+segwidth[i],ys-BOAT_SEG_SPACE*(i), PLT_LIGHTGREY);
   }
 }
 
@@ -1289,38 +994,30 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     int sh  // sprite height
     ) {
     TFT_eSprite dial = TFT_eSprite(tft);
-    dial.setColorDepth(4);
     uint16_t palette[16];
-#define PLT_BLACK 0
-#define PLT_ORANGE 1
-#define PLT_PURPLE 5
-#define PLT_DARKGREY 7
-#define PLT_GREY 8
-#define PLT_BLUE 9
-#define PLT_GREEN 10
-#define PLT_RED 12
-#define PLT_YELLOW 14
-#define PLT_WHITE 15
 
+    // select custom colors using http://www.barth-dev.de/online/rgb565-color-picker/
     palette[PLT_BLACK]  = TFT_BLACK;
-    palette[PLT_ORANGE]  = TFT_ORANGE;
-    palette[2]  = TFT_DARKGREEN;
+    palette[PLT_ORANGE]  = 0xDAA3; //TFT_ORANGE;
+    palette[PLT_TRANSPARENT]  = TFT_GREEN;
     palette[3]  = TFT_DARKCYAN;
     palette[4]  = TFT_MAROON;
-    palette[PLT_PURPLE]  = TFT_PURPLE;
-    palette[6]  = TFT_OLIVE;
+    palette[PLT_PURPLE]  = 0x780D; //TFT_PURPLE;
+    palette[PLT_LIGHTGREY]  = 0x632C; // TFT_LIGHTGREY;
     palette[PLT_DARKGREY]  = TFT_DARKGREY;
     palette[PLT_GREY]  = TFT_GREY;
-    palette[PLT_BLUE]  = TFT_BLUE;
-    palette[PLT_GREEN] = TFT_GREEN;
+    palette[PLT_BLUE]  = 0x2CF9; // TFT_BLUE;
+    palette[PLT_GREEN] = 0x0566; //TFT_GREEN;
     palette[11] = TFT_CYAN;
-    palette[PLT_RED] = TFT_RED;
+    palette[PLT_RED] = 0xD802; //TFT_RED;
     palette[13] = TFT_NAVY;
-    palette[PLT_YELLOW] = TFT_YELLOW;
+    palette[PLT_YELLOW] = 0xDE47; //TFT_YELLOW;
     palette[PLT_WHITE] = TFT_WHITE; 
     dial.setColorDepth(4);
     dial.createSprite(sw, sh); // 320*320/2, might be a problem, so may have to call this multiple times
     dial.createPalette(palette);
+    dial.fillSprite(PLT_TRANSPARENT);
+
 
 
 
@@ -1328,12 +1025,17 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     // use dial origin as drawing origin.
     int16_t cx = uw/2-sx;
     int16_t cy = uh/2-sy;
-    int16_t tx[5];
-    int16_t ty[5];
 
+
+
+
+    int16_t tx[8];
+    int16_t ty[8];
+
+    dial.fillCircle(cx, cy, outer_r, PLT_BLACK);
     dial.drawCircle(cx, cy, outer_r, PLT_GREY);
     dial.drawCircle(cx, cy, inner_r, PLT_GREY);
-    dial.drawCircle(cx, cy, uw/6, PLT_GREY);
+    dial.drawCircle(cx, cy, uw/5, PLT_GREY);
 
     // draw compass dial rotated for heading.
     char deg[4];
@@ -1347,8 +1049,8 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
         tx[0] = 0; 
         tx[1] = 0; 
         tx[2] = 0; 
-        tx[3] = 5; 
-        tx[4] = -5;
+        tx[3] = 12; 
+        tx[4] = -12;
         ty[0] = -txt_r;
         ty[1] = -outer_r;
         ty[2] = -inner_r;
@@ -1366,12 +1068,12 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
         dial.fillTriangle(
           tx[2], ty[2],
           tx[3], ty[3],
-          ty[4], ty[4],
+          tx[4], ty[4],
             PLT_DARKGREY
           );
         // add dots
-        dial.fillCircle(tx[1],ty[1],5,PLT_WHITE);
-        dial.fillCircle(tx[2],ty[2],5,PLT_WHITE);
+        dial.fillCircle(tx[1],ty[1],2,PLT_GREY);
+        dial.fillCircle(tx[2],ty[2],2,PLT_GREY);
       } else if ( i%30 == 0 ) {
         tx[0] = 0;
         ty[0] = -txt_r;
@@ -1383,29 +1085,35 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
         tx[0] = 0;
         ty[0] = -txt_r;
         rotatePoints(tx,ty,1,(hdg-i), cx, cy);
-        dial.fillCircle(tx[0],ty[0],5,PLT_WHITE);
+        dial.fillCircle(tx[0],ty[0],2,PLT_GREY);
       }
     } 
 
     // draw heading rectangle, allways at the top.
-    dial.fillRoundRect(cx-15,0,15,10,4,PLT_WHITE);
+    int16_t rectd = (outer_r-inner_r)-4;
+    dial.drawRoundRect(cx-rectd,0,2*rectd,rectd,4,PLT_LIGHTGREY);
+    dial.fillRoundRect(cx-rectd+1,1,(2*rectd)-2,rectd-2,4,PLT_BLACK);
     dial.setTextColor(PLT_WHITE);
     dial.setTextDatum(MC_DATUM);
-    itoa(hdg,deg,10);
-    dial.drawString(deg, cx,5, 2);
+    //itoa(hdg,deg,10);
+    deg[0] = ((int8_t)((hdg%1000)/100))+'0';
+    deg[1] = ((int8_t)((hdg%100)/10))+'0';
+    deg[2] = ((int8_t)(hdg%10))+'0';
+    deg[3] = '\0';
+    dial.drawString(deg, cx,(rectd/2)+2, 4);
 
+    // port and starboard track
+    drawSector(&dial, hdg-portLL, cx, cy, PLT_RED); 
+    drawSector(&dial, hdg-stbdLL, cx, cy, PLT_GREEN);
 
     // wind pointers
     drawWindpointer(&dial, twa, twah, ntwah, cx, cy, PLT_RED);
     drawWindpointer(&dial, awa, awah, nawah, cx, cy, PLT_GREEN);
 
-    // port and starboard track
-    drawSector(&dial, hdg-portLL, cx, cy, PLT_RED); 
-    drawSector(&dial, hdg-stbdLL, cx, cy, PLT_RED);
 
     // orange pointer
-    tx[0] = -5;
-    tx[1] = 5;
+    tx[0] = -7;
+    tx[1] = 7;
     tx[2] = 0;
     ty[0] = (-txt_r-outer_r)/2;
     ty[1] = (-txt_r-outer_r)/2;
@@ -1420,10 +1128,10 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     // yellow pointer
     tx[0] = 0;
     tx[1] = 0;
-    ty[0] = -inner_r+10;
+    ty[0] = -inner_r+15;
     ty[1] = -inner_r;
     rotatePoints(tx,ty,2, yellowPointerAngle, cy, cy);
-    dial.fillCircle(tx[0], ty[0], 8, PLT_YELLOW);
+    dial.fillCircle(tx[0], ty[0], 7, PLT_YELLOW);
     dial.drawLine(tx[0], ty[0], tx[1], ty[1], PLT_YELLOW);
 
     // purple pointer
@@ -1441,38 +1149,114 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
       tx[1], ty[1],
       tx[2], ty[2],
       PLT_PURPLE);
-    dial.fillCircle(tx[3], ty[3], 3, PLT_PURPLE);
+    dial.fillCircle(tx[3], ty[3], 2, PLT_PURPLE);
 
-    drawBoat(&dial, cx, cy, PLT_BLACK, PLT_GREY);
+    drawBoat(&dial, cx, cy);
 
-    // current
+    // current arrow
+    /*
+     point numbering
+            0
+          13 42
+           567
+
+    */
     tx[0] = 0;
-    tx[1] = -3;
-    tx[2] = 3;
-    tx[3] = 0;
-    tx[4] = 0;
-    ty[0] = -10;
-    ty[1] = -2;
-    ty[2] = -2;
-    ty[3] = -2;
-    ty[4] = -10;
-    rotatePoints(tx,ty,5, currentAngle, cy, cy);
+    tx[1] = -7;
+    tx[2] = 7;
+
+    tx[3] = -3;
+    tx[4] = 3;
+
+    tx[5] = -4;
+    tx[6] = 0;
+    tx[7] = 4;
+    
+    ty[0] = -20;
+    ty[1] = -5;
+    ty[2] = -5;
+
+    ty[3] = -5;
+    ty[4] = -5;
+    ty[5] = 15;
+    ty[6] = 15;
+    ty[7] = 15;
+    rotatePoints(tx,ty,8, currentAngle, cy, cy);
     dial.fillTriangle(
       tx[0], ty[0],
       tx[1], ty[1],
       tx[2], ty[2],
       PLT_BLUE);
-    dial.drawWedgeLine(
-      tx[3], ty[3],
-      tx[4], ty[4],
-      6, 7,
-      PLT_BLUE
-      ); 
 
-    dial.pushSprite(x+sx,y+sy);    
+    dial.fillTriangle(
+      tx[5], ty[5],
+      tx[3], ty[3],
+      tx[6], ty[6],
+      PLT_BLUE);
+    dial.fillTriangle(
+      tx[3], ty[3],
+      tx[6], ty[6],
+      tx[4], ty[4],
+      PLT_BLUE);
+    dial.fillTriangle(
+      tx[6], ty[6],
+      tx[4], ty[4],
+      tx[7], ty[7],
+      PLT_BLUE);
+    
+    
+    dial.pushSprite(x+sx,y+sy, PLT_TRANSPARENT);    
 }
+
+
+
 
 void TFTSailing::display(TFT_eSPI *tft, bool firstPaint) {
-    drawDial(tft, 0,0,uh,uw);  // may need to iterate over the dial to reduce memory requirements.
+  if ( firstPaint ) {
+    tft->fillScreen(PLT_BLACK);    
+  }
+  drawDial(tft, 0,0,uw,uh);  // may need to iterate over the dial to reduce memory requirements.
 }
+
+
+
+
+void TFTInfoBlock::display(TFT_eSPI *tft, const char *line2, const char *line3, bool firstPaint) {
+  TFT_eSprite block = TFT_eSprite(tft);
+  block.setColorDepth(1);
+  block.createSprite(uw, uh); // 320*320/2, might be a problem, so may have to call this multiple times
+  block.fillSprite(TFT_BLACK);
+  block.setTextColor(TFT_WHITE);
+  int16_t lineHeight = 20;
+  switch(alignment) {
+    case TFTInfoBlock::topRight:
+      block.setTextDatum(TR_DATUM);
+      block.drawString(title, uw, 0,  4);
+      block.drawString(line2, uw, lineHeight, 4);
+      block.drawString(line3, uw, lineHeight*2, 4);
+    break;
+    case TFTInfoBlock::bottomLeft:
+      block.setTextDatum(BL_DATUM);
+      block.drawString(title, 0, uh, 4);
+      block.drawString(line2, 0, uh-(lineHeight*2), 4);
+      block.drawString(line3, 0, uh-(lineHeight), 4);
+    break;
+    case TFTInfoBlock::bottomRight:
+      block.setTextDatum(BR_DATUM);
+      block.drawString(title, uw, uh, 4);
+      block.drawString(line2, uw, uh-(lineHeight*2), 4);
+      block.drawString(line3,  uw, uh-lineHeight, 4);
+    break;
+    case TFTInfoBlock::topLeft:
+    default:
+      block.setTextDatum(TL_DATUM);
+      block.drawString(title, 0,0, 4);
+      block.drawString(line2, 0,lineHeight, 4);
+      block.drawString(line3, 0,lineHeight*2, 4);
+  }
+  tft->setBitmapColor(colour, PLT_BLACK);
+  block.pushSprite(x,y, PLT_BLACK);
+}
+
+
 

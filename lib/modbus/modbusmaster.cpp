@@ -344,11 +344,13 @@ void ModbusMaster::readResponseAsync() {
         if ( frameLength >= 2 ) {
             // start evaluating 
             if ( buffer[0] != recieveFromUnit ) {
-                Serial.print("Wrong unit responded, expected:");
-                Serial.print(recieveFromUnit);
-                Serial.print(" got:");
-                Serial.println(buffer[0]);
-                debugDumpFrame(1);
+                if ( diagnosticsEnabled ){
+                    Serial.print("Wrong unit responded, expected:");
+                    Serial.print(recieveFromUnit);
+                    Serial.print(" got:");
+                    Serial.println(buffer[0]);                
+                    debugDumpFrame(1);
+                }
                 // dont read any more
                 errors++;
                 state =  MODBUS_WRONGUNIT;
@@ -356,20 +358,24 @@ void ModbusMaster::readResponseAsync() {
                 return;
             } else if ((buffer[1] & 0x7f) != readFunction ) {
                 // response had wrong function code.
-                Serial.println("Wrong function response, expected:");
-                Serial.print(readFunction);
-                Serial.print(" got:");
-                Serial.println(buffer[1]);
-                debugDumpFrame(2);
+                if ( diagnosticsEnabled ){
+                    Serial.println("Wrong function response, expected:");
+                    Serial.print(readFunction);
+                    Serial.print(" got:");
+                    Serial.println(buffer[1]);
+                    debugDumpFrame(2);
+                }
                 errors++;
                 state =  MODBUS_WRONGFUNCTION;
                 modbusCallback->onResponse(state);
                 return;
             } else if ( frameLength >= 5 && (buffer[1] & 0x80) == 0x80 ) {
                 checkCrc(3);
-                Serial.print("Exception: 0x");
-                Serial.println(buffer[0]);
-                debugDumpFrame(3);
+                if (diagnosticsEnabled ) {
+                    Serial.print("Exception: 0x");
+                    Serial.println(buffer[0]);
+                    debugDumpFrame(3);                    
+                }
                 errors++;
                 state = MODBUS_EXCEPTION;
                 modbusCallback->onResponse(state);
@@ -385,8 +391,10 @@ void ModbusMaster::readResponseAsync() {
                 // if the buffer has > than lenToRead still assume lenToRead is the CRC
                 if ( !checkCrc(lenToRead-2) ) {
                     errors++;
-                    Serial.println("CRC fail count len");
-                    debugDumpFrame(lenToRead);
+                    if ( diagnosticsEnabled ) {
+                        Serial.println("CRC fail count len");
+                        debugDumpFrame(lenToRead);                        
+                    }
                     state = MODBUS_CRCFAIL;
                     modbusCallback->onResponse(state);
                 } else {
@@ -531,7 +539,7 @@ bool ModbusMaster::checkCrc(uint8_t p) {
     uint16_t crcv = crc16(&buffer[0],p);
     uint16_t crcr = (0xff00&(buffer[p]<<8)) | (0xff&buffer[p+1]);
     if (crcv != crcr ) {
-        Serial.println("Warning: CRC Failed");
+        //Serial.println("Warning: CRC Failed");
         return false;
     }
     return true;

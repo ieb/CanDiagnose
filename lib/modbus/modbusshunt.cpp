@@ -106,27 +106,33 @@ void ModbusShunt::onResponse(int res) {
 |  1004   | int16 | counter | modbus errors sent |
 |  1005   | int16 | counter | modbus buffer overflow |
 */
-                Serial.print(" stats frames:{recieved:");
-                Serial.print(modbusMaster.getInt16Response(0));
-                Serial.print(" sent:");
-                Serial.print(modbusMaster.getInt16Response(1));
-                Serial.print(" errors recieved:");
-                Serial.print(modbusMaster.getInt16Response(2));
-                Serial.print(" ignored:");
-                Serial.print(modbusMaster.getInt16Response(3));
-                Serial.print(" errors sent:");
-                Serial.print(modbusMaster.getInt16Response(4));
-                Serial.print(" buffer overflow:");
-                Serial.print(modbusMaster.getInt16Response(5));
-                Serial.println("}");
+                if ( diagnosticsEnabled ) {
+                    Serial.print(" stats frames:{recieved:");
+                    Serial.print(modbusMaster.getInt16Response(0));
+                    Serial.print(" sent:");
+                    Serial.print(modbusMaster.getInt16Response(1));
+                    Serial.print(" errors recieved:");
+                    Serial.print(modbusMaster.getInt16Response(2));
+                    Serial.print(" ignored:");
+                    Serial.print(modbusMaster.getInt16Response(3));
+                    Serial.print(" errors sent:");
+                    Serial.print(modbusMaster.getInt16Response(4));
+                    Serial.print(" buffer overflow:");
+                    Serial.print(modbusMaster.getInt16Response(5));
+                    Serial.println("}");
+                }
 
                 res = modbusMaster.readHoldingAsync(unit,0,8, this);
                 if ( res == MODBUS_SENT_OK ) {
                     readCommand = READING_STATS2;
                 } else if (res == MODBUS_BUSY ) {
-                    Serial.println("Failed to query stats2, async operation in progress");
+                    if ( diagnosticsEnabled ) {
+                        Serial.println("Failed to query stats2, async operation in progress");
+                    }
                 } else {
-                    Serial.println("Failed to query holding");
+                    if ( diagnosticsEnabled ) {
+                        Serial.println("Failed to query holding");
+                    }
                 }
                 break;
             case READING_STATS2:
@@ -142,50 +148,60 @@ void ModbusShunt::onResponse(int res) {
 | 7 | int16 | 0.001x | R/W | Temperature probe 2 scale, default 1000 eg 1x |
 
 */
-                Serial.print(" serial number:");
-                Serial.print(modbusMaster.getInt16Response(0));
-                Serial.print(" device address:");
-                Serial.print(modbusMaster.getInt16Response(1));
-                Serial.print(" Shunt fully scale:");
-                Serial.print(modbusMaster.getInt16Response(2));
-                Serial.print("A Shunt full scale v:");
-                Serial.print(modbusMaster.getInt16Response(3));
-                Serial.print("mV temperature offset:");
-                Serial.print(0.1*modbusMaster.getInt16Response(4));
-                Serial.print("C temperature scale:");
-                Serial.print(0.001*modbusMaster.getInt16Response(5));
-                Serial.print(" temperature opt offset:");
-                Serial.print(0.1*modbusMaster.getInt16Response(6));
-                Serial.print("C temperature opt scale:");
-                Serial.println(0.001*modbusMaster.getInt16Response(7));
+                if ( diagnosticsEnabled ) {
+                    Serial.print(" serial number:");
+                    Serial.print(modbusMaster.getInt16Response(0));
+                    Serial.print(" device address:");
+                    Serial.print(modbusMaster.getInt16Response(1));
+                    Serial.print(" Shunt fully scale:");
+                    Serial.print(modbusMaster.getInt16Response(2));
+                    Serial.print("A Shunt full scale v:");
+                    Serial.print(modbusMaster.getInt16Response(3));
+                    Serial.print("mV temperature offset:");
+                    Serial.print(0.1*modbusMaster.getInt16Response(4));
+                    Serial.print("C temperature scale:");
+                    Serial.print(0.001*modbusMaster.getInt16Response(5));
+                    Serial.print(" temperature opt offset:");
+                    Serial.print(0.1*modbusMaster.getInt16Response(6));
+                    Serial.print("C temperature opt scale:");
+                    Serial.println(0.001*modbusMaster.getInt16Response(7));
+                }
                 readCommand = READING_NONE;
                 break;
         }
     } else {
-        Serial.print("Modbus ");
-        Serial.print(name);
-        Serial.print(" unit:");
-        Serial.print(unit);
-        Serial.print(" res:");
-        Serial.print(res);
-        Serial.println(" Failed to query measurements");        
+        //Serial.print("Modbus ");
+        //Serial.print(name);
+        //Serial.print(" unit:");
+        //Serial.print(unit);
+        //Serial.print(" res:");
+        //Serial.print(res);
+        //Serial.println(" Failed to query measurements");        
     }
 }
 
 
 void ModbusShunt::readStats() {
     if ( unit > 0) {
-        Serial.print("Modbus ");
-        Serial.print(name);
-        Serial.print(" unit:");
-        Serial.println(unit);
+        if ( diagnosticsEnabled ) {
+             /* code */
+            Serial.print("Modbus ");
+            Serial.print(name);
+            Serial.print(" unit:");
+            Serial.println(unit);
+
+        }
         int8_t res = modbusMaster.readInputAsync(unit,1000,6, this);
         if ( res == MODBUS_SENT_OK ) {
             readCommand = READING_STATS1;
         } else if (res == MODBUS_BUSY ) {
-            Serial.println("Failed to query stats, async operation in progress");
+            if ( diagnosticsEnabled ) {
+                Serial.println("Failed to query stats, async operation in progress");
+            }
         } else {
-            Serial.println("Failed to query stats");
+            if ( diagnosticsEnabled ) {
+                Serial.println("Failed to query stats");
+            }
         }
     }
 }
