@@ -60,10 +60,10 @@ public:
 private:
 	const char *br, *bl;
 	int x, y, width, height, precision;
-	float previousValue, maxValue, minValue;
+	float maxValue, minValue;
 	char positive, negative;
+	uint16_t checksum = 0;
 	void formatValue(float value, char *buffer);
-	float adjustValue(float v, float p);
 
 };
 
@@ -80,7 +80,7 @@ public:
 	void update(TFT_eSPI *tft, float lat, float lon,  bool firstPaint);
 private:
 	int x, y, width, height;
-	float previousLat, previousLon;
+	uint16_t checksum = 0;
 	bool updateString(TFT_eSPI *tft,  int x, int y, const char *prev, const char* current, bool force, bool updated);
 	void formatMinDec( float v, char *buffer, bool isLatitude);
 	void formatDeg( float v, char *buffer, bool isLatitude);
@@ -136,6 +136,20 @@ private:
 #define NEEDLE_WIDTH   5  // Width of needle - make it an odd number
 #define NEEDLE_RADIUS 84  // Radius at tip
 
+typedef struct _TachometerValues {
+  float rpm;
+  float coolantTemperature;
+  float fuel;
+  float speed;
+  float engineBatteryVoltage;
+  float alternatorVoltage;
+  float chargeCurrent;
+  float serviceBatteryVoltage;
+  uint16_t engineHours;
+  uint16_t status1;
+  uint16_t status2;
+} TachometerValues;
+
 class TFTTachometer : public TFTDial {
 public:
 	TFTTachometer(int16_t x, int16_t y): TFTDial{x,y, 310, 310, 
@@ -151,7 +165,7 @@ public:
 	};
 	void loadJpg() override;
 	int16_t getNeedleAngle(float value) override;
-	void updateLCD(TFT_eSPI *tft, float *values,  bool firstPaint);
+	void updateLCD(TFT_eSPI *tft, TachometerValues *values,  bool firstPaint);
 private:
 	unsigned long lastLCDUpdate = 0;
 	unsigned long lastLCDChange = 0;
@@ -209,6 +223,25 @@ private:
 };
 
 
+
+typedef struct _SailingScreenValues {
+	int16_t hdg;
+	int16_t twa;
+	int16_t awa;
+	int16_t portLL;
+	int16_t stbdLL;
+	int16_t orangePointerAngle;
+	int16_t yellowPointerAngle;
+	int16_t purplePointerAngle;
+	int16_t currentDirection;
+	float aws;
+	float vmg;
+	float polar;
+	float tws;
+	float currentSpeed;
+} SailingScreenValues;
+
+
 class TFTSailing {
 public:
 
@@ -221,24 +254,12 @@ public:
   		inner_r = (uw*40)/100;
   		txt_r = (uw*45)/100;
 	};
- 	void display(TFT_eSPI *tft, bool firstPaint);
+ 	void display(TFT_eSPI *tft, SailingScreenValues * values, bool firstPaint);
 
  	#define MAX_WIND_HISTORY 20
 	// data
 
- 	int16_t hdg = 0;
-	int16_t twa = 60;
-	int16_t awa = 45;
-	int16_t twah[MAX_WIND_HISTORY];
-	int16_t awah[MAX_WIND_HISTORY];
-	uint8_t ntwah = 0;
-	uint8_t nawah = 0;;
-	int16_t portLL = -30;
-	int16_t stbdLL = 30;
-	int16_t orangePointerAngle = 120;
-	int16_t yellowPointerAngle = 210;
-	int16_t purplePointerAngle = 270;
-	int16_t currentAngle = 225;
+
 
 private:
 	int16_t x; // top left
@@ -248,38 +269,50 @@ private:
 	int16_t outer_r;
 	int16_t inner_r;
 	int16_t txt_r;
+	int16_t twah[MAX_WIND_HISTORY];
+	int16_t awah[MAX_WIND_HISTORY];
+	uint8_t ntwah = 0;
+	uint8_t nawah = 0;;
+	unsigned long lastUpdate = 0;
 	void rotatePoints(int16_t *x, int16_t *y, int8_t n, int16_t a, int16_t tx, int16_t ty);
 	void drawWindpointer(TFT_eSprite *dial, int16_t a, int16_t *ah, int8_t nah, int16_t cx, int16_t cy, int8_t pallet_idx);
 	void drawSector(TFT_eSprite *dial, int16_t a, int16_t cx, int16_t cy, int8_t pallet_idx);
 	void drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy);
-	void drawDial(TFT_eSPI *tft, int sx, int sy, int sw, int sh);
+	void drawDial(TFT_eSPI *tft, SailingScreenValues * values, int sx, int sy, int sw, int sh);
 };
 
-class TFTInfoBlock {
+
+class TFTTrueWindBlock {
 public:
-	TFTInfoBlock(int16_t x, int16_t y, int16_t uw, int16_t uh, uint16_t colour, const char * title, uint8_t alignment=TFTInfoBlock::topLeft) {
-		this->x = x;
-		this->y = y;
-		this->uw = uw;
-		this->uh = uh;
-		this->title = title;
-		this->alignment = alignment;
-		this->colour = colour;
-	};
- 	void display(TFT_eSPI *tft, const char *line2, const char *line3, bool firstPaint);
- 	static const uint8_t topLeft = 0;
- 	static const uint8_t topRight = 1;
- 	static const uint8_t bottomLeft = 2;
- 	static const uint8_t bottomRight = 3;
+	TFTTrueWindBlock() {};
+	void display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint);
 private:
-#define MAX_INFO_LINE_LENGTH 10
-	int16_t x; // top left
-	int16_t y; // top left
-	int16_t uw; // widget width
-	int16_t uh; // widget height
-	uint16_t colour;
-	const char *title;
-	uint8_t alignment = 0;
-	char lastLine1[MAX_INFO_LINE_LENGTH];
-	char lastLine2[MAX_INFO_LINE_LENGTH];
+	uint16_t checksum = 0;
 };
+
+class TFTVMGBlock {
+public:
+	TFTVMGBlock() {};
+	void display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint);
+private:
+	uint16_t checksum = 0;
+};
+
+class TFTApparentWindBlock {
+public:
+	TFTApparentWindBlock() {};
+	void display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint);
+private:
+	uint16_t checksum = 0;
+};
+
+class TFTCurrentBlock {
+public:
+	TFTCurrentBlock() {};
+	void display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint);
+private:
+	uint16_t checksum = 0;
+};
+
+
+

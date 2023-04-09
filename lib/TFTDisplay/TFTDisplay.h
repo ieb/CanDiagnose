@@ -42,13 +42,20 @@ class TFTDisplayPage {
 
 };
 
+
 class TFTEngineDisplayPage : public TFTDisplayPage {	
 	public:
-		TFTEngineDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
+		TFTEngineDisplayPage(TFT_eSPI &tft, N2KCollector &n2kCollector, Modbus &modbus):  
+			TFTDisplayPage{tft},
+			n2kCollector{n2kCollector},
+            modbus{modbus}{
 		};
 		~TFTEngineDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
+        N2KCollector &n2kCollector;
+        Modbus &modbus;
+#ifdef DEMO_MODE
 		int d = 0;
 		int rpm = 0; // dummy value
 		int rpmadd = 1000;
@@ -56,6 +63,7 @@ class TFTEngineDisplayPage : public TFTDisplayPage {
 		int fuelLevelAdd = 12;
 		int coolantTemperature = 20;
 		int coolantTemperatureAdd = 12;
+#endif
 		unsigned long lastUpdate = 0;
 		TFTTachometer tachometer = TFTTachometer(10,10);
 		TFTFuelGauge fuel = TFTFuelGauge(480-130-10,10);
@@ -70,18 +78,27 @@ class TFTLogoDisplayPage : public TFTDisplayPage {
 		void update(bool paintScreen) override;
 		void update(const char * message, int lineNo) override;
 	private:
+#ifdef DEMO_MODE
 		int d = 0; // dummy value
+#endif
 		TFTSplash splash = TFTSplash("/LunaLogo480_320.jpg");
 };
 
 
 class TFTMaxiDisplayPage : public TFTDisplayPage {	
 	public:
-		TFTMaxiDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
+		TFTMaxiDisplayPage(TFT_eSPI &tft, N2KCollector &n2kCollector, Modbus &modbus, WebServer &webServer):  
+			TFTDisplayPage{tft},
+			n2kCollector{n2kCollector},
+            modbus{modbus},
+            webServer{webServer} {
 		};
 		~TFTMaxiDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
+        N2KCollector &n2kCollector;
+        Modbus &modbus;
+        WebServer &webServer;
 		uint16_t currentValue = 0; 
 
 };
@@ -90,17 +107,21 @@ class TFTMaxiDisplayPage : public TFTDisplayPage {
 
 class TFTSailingDisplayPage : public TFTDisplayPage {	
 	public:
-		TFTSailingDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
+		TFTSailingDisplayPage(TFT_eSPI &tft, N2KCollector &n2kCollector):  
+			TFTDisplayPage{tft},
+			n2kCollector{n2kCollector} {
 		};
 		~TFTSailingDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
+        N2KCollector &n2kCollector;
 		unsigned long lastUpdate = 0;
+		float d = 0;
 		TFTSailing sailing = TFTSailing(480/2-320/2,0,320,320);
-		TFTInfoBlock trueWind =     TFTInfoBlock(        5,        5, 200, 80,    0xD802, "True Wind", TFTInfoBlock::topLeft);
-		TFTInfoBlock apparentWind = TFTInfoBlock(480-5-200,        5, 200, 80,    0x0566,  "App Wind", TFTInfoBlock::topRight);
-		TFTInfoBlock polar =        TFTInfoBlock(        5, 320-5-80, 200, 80, TFT_WHITE, "VMG/Polar", TFTInfoBlock::bottomLeft);
-		TFTInfoBlock current =      TFTInfoBlock(480-5-200, 320-5-80, 200, 80,    0x2CF9,   "Current", TFTInfoBlock::bottomRight);
+		TFTTrueWindBlock trueWind = TFTTrueWindBlock();
+		TFTApparentWindBlock apparentWind = TFTApparentWindBlock();
+		TFTVMGBlock polar = TFTVMGBlock();
+		TFTCurrentBlock current = TFTCurrentBlock();
 };
 
 #define GRID_GAP 4
@@ -112,12 +133,19 @@ class TFTSailingDisplayPage : public TFTDisplayPage {
 
 class TFTGridBoxesDisplayPage : public TFTDisplayPage {	
 	public:
-		TFTGridBoxesDisplayPage(TFT_eSPI &tft):  TFTDisplayPage{tft} {
+		TFTGridBoxesDisplayPage(TFT_eSPI &tft, N2KCollector &n2kCollector, Modbus &modbus, WebServer &webServer):  
+			TFTDisplayPage{tft},
+			n2kCollector{n2kCollector},
+            modbus{modbus},
+            webServer{webServer} {
 
 		};
 		~TFTGridBoxesDisplayPage() override = default;
 		void update(bool paintScreen) override;
 	private:
+        N2KCollector &n2kCollector;
+        Modbus &modbus;
+        WebServer &webServer;
 		unsigned long lastUpdate = 0;
 		int d = 0; // dummy value
 		TFTTextBox awa = TFTTextBox(GRID_4_SPACE_X(0), GRID_4_SPACE_Y(0), GRID_4_WIDTH, GRID_4_HEIGHT, GRID_GAP, 0, -180, 180,  "AWA", "deg", 'P', 'S');

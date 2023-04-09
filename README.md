@@ -144,3 +144,29 @@ The display sleeps after 60s of inactivity to reduce power drain, but turning of
 
 In most cases attempts to update the screen, on screen causes flickering so double buffering of updates is done using sprits with DMA transfers from the sprite to the screen. Images for screen are stored in jpg on flash, consuming about 30KB per screen.
 
+Drawing to sprites also works in 1bpp, 4bpp or 16bpp.
+
+## TFT case
+
+3d printed case, with 2 touch sensors and round shielded cable, as ribbon will emit too much interference to nearby devices. 
+
+Wires
+
+|| color || designation || ESP32 Pin ||
+---------------------------------------
+| Red    |  5v          | 5v           |
+| black  |  0v          | 0v           |
+| pink   |  CS          | GPIO_NUM_25  |
+| cyan   |  Reset       | GPIO_NUM_27  |
+| white  |  DC/RS       | GPIO_NUM_26  |
+| blue   |  SDI(MOSI)   | GPIO_NUM_32  |
+| green  |  SCK         | GPIO_NUM_33  |
+| grey   |  LED         | GPIO_NUM_14  |
+| Purple |  SDO(MISO)   | GPIO_NUM_35  |
+| Orange |  3.3v        | 3.3v         |
+| Brown  | Touch Lower  | GPIO_NUM_19  |
+| Yellow | Touch Top    | TBD          |
+
+Due to the additional touch pins a fresh PCB is probably needed.
+
+

@@ -103,17 +103,23 @@ void Modbus::outputJson(AsyncResponseStream *outputStream) {
     endArray();
     endJson();
 }
+
+
+//# battery,id,t,lastModified,voltage,current,temperature
+// see also csvoutput.cpp where NMEA2000 batteries are output
+// NMEA2000 and modbus are registered at different IDs so the 
+// id fields here will not clash.
 void Modbus::outputCsv(AsyncResponseStream *outputStream) {
     startBlock(outputStream);
     startRecord("battery");
-    appendField(0);
+    appendField(1);
     appendField(serviceBattery.lastModified);
     appendField(serviceBattery.voltage);
     appendField(serviceBattery.current);
     appendField(serviceBattery.temperature);
     endRecord();
     startRecord("battery");
-    appendField(1);
+    appendField(2);
     appendField(engineBattery.lastModified);
     appendField(engineBattery.voltage);
     appendField(engineBattery.current);

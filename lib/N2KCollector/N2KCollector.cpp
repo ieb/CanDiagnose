@@ -902,6 +902,43 @@ HeadingData * N2KCollector::getHeading() {
     return selected;
 };
 
+VariationData * N2KCollector::getVariation() {
+    unsigned long lm = 0;
+    VariationData *selected = NULL;
+    for (int i = 0; i < MAX_VARIATION_SOURCES; i++) {
+        if (variation[i].source != 255 && variation[i].lastModified > lm ) {
+            lm = variation[i].lastModified;
+            selected = &variation[i];
+        }
+    }
+    return selected;
+};
+
+AttitudeData * N2KCollector::getAttitude() {
+    unsigned long lm = 0;
+    AttitudeData *selected = NULL;
+    for (int i = 0; i < MAX_ATTITUDE_SOURCES; i++) {
+        if (attitude[i].source != 255 && attitude[i].lastModified > lm ) {
+            lm = attitude[i].lastModified;
+            selected = &attitude[i];
+        }
+    }
+    return selected;
+};
+
+
+WaterDepthData * N2KCollector::getWaterDepth() {
+    unsigned long lm = 0;
+    WaterDepthData *selected = NULL;
+    for (int i = 0; i < MAX_WATER_DEPTH_SOURCES; i++) {
+        if (waterDepth[i].source != 255 && waterDepth[i].lastModified > lm ) {
+            lm = waterDepth[i].lastModified;
+            selected = &waterDepth[i];
+        }
+    }
+    return selected;
+};
+
 WindData * N2KCollector::getAparentWind() {
     unsigned long lm = 0;
     WindData *selected = NULL;

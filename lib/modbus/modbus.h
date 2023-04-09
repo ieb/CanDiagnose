@@ -88,10 +88,6 @@ class ModbusMaster {
         void debugDumpFrame(uint8_t length);
         bool checkCrc(uint8_t p);
         bool checkRegisterOffset(uint8_t offset);
-
-        uint16_t crc16(const uint8_t *array, uint16_t length);
-
-
 };
 
 

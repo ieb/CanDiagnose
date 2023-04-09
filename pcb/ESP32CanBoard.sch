@@ -790,7 +790,7 @@ F 3 "" H 8600 8200 60  0001 C CNN
 	1    8600 8200
 	1    0    0    -1  
 $EndComp
-Text GLabel 7300 5600 2    60   Input ~ 0
+Text GLabel 13300 8900 2    60   Input ~ 0
 BTN
 Text GLabel 9000 8250 0    60   BiDi ~ 0
 SCL
@@ -898,21 +898,21 @@ Wire Wire Line
 $Comp
 L R R101
 U 1 1 62C15F60
-P 11500 8000
-F 0 "R101" V 11580 8000 40  0000 C CNN
-F 1 "4K7" V 11507 8001 40  0000 C CNN
-F 2 "Resistors_SMD:R_0805" V 11430 8000 30  0001 C CNN
-F 3 "" H 11500 8000 30  0000 C CNN
-	1    11500 8000
+P 13000 8400
+F 0 "R101" V 13080 8400 40  0000 C CNN
+F 1 "4K7" V 13007 8401 40  0000 C CNN
+F 2 "Resistors_SMD:R_0805" V 12930 8400 30  0001 C CNN
+F 3 "" H 13000 8400 30  0000 C CNN
+	1    13000 8400
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	11500 7750 11500 7600
 Connection ~ 11500 7600
-Text GLabel 11500 8600 3    60   Input ~ 0
+Text GLabel 13500 8500 3    60   Input ~ 0
 BTN
 Wire Wire Line
-	11500 8250 11500 8600
+	13300 8250 13300 8600
 Wire Wire Line
 	9000 8450 9200 8450
 Wire Wire Line
@@ -1071,26 +1071,26 @@ L CONN_12 P?
 U 1 1 63CF9FAE
 P 2100 6000
 F 0 "P?" V 2050 6000 60  0000 C CNN
-F 1 "CONN_12" V 2150 6000 60  0000 C CNN
+F 1 "Display" V 2150 6000 60  0000 C CNN
 F 2 "" H 2100 6000 60  0001 C CNN
 F 3 "" H 2100 6000 60  0001 C CNN
 	1    2100 6000
 	-1   0    0    1   
 $EndComp
-Text GLabel 2450 6550 2    60   Input ~ 0
+Text GLabel 2450 6350 2    60   Input ~ 0
 3v3
 $Comp
 L GND #PWR?
 U 1 1 63CFA138
-P 2450 6350
-F 0 "#PWR?" H 2450 6350 30  0001 C CNN
-F 1 "GND" H 2450 6280 30  0001 C CNN
-F 2 "" H 2450 6350 60  0001 C CNN
-F 3 "" H 2450 6350 60  0001 C CNN
-	1    2450 6350
+P 2450 6450
+F 0 "#PWR?" H 2450 6450 30  0001 C CNN
+F 1 "GND" H 2450 6380 30  0001 C CNN
+F 2 "" H 2450 6450 60  0001 C CNN
+F 3 "" H 2450 6450 60  0001 C CNN
+	1    2450 6450
 	1    0    0    -1  
 $EndComp
-Text GLabel 2450 6450 2    60   Input ~ 0
+Text GLabel 2450 6550 2    60   Input ~ 0
 5V
 Text GLabel 2450 5750 2    60   Input ~ 0
 MOSI
@@ -1106,12 +1106,82 @@ Text GLabel 2450 6150 2    60   Input ~ 0
 RST
 Text GLabel 2450 6250 2    60   Input ~ 0
 LED
-Text GLabel 2450 5450 2    60   Output ~ 0
-B1
 Text GLabel 2450 5550 2    60   Output ~ 0
-B2
-Text GLabel 3400 5000 0    60   Input ~ 0
 B1
+Text GLabel 2450 5450 2    60   Output ~ 0
+B2
 Text GLabel 3400 5200 0    60   Input ~ 0
+B1
+Text GLabel 3400 5000 0    60   Input ~ 0
+B2
+Text Notes 1650 6400 0    60   ~ 0
+Orange
+Text Notes 1650 6600 0    60   ~ 0
+Red
+Text Notes 1650 6500 0    60   ~ 0
+Black
+Text Notes 500  7950 0    60   ~ 0
+ Red    |  5v          | 5v           |\n| black  |  0v          | 0v           |\n| pink   |  CS          | GPIO_NUM_25  |\n| cyan   |  Reset       | GPIO_NUM_27  |\n| white  |  DC/RS       | GPIO_NUM_26  |\n| blue   |  SDI(MOSI)   | GPIO_NUM_32  |\n| green  |  SCK         | GPIO_NUM_33  |\n| grey   |  LED         | GPIO_NUM_14  |\n| Purple |  SDO(MISO)   | GPIO_NUM_35  |\n| Orange |  3.3v        | 3.3v         |\n| Brown  | Touch Lower  | GPIO_NUM_19  |\n| Yellow | Touch Top    | TBD          |
+Text Notes 1650 6000 0    60   ~ 0
+Pink
+Text Notes 1650 6200 0    60   ~ 0
+Cyan
+Text Notes 1650 6100 0    60   ~ 0
+White
+Text Notes 1650 5800 0    60   ~ 0
+Blue
+Text Notes 1650 5900 0    60   ~ 0
+Green
+Text Notes 1650 6300 0    60   ~ 0
+Grey
+Text Notes 1650 5700 0    60   ~ 0
+Purple
+Text Notes 1650 5600 0    60   ~ 0
+Brown
+Text Notes 1650 5500 0    60   ~ 0
+Yellow
+$Comp
+L CONN_12 P?
+U 1 1 64180578
+P 1700 8800
+F 0 "P?" V 1650 8800 60  0000 C CNN
+F 1 "Display" V 1750 8800 60  0000 C CNN
+F 2 "" H 1700 8800 60  0001 C CNN
+F 3 "" H 1700 8800 60  0001 C CNN
+	1    1700 8800
+	-1   0    0    1   
+$EndComp
+Text GLabel 2050 9350 2    60   Input ~ 0
+5V
+$Comp
+L GND #PWR?
+U 1 1 641806B2
+P 2050 9250
+F 0 "#PWR?" H 2050 9250 30  0001 C CNN
+F 1 "GND" H 2050 9180 30  0001 C CNN
+F 2 "" H 2050 9250 60  0001 C CNN
+F 3 "" H 2050 9250 60  0001 C CNN
+	1    2050 9250
+	1    0    0    -1  
+$EndComp
+Text GLabel 2050 9150 2    60   Input ~ 0
+CS
+Text GLabel 2050 9050 2    60   Input ~ 0
+RST
+Text GLabel 2050 8950 2    60   Input ~ 0
+DC
+Text GLabel 2050 8850 2    60   Input ~ 0
+MOSI
+Text GLabel 2050 8750 2    60   Input ~ 0
+SCK
+Text GLabel 2050 8650 2    60   Input ~ 0
+LED
+Text GLabel 2050 8550 2    60   Input ~ 0
+MOSI
+Text GLabel 2050 8450 2    60   Input ~ 0
+3v3
+Text GLabel 2050 8350 2    60   Output ~ 0
+B1
+Text GLabel 2050 8250 2    60   Output ~ 0
 B2
 $EndSCHEMATC

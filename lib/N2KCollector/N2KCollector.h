@@ -278,6 +278,45 @@ class LeewayData: public MessageStoreWithInstance {
 };
 
 
+/*
+ * This contains performance data derived 
+ * from other values. There is only 1 instance of this.
+ */
+class N2KCollector;
+
+class PerformanceData {
+public:
+    PerformanceData() {};
+    unsigned long lastModified = 0;
+    void update(N2KCollector *n2kCollector);
+    WindData trueWind;
+    float leeway, 
+        polarSpeed, 
+        polarSpeedRatio, 
+        polarVmg, 
+        vmg, 
+        targetTwa, 
+        targetVmg, 
+        targetStw, 
+        polarVmgRatio,
+        windDirectionTrue, 
+        windDirectionMagnetic, 
+        oppositeTrackHeadingTrue, 
+        oppositeTrackHeadingMagnetic, 
+        oppositeTrackTrue,
+        oppositeTrackMagnetic;
+private:
+    float calcPolarSpeed(float twsv, float twav, bool nmea2000Units=true);
+    void updateTWSIdx(float tws);
+    void updateTWAIdx(float twa);
+    void findIndexes(uint8_t v, const uint8_t *a, uint8_t al, int8_t *idx  );
+    float interpolateForY(float x, float xl, float xh, float yl, float yh);
+    float correctBearing(float b);
+    uint8_t lastTWSV = 0;
+    uint8_t lastTWAV = 0;
+    int8_t twaidx[2] = {0,0};
+    int8_t twsidx[2] = {0,0};
+};
 
 
 
@@ -313,6 +352,7 @@ class N2KCollector {
         LogData log[MAX_LOG_SOURCES];
         PossitionData possition[MAX_POSSITION_SOURCES];
         LeewayData leeway[MAX_LEEWAY_SOURCES];
+        PerformanceData performance;
         LogData *getLog();
 
         WindData * getWindInstance(byte instance, tN2kWindReference reference=N2kWind_Apparent);
@@ -327,9 +367,15 @@ class N2KCollector {
         PressureData * getAtmosphericPressure();
         SpeedData * getSpeed();
         HeadingData * getHeading();
+        VariationData * getVariation();
+        AttitudeData * getAttitude();
         WindData * getAparentWind();
+        WindData * getTrueWind() {
+            return &(performance.trueWind);
+        };
         DcBatteryData * getBatteryInstance(byte instance);
         FluidLevelData * getFuelLevel();
+        WaterDepthData * getWaterDepth();
 
 
 

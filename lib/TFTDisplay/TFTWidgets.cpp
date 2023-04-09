@@ -17,9 +17,11 @@
 #include <FS.h>
 #include "SPIFFS.h" 
 
-
 #include "images.h"
 
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish, uint16_t crc);
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish);
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length);
 
 
 // 
@@ -63,24 +65,6 @@ void TFTTextBox::formatValue(float value, char *buffer) {
     }
   }
 }
-float TFTTextBox::adjustValue(float v, float p) {
-  float d = v - p;
-  float inc = 1;
-  for (int i = 0; i < precision; i++) {
-    inc = inc/10;
-  }  
-  if ( d > 50*inc ) {
-    return p+49*inc;
-  } else if ( d < -50*inc ) {
-    return p-49*inc;
-  } else if ( d > inc ) {
-    return p+inc;
-  } else if ( d < -inc ) {
-    return p-inc;
-  } else {
-    return v;
-  }
-}
 
 void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {  
   tft->setTextColor(TFT_WHITE, TFT_BLACK);
@@ -93,13 +77,11 @@ void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {
   }
 
   char buffer1[10];
-  char buffer2[10];
-  float displayValue = adjustValue(value, previousValue);
+  formatValue(value, buffer1);
+  uint16_t check = Modbus_crc16((const uint8_t *)buffer1,strlen(buffer1));
 
-
-  formatValue(displayValue, buffer1);
-  formatValue(previousValue, buffer2);
-  if ( firstPaint || strcmp(buffer1, buffer2) != 0) {
+  if ( firstPaint || check != checksum ) {
+    checksum = check;    
     TFT_eSprite textSprite = TFT_eSprite(tft);
     textSprite.setColorDepth(1);
     textSprite.createSprite(width-4, height-40);
@@ -110,7 +92,6 @@ void TFTTextBox::update(TFT_eSPI *tft, float value, bool firstPaint) {
     textSprite.pushSprite(x+2, y+20);
 
   }
-  previousValue = displayValue;
 }
 
 void TFTLatLonBox::formatDeg( float v, char *buffer, bool isLatitude) {
@@ -187,10 +168,6 @@ bool TFTLatLonBox::updateString(TFT_eSPI *tft, int x, int y, const char *prev, c
 */ 
 
 void TFTLatLonBox::update(TFT_eSPI *tft, float lat, float lon, bool firstPaint) {  
-  if ( ! (firstPaint || lat != previousLat || lon != previousLon) ) {
-    // no change, dontupdate
-    return;
-  }
 
 #define degWidth    42
 #define degSymWidth 13
@@ -233,54 +210,70 @@ void TFTLatLonBox::update(TFT_eSPI *tft, float lat, float lon, bool firstPaint) 
 
   char buffer[10];
 
-
-  // setup 1 bit sprite for the whole widget.
-  // and draw it all, no conditionals.
-  TFT_eSprite textSprite = TFT_eSprite(tft);
-  textSprite.setColorDepth(1);
-  textSprite.createSprite(width, height);
-  textSprite.setTextColor(TFT_WHITE, TFT_BLACK);
-
-
   formatDeg(lat, buffer, true);
-  textSprite.setTextDatum(BR_DATUM);
-  textSprite.drawString(buffer, degx, laty, 4); 
-
-  
+  uint16_t check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer),false);
   formatMin(lat, buffer, true);
-  textSprite.setTextDatum(BL_DATUM);
-  textSprite.drawString(buffer, minx, laty, 4); 
-  
+  check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer), false, check);
   formatMinDec(lat, buffer, true);
-  textSprite.drawString(buffer, minDecx, laty, 4); 
-  textSprite.setTextDatum(TL_DATUM);
-  textSprite.drawString("o", degx, laty-fontHeight-5, 2); 
-  textSprite.drawString("'", minx+minWidth, laty-fontHeight, 2); 
-
+  check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer), false, check);
   formatDeg(lon, buffer, false);
-  textSprite.setTextDatum(TR_DATUM);
-  textSprite.drawString(buffer, degx, lony, 4); 
-
+  check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer), false, check);
   formatMin(lon, buffer, false);
-  textSprite.setTextDatum(TL_DATUM);
-  textSprite.drawString(buffer, minx, lony, 4); 
-
+  check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer), false, check);
   formatMinDec(lon, buffer, false);
-  textSprite.drawString(buffer, minDecx, lony, 4); 
-  textSprite.drawString("o", degx, lony-5, 2); 
-  textSprite.drawString("'", minx+minWidth, lony, 2);
+  check = Modbus_crc16((const uint8_t *)buffer,strlen(buffer), false, check);
 
-  textSprite.drawRoundRect(0, 0, width, height, 5, TFT_WHITE);
-  textSprite.setTextDatum(BL_DATUM);
-  textSprite.drawString("FIX", 5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
-  textSprite.setTextDatum(BR_DATUM);
-  textSprite.drawString("d m.m", width-5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
 
-  tft->setBitmapColor(TFT_WHITE, TFT_BLACK); 
-  textSprite.pushSprite(x, y);
+  if ( firstPaint || check != checksum ) {
+    checksum = check;    
 
-  previousLat = lat;
-  previousLon = lon;
+
+    // setup 1 bit sprite for the whole widget.
+    // and draw it all, no conditionals.
+    TFT_eSprite textSprite = TFT_eSprite(tft);
+    textSprite.setColorDepth(1);
+    textSprite.createSprite(width, height);
+    textSprite.setTextColor(TFT_WHITE, TFT_BLACK);
+
+
+    formatDeg(lat, buffer, true);
+    textSprite.setTextDatum(BR_DATUM);
+    textSprite.drawString(buffer, degx, laty, 4); 
+
+    
+    formatMin(lat, buffer, true);
+    textSprite.setTextDatum(BL_DATUM);
+    textSprite.drawString(buffer, minx, laty, 4); 
+    
+    formatMinDec(lat, buffer, true);
+    textSprite.drawString(buffer, minDecx, laty, 4); 
+    textSprite.setTextDatum(TL_DATUM);
+    textSprite.drawString("o", degx, laty-fontHeight-5, 2); 
+    textSprite.drawString("'", minx+minWidth, laty-fontHeight, 2); 
+
+    formatDeg(lon, buffer, false);
+    textSprite.setTextDatum(TR_DATUM);
+    textSprite.drawString(buffer, degx, lony, 4); 
+
+    formatMin(lon, buffer, false);
+    textSprite.setTextDatum(TL_DATUM);
+    textSprite.drawString(buffer, minx, lony, 4); 
+
+    formatMinDec(lon, buffer, false);
+    textSprite.drawString(buffer, minDecx, lony, 4); 
+    textSprite.drawString("o", degx, lony-5, 2); 
+    textSprite.drawString("'", minx+minWidth, lony, 2);
+
+    textSprite.drawRoundRect(0, 0, width, height, 5, TFT_WHITE);
+    textSprite.setTextDatum(BL_DATUM);
+    textSprite.drawString("FIX", 5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+    textSprite.setTextDatum(BR_DATUM);
+    textSprite.drawString("d m.m", width-5, height-5, 2); // Value in middle, Font 8 only as numbers, no letters.
+
+    tft->setBitmapColor(TFT_WHITE, TFT_BLACK); 
+    textSprite.pushSprite(x, y);
+
+  }
 
 }
 
@@ -688,7 +681,7 @@ nx:185ny:150 value:4000.00 angle:120 min_x:175 min_y:140 uw:64 uh:18
 }
 
 void TFTTachometer::updateLCD(TFT_eSPI *tft, 
-    float *values,  bool firstPaint) {
+    TachometerValues *values,  bool firstPaint) {
 
     unsigned long now = millis();
     if ( now > lastLCDUpdate + 500 ) {
@@ -730,42 +723,44 @@ void TFTTachometer::updateLCD(TFT_eSPI *tft,
       // fule engine V service V
 
 
+
+
       char buffer[20];
       background.setTextColor(TFT_WHITE);
       switch(lcdView) {
         case 0:
-          sprintf(buffer, "%4.0frpm",values[0]);
+          sprintf(buffer, "%4.0frpm",values->rpm);
           background.setTextDatum(TC_DATUM);
           background.drawString(buffer, uw/2, 1, 4);
 
-          sprintf(buffer, "%4.1fkn",values[3]);
+          sprintf(buffer, "%4.1fkn",values->speed);
           background.setTextDatum(BC_DATUM);
           background.drawString(buffer, uw/2, uh-1, 4);
           break;
         case 1:
-          sprintf(buffer, "tmp %3.0fC",values[1]);
+          sprintf(buffer, "tmp %3.0fC",values->coolantTemperature);
           background.setTextDatum(TC_DATUM);
           background.drawString(buffer, uw/2, 1, 4);
 
-          sprintf(buffer, "fuel %3.0f%%",values[2]);
+          sprintf(buffer, "fuel %3.0f%%",values->fuel);
           background.setTextDatum(BC_DATUM);
           background.drawString(buffer, uw/2, uh-1, 4);
           break;
         case 2:
-          sprintf(buffer, "alt %5.2fV",values[5]);
+          sprintf(buffer, "alt %5.2fV",values->alternatorVoltage);
           background.setTextDatum(TC_DATUM);
           background.drawString(buffer, uw/2, 1, 4);
 
-          sprintf(buffer, "chg %5.1fA",values[6]);
+          sprintf(buffer, "chg %5.1fA",values->chargeCurrent);
           background.setTextDatum(BC_DATUM);
           background.drawString(buffer, uw/2, uh-1, 4);
           break;
         case 3:
-          sprintf(buffer, "eb %5.2fV",values[4]);
+          sprintf(buffer, "eb %5.2fV",values->engineBatteryVoltage);
           background.setTextDatum(TC_DATUM);
           background.drawString(buffer, uw/2, 1, 4);
 
-          sprintf(buffer, "sb %5.2fV",values[7]);
+          sprintf(buffer, "sb %5.2fV",values->serviceBatteryVoltage);
           background.setTextDatum(BC_DATUM);
           background.drawString(buffer, uw/2, uh-1, 4);
           break;
@@ -988,11 +983,14 @@ void TFTSailing::drawBoat(TFT_eSprite *dial, int16_t cx, int16_t cy) {
 
 
 void TFTSailing::drawDial(TFT_eSPI *tft, 
+    SailingScreenValues * values,
     int sx, // sprite x offset from dial origin
     int sy, // sprite y offset from dial origin
     int sw, // sprite witdth
     int sh  // sprite height
     ) {
+
+
     TFT_eSprite dial = TFT_eSprite(tft);
     uint16_t palette[16];
 
@@ -1032,7 +1030,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     int16_t tx[8];
     int16_t ty[8];
 
-    dial.fillCircle(cx, cy, outer_r, PLT_BLACK);
+    dial.fillCircle(cx, cy, outer_r+3, PLT_BLACK);
     dial.drawCircle(cx, cy, outer_r, PLT_GREY);
     dial.drawCircle(cx, cy, inner_r, PLT_GREY);
     dial.drawCircle(cx, cy, uw/5, PLT_GREY);
@@ -1056,7 +1054,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
         ty[2] = -inner_r;
         ty[3] =  0;
         ty[4] =  0;
-        rotatePoints(tx,ty,5,(hdg-i), cx, cy);
+        rotatePoints(tx,ty,5,(values->hdg-i), cx, cy);
         dial.setTextColor(PLT_WHITE);
         if ( i == 0) {
           dial.drawString("N",tx[0],ty[0],2);
@@ -1077,14 +1075,14 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
       } else if ( i%30 == 0 ) {
         tx[0] = 0;
         ty[0] = -txt_r;
-        rotatePoints(tx,ty,1,(hdg-i), cx, cy);
+        rotatePoints(tx,ty,1,(values->hdg-i), cx, cy);
         itoa(i,deg,10);
         dial.setTextColor(PLT_DARKGREY);
         dial.drawString(deg,tx[0],ty[0],2);            
       } else {
         tx[0] = 0;
         ty[0] = -txt_r;
-        rotatePoints(tx,ty,1,(hdg-i), cx, cy);
+        rotatePoints(tx,ty,1,(values->hdg-i), cx, cy);
         dial.fillCircle(tx[0],ty[0],2,PLT_GREY);
       }
     } 
@@ -1095,20 +1093,20 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     dial.fillRoundRect(cx-rectd+1,1,(2*rectd)-2,rectd-2,4,PLT_BLACK);
     dial.setTextColor(PLT_WHITE);
     dial.setTextDatum(MC_DATUM);
-    //itoa(hdg,deg,10);
-    deg[0] = ((int8_t)((hdg%1000)/100))+'0';
-    deg[1] = ((int8_t)((hdg%100)/10))+'0';
-    deg[2] = ((int8_t)(hdg%10))+'0';
+    //itoa(values->hdg,deg,10);
+    deg[0] = ((int8_t)((values->hdg%1000)/100))+'0';
+    deg[1] = ((int8_t)((values->hdg%100)/10))+'0';
+    deg[2] = ((int8_t)(values->hdg%10))+'0';
     deg[3] = '\0';
     dial.drawString(deg, cx,(rectd/2)+2, 4);
 
     // port and starboard track
-    drawSector(&dial, hdg-portLL, cx, cy, PLT_RED); 
-    drawSector(&dial, hdg-stbdLL, cx, cy, PLT_GREEN);
+    drawSector(&dial, values->hdg-values->portLL, cx, cy, PLT_RED); 
+    drawSector(&dial, values->hdg-values->stbdLL, cx, cy, PLT_GREEN);
 
     // wind pointers
-    drawWindpointer(&dial, twa, twah, ntwah, cx, cy, PLT_RED);
-    drawWindpointer(&dial, awa, awah, nawah, cx, cy, PLT_GREEN);
+    drawWindpointer(&dial, values->twa, twah, ntwah, cx, cy, PLT_RED);
+    drawWindpointer(&dial, values->awa, awah, nawah, cx, cy, PLT_GREEN);
 
 
     // orange pointer
@@ -1118,7 +1116,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     ty[0] = (-txt_r-outer_r)/2;
     ty[1] = (-txt_r-outer_r)/2;
     ty[2] = -inner_r;
-    rotatePoints(tx,ty,3, orangePointerAngle, cy, cy);
+    rotatePoints(tx,ty,3, values->orangePointerAngle, cy, cy);
     dial.fillTriangle(
       tx[0], ty[0],
       tx[1], ty[1],
@@ -1130,7 +1128,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     tx[1] = 0;
     ty[0] = -inner_r+15;
     ty[1] = -inner_r;
-    rotatePoints(tx,ty,2, yellowPointerAngle, cy, cy);
+    rotatePoints(tx,ty,2, values->yellowPointerAngle, cy, cy);
     dial.fillCircle(tx[0], ty[0], 7, PLT_YELLOW);
     dial.drawLine(tx[0], ty[0], tx[1], ty[1], PLT_YELLOW);
 
@@ -1143,7 +1141,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     ty[1] = -inner_r;
     ty[2] = -inner_r;
     ty[3] = -inner_r;
-    rotatePoints(tx,ty,4, purplePointerAngle, cy, cy);
+    rotatePoints(tx,ty,4, values->purplePointerAngle, cy, cy);
     dial.fillTriangle(
       tx[0], ty[0],
       tx[1], ty[1],
@@ -1181,7 +1179,7 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
     ty[5] = 15;
     ty[6] = 15;
     ty[7] = 15;
-    rotatePoints(tx,ty,8, currentAngle, cy, cy);
+    rotatePoints(tx,ty,8, values->currentDirection, cy, cy);
     dial.fillTriangle(
       tx[0], ty[0],
       tx[1], ty[1],
@@ -1211,52 +1209,226 @@ void TFTSailing::drawDial(TFT_eSPI *tft,
 
 
 
-void TFTSailing::display(TFT_eSPI *tft, bool firstPaint) {
+void TFTSailing::display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint) {
   if ( firstPaint ) {
     tft->fillScreen(PLT_BLACK);    
   }
-  drawDial(tft, 0,0,uw,uh);  // may need to iterate over the dial to reduce memory requirements.
-}
-
-
-
-
-void TFTInfoBlock::display(TFT_eSPI *tft, const char *line2, const char *line3, bool firstPaint) {
-  TFT_eSprite block = TFT_eSprite(tft);
-  block.setColorDepth(1);
-  block.createSprite(uw, uh); // 320*320/2, might be a problem, so may have to call this multiple times
-  block.fillSprite(TFT_BLACK);
-  block.setTextColor(TFT_WHITE);
-  int16_t lineHeight = 20;
-  switch(alignment) {
-    case TFTInfoBlock::topRight:
-      block.setTextDatum(TR_DATUM);
-      block.drawString(title, uw, 0,  4);
-      block.drawString(line2, uw, lineHeight, 4);
-      block.drawString(line3, uw, lineHeight*2, 4);
-    break;
-    case TFTInfoBlock::bottomLeft:
-      block.setTextDatum(BL_DATUM);
-      block.drawString(title, 0, uh, 4);
-      block.drawString(line2, 0, uh-(lineHeight*2), 4);
-      block.drawString(line3, 0, uh-(lineHeight), 4);
-    break;
-    case TFTInfoBlock::bottomRight:
-      block.setTextDatum(BR_DATUM);
-      block.drawString(title, uw, uh, 4);
-      block.drawString(line2, uw, uh-(lineHeight*2), 4);
-      block.drawString(line3,  uw, uh-lineHeight, 4);
-    break;
-    case TFTInfoBlock::topLeft:
-    default:
-      block.setTextDatum(TL_DATUM);
-      block.drawString(title, 0,0, 4);
-      block.drawString(line2, 0,lineHeight, 4);
-      block.drawString(line3, 0,lineHeight*2, 4);
+  unsigned long now = millis();
+  if ( now > lastUpdate + 1000) {
+    lastUpdate = now;
+    for ( int i = MAX_WIND_HISTORY-1; i > 0; i-- ) {
+      twah[i] = twah[i-1];
+      awah[i] = awah[i-1];
+    }
+    twah[0] = values->twa;
+    awah[0] = values->awa;
+    if ( ntwah < MAX_WIND_HISTORY ) {
+      ntwah++;
+    }
+    if ( nawah < MAX_WIND_HISTORY ) {
+      nawah++;
+    }       
   }
-  tft->setBitmapColor(colour, PLT_BLACK);
-  block.pushSprite(x,y, PLT_BLACK);
+
+  drawDial(tft, values, 0,0,uw,uh);  // may need to iterate over the dial to reduce memory requirements.
 }
+
+/*
+pixels per mm = 480/83=5.78
+title width = 22*5.78 = 130
+data width = 14.3*5.78 = 83
+*/
+
+void TFTTrueWindBlock::display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint) {
+  char twaBuf[6];
+  char twsBuf[6];
+  if ( values->twa < 0 ) {
+    twaBuf[0] = 'S';
+    itoa(-values->twa,&twaBuf[1],10);
+  } else {
+    twaBuf[0] = 'P';
+    itoa(values->twa,&twaBuf[1],10);
+  }
+  dtostrf(values->tws,1,1,&twsBuf[0]);
+
+  uint16_t check = Modbus_crc16((const uint8_t *)twaBuf,strlen(twaBuf),false);
+  check = Modbus_crc16((const uint8_t *)twsBuf,strlen(twsBuf), true, check);
+
+  if ( firstPaint || check != checksum ) {
+    checksum = check;
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(130, 25);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TL_DATUM);
+      block.drawString("True Wind", 0,0, 4);
+      tft->setBitmapColor(0xD802, PLT_BLACK);
+      block.pushSprite(5, 5, PLT_BLACK);
+    }
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(83, 50);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+
+      block.drawString(twsBuf, 0,0, 4);
+      int16_t tw = block.textWidth(twsBuf,4);
+      block.drawString("kn", tw,0, 4);
+
+      block.drawString(twaBuf, 0,25, 4);
+      tw = block.textWidth(twaBuf,4);
+      block.drawString("o", tw+2,15, 2);
+      tft->setBitmapColor(0xD802, PLT_BLACK);
+      block.pushSprite(5, 30);
+    }
+  }
+}
+
+
+
+void TFTVMGBlock::display(TFT_eSPI *tft, SailingScreenValues * values, bool firstPaint) {
+  char vmgBuf[6];
+  char polarBuf[6];
+  dtostrf(values->vmg,1,1,&vmgBuf[0]);
+  dtostrf(values->polar,1,0,&polarBuf[1]);
+  uint16_t check = Modbus_crc16((const uint8_t *)vmgBuf,strlen(vmgBuf), false);
+  check = Modbus_crc16((const uint8_t *)polarBuf,strlen(polarBuf), true, check);
+
+  if ( firstPaint || check != checksum ) {
+    checksum = check;    
+
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(130, 25);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TL_DATUM);
+      block.drawString("VMG/Polar", 0,0, 4);
+      tft->setBitmapColor(TFT_WHITE, PLT_BLACK);
+      block.pushSprite(5, 320-25-5, PLT_BLACK);
+    }
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(83, 50);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TL_DATUM);
+      block.drawString(vmgBuf, 0,0, 4);
+      int16_t tw = block.textWidth(vmgBuf,4);
+      block.drawString("kn",tw, 0, 4);
+      block.drawString(polarBuf, 0, 25, 4);
+      tw = block.textWidth(polarBuf,4);
+      block.drawString("%", tw, 25, 4);
+      tft->setBitmapColor(TFT_WHITE, PLT_BLACK);
+      block.pushSprite(5, 320-75-5);
+    }
+  }
+}
+
+
+void TFTApparentWindBlock::display(TFT_eSPI *tft, SailingScreenValues *values, bool firstPaint) {
+  char awaBuf[6];
+  char awsBuf[6];
+  if ( values->awa < 0 ) {
+    awaBuf[0] = 'S';
+    itoa(-values->awa,&awaBuf[1],10);
+  } else {
+    awaBuf[0] = 'P';
+    itoa(values->awa,&awaBuf[1],10);
+  }
+  dtostrf(values->aws,1,1,&awsBuf[0]);
+
+  uint16_t check = Modbus_crc16((const uint8_t *)awaBuf,strlen(awaBuf), false);
+  check = Modbus_crc16((const uint8_t *)awsBuf,strlen(awsBuf), true, check);
+
+  if ( firstPaint || check != checksum ) {
+    checksum = check;    
+
+   {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(130, 25);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TR_DATUM);
+      block.drawString("App Wind", 130,0, 4);
+      tft->setBitmapColor(0x0566, PLT_BLACK);
+      block.pushSprite(480-130-5, 5, PLT_BLACK);
+
+    }
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(83, 50);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TR_DATUM);
+      int16_t tw = block.textWidth("kn",4);
+
+      block.drawString(awsBuf, 83-tw,0, 4);
+      block.drawString("kn", 83,0, 4);
+
+      tw = block.textWidth("o",2);
+      block.drawString(awaBuf, 83-tw,25, 4);
+      block.drawString("o", 83,15, 2);
+      tft->setBitmapColor(0x0566, PLT_BLACK);
+      block.pushSprite(480-83-5, 25);
+
+    }
+  }
+}
+
+void TFTCurrentBlock::display(TFT_eSPI *tft, SailingScreenValues * values, bool firstPaint) {
+  char directionBuf[6];
+  char speedBuf[6];
+  itoa(values->currentDirection,&directionBuf[0],10);
+  dtostrf(values->currentSpeed,1,1,&speedBuf[1]);
+
+  uint16_t check = Modbus_crc16((const uint8_t *)directionBuf,strlen(directionBuf), false);
+  check = Modbus_crc16((const uint8_t *) speedBuf,strlen(speedBuf), true, check);
+
+  if ( firstPaint || check != checksum ) {
+    checksum = check;    
+
+
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(130, 25);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TR_DATUM);
+      block.drawString("Current", 130 ,0, 4);
+      tft->setBitmapColor(0x2CF9, PLT_BLACK);
+      block.pushSprite(480-130-5, 320-25-5, PLT_BLACK);
+    }
+    {
+      TFT_eSprite block = TFT_eSprite(tft);
+      block.setColorDepth(1);
+      block.createSprite(83, 50);
+      block.fillSprite(TFT_BLACK);
+      block.setTextColor(TFT_WHITE);
+      block.setTextDatum(TR_DATUM);
+      int16_t tw = block.textWidth("o",2);
+      block.drawString(directionBuf, 83-tw,0, 4);
+      block.setTextDatum(BR_DATUM);
+      block.drawString("o", 83,2, 2);
+      block.setTextDatum(TR_DATUM);
+
+      tw = block.textWidth("kn",4);
+      block.drawString(speedBuf, 83-tw,25, 4);
+      block.drawString("kn", 83,25, 4);
+      tft->setBitmapColor(0x2CF9, PLT_BLACK);
+      block.pushSprite(480-83-5, 320-75-5);
+    }
+  }
+}
+
 
 
 

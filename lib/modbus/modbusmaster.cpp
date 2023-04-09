@@ -1,5 +1,8 @@
 #include "modbus.h"
 
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish, uint16_t crc);
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish);
+extern uint16_t Modbus_crc16(const uint8_t *array, uint16_t length);
 
 
 void ModbusMaster::begin() {
@@ -297,7 +300,7 @@ void ModbusMaster::dumpFrame(uint8_t length) {
 
 
 void ModbusMaster::send() {
-    uint16_t crcv = crc16(&buffer[0],frameLength);
+    uint16_t crcv = Modbus_crc16(&buffer[0],frameLength);
     buffer[frameLength++] = 0xff&(crcv>>8);
     buffer[frameLength++] = 0xff&(crcv);
     transmitEnable();
@@ -536,7 +539,7 @@ int8_t ModbusMaster::readResponse(uint8_t unit, uint8_t function, int16_t len) {
 
 
 bool ModbusMaster::checkCrc(uint8_t p) {
-    uint16_t crcv = crc16(&buffer[0],p);
+    uint16_t crcv = Modbus_crc16(&buffer[0],p);
     uint16_t crcr = (0xff00&(buffer[p]<<8)) | (0xff&buffer[p+1]);
     if (crcv != crcr ) {
         //Serial.println("Warning: CRC Failed");
@@ -550,9 +553,17 @@ bool ModbusMaster::checkCrc(uint8_t p) {
 * @param array 
 * @param length 
 * @return uint16_t 
+* 
+* 
 */
-uint16_t ModbusMaster::crc16(const uint8_t *array, uint16_t length) {
-    uint16_t crc = 0xffff;
+uint16_t Modbus_crc16(const uint8_t *array, uint16_t length) {
+    return Modbus_crc16(array, length, false, 0xffff);
+}
+uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish) {
+    return Modbus_crc16(array, length, finish, 0xffff);    
+}
+
+uint16_t Modbus_crc16(const uint8_t *array, uint16_t length, bool finish, uint16_t crc ) {
     while (length--) {
         if ((length & 0xFF) == 0) yield();  // RTOS
         uint8_t data = *array++;
@@ -569,9 +580,11 @@ uint16_t ModbusMaster::crc16(const uint8_t *array, uint16_t length) {
         }
         }
     }
-    crc = (((crc & 0XAAAA) >> 1) | ((crc & 0X5555) << 1));
-    crc = (((crc & 0xCCCC) >> 2) | ((crc & 0X3333) << 2));
-    crc = (((crc & 0xF0F0) >> 4) | ((crc & 0X0F0F) << 4));
+    if ( finish ) {
+        crc = (((crc & 0XAAAA) >> 1) | ((crc & 0X5555) << 1));
+        crc = (((crc & 0xCCCC) >> 2) | ((crc & 0X3333) << 2));
+        crc = (((crc & 0xF0F0) >> 4) | ((crc & 0X0F0F) << 4));
+    }
     //  crc = (( crc >> 8) | (crc << 8));
     //  crc ^= endmask;
     return crc;
