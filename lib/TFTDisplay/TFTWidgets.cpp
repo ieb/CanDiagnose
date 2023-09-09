@@ -684,8 +684,8 @@ void TFTTachometer::updateLCD(TFT_eSPI *tft,
     TachometerValues *values,  bool firstPaint) {
 
     unsigned long now = millis();
-    if ( now > lastLCDUpdate + 500 ) {
-      if ( now > lastLCDChange + 5000 ) {
+    if ( now-lastLCDUpdate >  500 ) {
+      if ( now-lastLCDChange >  5000 ) {
         lcdView++;
         if ( lcdView > 3) lcdView = 0;
         lastLCDChange = now;
@@ -1214,7 +1214,7 @@ void TFTSailing::display(TFT_eSPI *tft, SailingScreenValues *values, bool firstP
     tft->fillScreen(PLT_BLACK);    
   }
   unsigned long now = millis();
-  if ( now > lastUpdate + 1000) {
+  if ( now-lastUpdate >  1000) {
     lastUpdate = now;
     for ( int i = MAX_WIND_HISTORY-1; i > 0; i-- ) {
       twah[i] = twah[i-1];

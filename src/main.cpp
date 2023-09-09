@@ -461,7 +461,7 @@ void endTimer(int i) {
   calls[i]++;
   totalCalls++;
   counters[i] = counters[i]+(end-start);
-  if ( end > (lastPrint+10000) ) {
+  if ( end-lastPrint > (+10000) ) {
     lastPrint = end;
     Serial.print(end);
     Serial.print(" times:");

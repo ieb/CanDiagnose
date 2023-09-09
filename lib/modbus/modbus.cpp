@@ -47,7 +47,7 @@ void Modbus::output() {
     unsigned long now = millis();
 
     tN2kMsg N2kMsg;
-    if ( now > lastDCStatus + dcstatusPeriod) {
+    if ( (now-lastDCStatus) >  dcstatusPeriod) {
         lastDCStatus = now;
         // needs to come over RS485, if no update for 60s dont send.
         if ( serviceBattery.isEnabled() ) {
@@ -71,7 +71,7 @@ void Modbus::read() {
     // until its read more reads are noops so its ok to call repeatedly
     serviceBattery.read();
     engineBattery.read();
-    if ( now > lastRead + readPeriod )  {
+    if ( (now-lastRead) >  readPeriod )  {
         // Update the history periodically.
         // this may get the value from the last read, but thats ok.
         lastRead = now;

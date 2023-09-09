@@ -27,7 +27,7 @@ double LogBook::headingAngleToDeg(double a) {
 
 void LogBook::demoMode() {
     unsigned long now = millis();
-    if ( now > lastDemoUpdate + 5000) {
+    if ( (now-lastDemoUpdate) >  5000) {
         lastDemoUpdate = now;
          n2kCollector.log[0].lastModified = now;
          n2kCollector.log[0].source = 1;
@@ -48,7 +48,7 @@ void LogBook::demoMode() {
 
 void LogBook::log() {
     unsigned long now = millis();
-    if ( now > lastLogUpdate + logPeriod) {
+    if ( (now-lastLogUpdate) >  logPeriod) {
         LogData * log = n2kCollector.getLog();
         GnssData * gnss = n2kCollector.getGnss();
 

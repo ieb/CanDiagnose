@@ -79,7 +79,7 @@ void Temperature::begin(const char * configurationFile) {
 
 void Temperature::read() {
     unsigned long now = millis();
-    if ( now > lastRead + readPeriod )  {
+    if ( (now-lastRead) >  readPeriod )  {
         lastRead = now;  
         for(int i=0; i< MAX_TEMPERATURE_SENSORS; i++) {
             if(isAvailable(i)) {
@@ -102,7 +102,7 @@ void Temperature::output() {
     unsigned long now = millis();
 
     tN2kMsg N2kMsg;
-    if ( now > lastTemperature + temperaturePeriod )  {
+    if ( (now - lastTemperature) >  temperaturePeriod )  {
         lastTemperature = now; 
         for (int i = 0; i < MAX_TEMPERATURE_SENSORS; i++) {
             if ( temperatureInstance[i] != 255 && temperatureSensor[i].connected ) {

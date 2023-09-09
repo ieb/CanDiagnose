@@ -29,12 +29,12 @@ void OledDisplay::update() {
         case START_SLEEP:
             logoDisplayPage.drawPage(&display);
             displayState = WAIT_SLEEP_END;
-            sleepEndAt = now+4000;
+            sleepStart = now;
             Serial.println("Display Sleep Process complete  in 4s");
             break;
         case WAIT_SLEEP_END:
 
-            if ( now > sleepEndAt ) {
+            if ( now-sleepStart > 4000 ) {
                 display.clearDisplay();
                 display.display();
                 Serial.println("Display Sleep Process is complete");
@@ -50,12 +50,12 @@ void OledDisplay::update() {
             break;
         case AWAKE:
             if ( dimming ) {
-                if ( now > lastDim + dimPeriod ) {
+                if ( (now-lastDim)  > dimPeriod ) {
                     lastDim = now;
                     dim();
                 }
             } else {
-                if ( now > staticPagePress+15000 && now > lastDisplay + displayPeriod )  {
+                if ( (now-staticPagePress) > 15000 && (now-lastDisplay) > displayPeriod )  {
                     lastDisplay = now;
                     lastDim = now;
                     nextPage();

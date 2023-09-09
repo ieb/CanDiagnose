@@ -45,12 +45,12 @@ class MessageStoreWithInstance  {
             if ( source == 255) {
                 source = msgSource;
                 instance = msgInstance;
-                lastModified = millis();
+                lastModified = now;
                 return true;
             } else if ( source == msgSource && instance == msgInstance ) {
-                lastModified = millis();
+                lastModified = now;
                 return true;
-            } else if (useOld && now > lastModified+600000 ) {
+            } else if (useOld && now-lastModified > 600000 ) {
                 // no update for 10m so assume not transmitting any more
                 source = msgSource;
                 lastModified = now;

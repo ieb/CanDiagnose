@@ -326,7 +326,7 @@ void ModbusMaster::readResponseAsync() {
         return;
     } 
     unsigned long now = millis();
-    if ( now > (messageSent+5000) ) {
+    if ( (now-messageSent) > 5000 ) {
         state = MODBUS_TIMEOUT;
         modbusCallback->onResponse(state);
         return;

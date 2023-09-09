@@ -333,7 +333,7 @@ void TFTGridBoxesDisplayPage::update(bool paintScreen) {
     unsigned long now = millis();
 
  #if DEMOMODE
-    if ( now > lastUpdate + 1000) {
+    if ( now-lastUpdate >  1000) {
       lastUpdate = now;
       d += 4; if (d >= 360) d = 0;
     }

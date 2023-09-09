@@ -18,7 +18,7 @@ void BME280Sensor::begin() {
 
 void BME280Sensor::read() {
     unsigned long now = millis();
-    if ( now > lastRead + readPeriod )  {
+    if ( (now-lastRead) > readPeriod )  {
         lastRead = now;  
         bme_temp->getEvent(&temp_event);
         bme_pressure->getEvent(&pressure_event);

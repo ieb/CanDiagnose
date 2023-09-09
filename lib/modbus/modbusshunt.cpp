@@ -63,7 +63,7 @@ void ModbusShunt::setDiagnostics(bool enabled) {
 */
 
 void ModbusShunt::read() {
-    if ( unit > 0 && (millis() > (lastModified + readPeriod)) ) {
+    if ( unit > 0 && ((millis()-lastModified) > readPeriod) ) {
         // read can be called as many times as liked, but it wont read if its already readng
         // if its already running, then this is a noop and can be called as often as required.
 

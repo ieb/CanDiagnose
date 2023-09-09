@@ -85,7 +85,7 @@ void ADCSensor::begin(const char * configurationFile) {
 
 void ADCSensor::read() {
     unsigned long now = millis();
-    if ( now > lastRead + readPeriod )  {
+    if ( (now-lastRead) > readPeriod )  {
         lastRead = now;
         for (int i = 0; i < MAX_ADC_CHANNELS; i++) {
             switch(channel[i].type) {

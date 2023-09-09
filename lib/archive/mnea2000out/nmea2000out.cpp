@@ -65,7 +65,7 @@ void Nmea2000Output::output() {
     unsigned long now = millis();
 
     tN2kMsg N2kMsg;
-    if ( now > lastTemperature + temperaturePeriod )  {
+    if ( (now-lastTemperature) > temperaturePeriod )  {
         lastTemperature = now; 
         for (int i = 0; i < MAX_TEMPERATURE_SENSORS; i++) {
             if ( temperatureInstance[i] != 255 && temperature.temperatureSensor[i].connected ) {

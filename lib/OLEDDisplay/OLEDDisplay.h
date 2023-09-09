@@ -141,7 +141,7 @@ class OledDisplay {
         unsigned long lastDim = 0;
         unsigned long dimPeriod = 1000;
         unsigned long staticPagePress = 0;
-        unsigned long sleepEndAt = 0;
+        unsigned long sleepStart = 0;
         bool dimming = false;
         DisplayState displayState = AWAKE;
         uint8_t dimmer = 9;
